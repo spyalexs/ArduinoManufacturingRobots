@@ -1,0 +1,14 @@
+Follow these steps to setup the development enviroment:
+
+1. Download and Install VSCode
+2. Install the Arduino Extension in VSCode
+3. Download and Extract the Arduino Cli: https://arduino.github.io/arduino-cli/0.31/installation/
+4. Create a new folder at "C:\Program Files\ArduinoCli"
+5. Move the Arduino Cli file to the folder above
+6. Add "C:\Program Files\ArduinoCli" to the PATH system environment variable
+7. Inside VSCode Press CTRL+SHIFT+P, Select Arduino Nano as the board type
+8. Install Arduino IDE and Select Nano 33 IOT as board type
+
+Note: Steps 4-6 may be skipped if using VSCode bundled CLI
+
+To Upload, use IDE, development can be done in VSCode or IDE
