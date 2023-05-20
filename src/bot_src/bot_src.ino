@@ -8,6 +8,10 @@ BLEByteCharacteristic testCharacteristic(deviceServiceCharacteristicUuid, BLERea
 
 
 void setup(){
+  //start up led
+  pinMode(LED_BUILTIN, OUTPUT);
+
+  //start up Bluetooth module
   if(!BLE.begin()){
     Serial.println("Failed to start BLE!");
   }
@@ -16,32 +20,43 @@ void setup(){
   BLE.setAdvertisedService(testService);
   testService.addCharacteristic(testCharacteristic);
   BLE.addService(testService);
-  testCharacteristic.writeValue(-1);
+  testCharacteristic.writeValue(0);
   BLE.advertise();
 
   Serial.println("I am a bot!");
 }
 
 void loop(){
-    Serial.print("Characteristic Value: ");
-    Serial.println(testCharacteristic.value());
+    Serial.println("Searching for central...");
 
-    BLEDevice centralCommand = BLE.central();
+    BLEDevice bridge = BLE.central();
     delay(500);
 
-    if(centralCommand){
+    if(bridge){
       Serial.println("I found central!");
 
-      while(centralCommand.connected()){
-        if(testCharacteristic.written()){
-          Serial.print("Characteristic Value: ");
-          Serial.println(testCharacteristic.value());
-        }
-
-        delay(100);
+      while(bridge.connected()){
+        connectedLoop();
       }
 
-      Serial.println("Disconnected from central command!");
+      Serial.println("Disconnected from the bridge! - Stopping until connection reaquirred.");
     }
+}
 
+void connectedLoop(){
+//this runs while the bot is connected to the bridge
+  if(testCharacteristic.written()){
+    setLEDStatus(testCharacteristic.value());
+  }
+
+  
+}
+
+
+void setLEDStatus(int status){
+  if(status == 0){
+    digitalWrite(LED_BUILTIN, LOW);
+  }else{
+    digitalWrite(LED_BUILTIN, HIGH);
+  }
 }
