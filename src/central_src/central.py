@@ -1,4 +1,4 @@
-import serial
+import serial, serial.tools.list_ports
 import sys
 import time
 import queue
@@ -14,20 +14,43 @@ def initialize():
     #thread safe queu for messages out of central
     queueOut = queue.Queue()
 
-    #initialize COM7 port
-    COM7 = serial.Serial("COM7")
+    arduinios = [] 
+    #wait for bridge connection
+    searchStart = time.time()
+    while len(arduinios) < 1:
+        #get serial ports - connected and unsused
+        ports = serial.tools.list_ports.comports()
+
+        for port in ports:
+            #go through ports and try to open a serial COM
+            try:
+                #if arduino connected, save the port
+                if("Arduino" in port.description):
+                    arduinios.append(port.name)
+            except (OSError, serial.SerialException, AttributeError):
+                pass
+
+        if(searchStart + 100 < time.time()):
+            #cannot find arduinos - timeout
+            print("Timeout. Cannot find bridge. Quitting!")
+            quit()
+
+        time.sleep(0.1)
+
+    #initialize bridge port - assume the only port found 
+    bridge = serial.Serial(arduinios[0])
     #set baud rate to match arduino
-    COM7.baudrate = 38400; 
+    bridge.baudrate = 38400; 
     #set read time
-    COM7.timeout = 0.001  
+    bridge.timeout = 0.001  
 
     #create the thread to monitor the serial inbox
-    monitorThread = Thread(target=monitor,args=(COM7, queueIn))
+    monitorThread = Thread(target=monitor,args=(bridge, queueIn))
     monitorThread.daemon = True
     monitorThread.start()
 
     #create a thread to send messages out serial
-    publisherThread = Thread(target=publish, args=(COM7, queueOut))
+    publisherThread = Thread(target=publish, args=(bridge, queueOut))
     publisherThread.daemon = True
     publisherThread.start()
 
