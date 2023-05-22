@@ -1,10 +1,16 @@
 #include <ArduinoBLE.h>
 
 const char* deviceServiceUuid = "19b10000-e8f2-537e-4f6c-d104768a1214";
-const char* deviceBUILTINLEDCharacteristicUuid = "19b10001-e8f2-537e-4f6c-d104768a1214";
+const char* bot1_LEDCUuid = "19b10001-e8f2-537e-4f6c-d104768a1214";
+const char* bot1_mindControlCUuid = "19b10002-e8f2-537e-4f6c-d104768a1214";
+const char* bot1_M1CUuid = "19b10003-e8f2-537e-4f6c-d104768a1214";
+const char* bot1_M2CUuid = "19b10004-e8f2-537e-4f6c-d104768a1214";
 
 BLEDevice bot1;
-BLECharacteristic bot1_BUILTIN_LED;
+BLECharacteristic bot1_LEDC;
+BLECharacteristic bot1_mindControlC;
+BLECharacteristic bot1_M1C;
+BLECharacteristic bot1_M2C;
 
 
 class MessageLine{
@@ -97,8 +103,10 @@ void connectToBot(){
         Serial.println("Atrributes found on bot1!");
 
         //save characteristics
-        bot1_BUILTIN_LED = bot.characteristic(deviceBUILTINLEDCharacteristicUuid);
-
+        bot1_LEDC = bot.characteristic(bot1_LEDCUuid);
+        bot1_mindControlC = bot.characteristic(bot1_mindControlCUuid);
+        bot1_M1C = bot.characteristic(bot1_M1CUuid);
+        bot1_M2C = bot.characteristic(bot1_M2CUuid);
         
         bot1 = bot;
       }
@@ -106,21 +114,6 @@ void connectToBot(){
   }
 }
 
-void writeToBot(BLEDevice bot){
-  while(bot.connected()){
-    Serial.println("Connected");
-    //get charcteristic from bot
-
-    Serial.println(bot.discoverAttributes());
-
-    BLECharacteristic botCharacteristic = bot.characteristic(deviceBUILTINLEDCharacteristicUuid);
-
-    Serial.println(botCharacteristic);
-
-    botCharacteristic.writeValue((byte)12);
-    delay(1000);
-  }
-}
 
 void communicateWithCentral(){
   String message = Serial.readString();
@@ -148,8 +141,20 @@ void writeLine(MessageLine line){
   //match up target and characteristic
   if(line.m_target == "bot1"){
     if(line.m_characteristic == "BUILTIN_LED"){
-      if(bot1_BUILTIN_LED){
-        bot1_BUILTIN_LED.writeValue(byte(line.m_value.toInt()));
+      if(bot1_LEDC){
+        bot1_LEDC.writeValue(byte(line.m_value.toInt()));
+      }
+    }else if(line.m_characteristic == "mindControl"){
+      if(bot1_mindControlC){
+        bot1_mindControlC.writeValue(byte(line.m_value.toInt()));
+      }
+    }else if(line.m_characteristic == "M1"){
+      if(bot1_M1C){
+        bot1_M1C.writeValue(byte(line.m_value.toInt()));
+      }
+    }else if(line.m_characteristic == "M2"){
+      if(bot1_M2C){
+        bot1_M2C.writeValue(byte(line.m_value.toInt()));
       }
     }
   }

@@ -7,12 +7,15 @@ from random import random
 
 from monitorSerial import monitor
 from publishSerial import publish
+from gui.launchGUI import launchGUI
 
 def initialize():
     #thread safe queue for messages into central
     queueIn = queue.Queue()
     #thread safe queu for messages out of central
     queueOut = queue.Queue()
+    #queue for incomming gui requests
+    queueInGUI = queue.Queue()
 
     arduinios = [] 
     #wait for bridge connection
@@ -54,31 +57,40 @@ def initialize():
     publisherThread.daemon = True
     publisherThread.start()
 
-    return queueIn, queueOut
+    #create Gui
+    launchGUI(queueInGUI)
+
+    return queueIn, queueOut, queueInGUI
 
 
 def cycle():
     #In a cycle:
-    #1. in a general cycle, messages in should be handled
-    #2. map managment should occur
-    #3. any messages (not sent out by other processes) needing sent should be sent
+    #1. messages in should be handled
+    #2. gui requests in should be handled
+    #3. map managment should occur
+    #4. any messages (not sent out by other processes) needing sent should be sent
 
+    handleMessagesIn() #1
+    
+    handleGUIIn() #2
 
-    handleMessagesIn()
-
-    time.sleep(5)
-    print("ON")
-    SendMessageToBot("bot1", "BUILTIN_LED", 1)    
-    time.sleep(5)
-    print("Off")
-    SendMessageToBot("bot1", "BUILTIN_LED", 0)    
+    time.sleep(.05)
 
 def handleMessagesIn():
     #process incoming messages
     while(not queueIn.empty()):
+       print("Not Empty")
        print(queueIn.get())
 
-def SendMessageToBot(BotName, Characteristic, Value):
+def handleGUIIn():
+    while(not queueInGUI.empty()):
+        message = queueInGUI.get()
+        #handle all messages in the queu
+        if message.direct == True:
+            #if the message is ment to go directly to the robot
+            sendStringToBot(message.getDirectString())
+
+def sendMessageToBot(BotName, Characteristic, Value):
     #botname = string
     #characteristic = string
     #value = int
@@ -91,6 +103,9 @@ def SendMessageToBot(BotName, Characteristic, Value):
     message = BotName + "$" + Characteristic + "$" + str(Value)
     queueOut.put(message)
 
+def sendStringToBot(string):
+    queueOut.put(string)
+
 
 if __name__ == "__main__":
     if not sys.platform.startswith('win'):
@@ -99,7 +114,7 @@ if __name__ == "__main__":
         quit()
 
     #define threads and their queues
-    queueIn, queueOut = initialize()
+    queueIn, queueOut, queueInGUI = initialize()
 
     while(True):
       cycle()

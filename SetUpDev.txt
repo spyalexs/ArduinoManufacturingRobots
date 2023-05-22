@@ -11,12 +11,16 @@ Follow these steps to setup the development enviroment:
 
 Note: Steps 4-6 may be skipped if using VSCode bundled CLI
 
-Libraries To Install
+Libraries To Install:
 1. Arduino
     a. ArduinoBLE
     b. Arduino Motor Carrier
 2. Python
-    a. PySerial
+    a. pyserial
+    b. pysimplegui
+
+Rename bots:
+https://www.eightforums.com/threads/tutorial-how-to-change-device-names-in-device-manager.15321/
 
 
 
