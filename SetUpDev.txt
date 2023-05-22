@@ -11,4 +11,18 @@ Follow these steps to setup the development enviroment:
 
 Note: Steps 4-6 may be skipped if using VSCode bundled CLI
 
-To Upload, use IDE, development can be done in VSCode or IDE
+Libraries To Install
+1. Arduino
+    a. ArduinoBLE
+    b. Arduino Motor Carrier
+2. Python
+    a. PySerial
+
+
+
+To Upload to Arduinos, use IDE, development can be done in VSCode or IDE for either
+Central.py should be run on a laptop, connect a bridge Arduino via serial
+
+
+
+

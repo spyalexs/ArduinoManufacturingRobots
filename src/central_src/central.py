@@ -1,4 +1,5 @@
 import serial
+import sys
 import time
 import queue
 from threading import Thread
@@ -34,6 +35,12 @@ def initialize():
 
 
 def cycle():
+    #In a cycle:
+    #1. in a general cycle, messages in should be handled
+    #2. map managment should occur
+    #3. any messages (not sent out by other processes) needing sent should be sent
+
+
     handleMessagesIn()
 
     time.sleep(5)
@@ -63,6 +70,11 @@ def SendMessageToBot(BotName, Characteristic, Value):
 
 
 if __name__ == "__main__":
+    if not sys.platform.startswith('win'):
+        #ensure windows is being used
+        print("This program was designed to run only on a Windows operating system! Quitting.")
+        quit()
+
     #define threads and their queues
     queueIn, queueOut = initialize()
 
