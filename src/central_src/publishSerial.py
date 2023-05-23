@@ -1,5 +1,6 @@
 import serial
 import queue
+import time
 
 def publish(COM, queueOut):
     #COM - the serial port to be published to
@@ -16,6 +17,7 @@ def publish(COM, queueOut):
                 break
 
             COM.write(bytes(messageOut, "utf-8"))
+            time.sleep(.01)
 
         
 

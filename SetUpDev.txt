@@ -22,11 +22,7 @@ Libraries To Install:
 Rename bots:
 https://www.eightforums.com/threads/tutorial-how-to-change-device-names-in-device-manager.15321/
 
-
-
 To Upload to Arduinos, use IDE, development can be done in VSCode or IDE for either
 Central.py should be run on a laptop, connect a bridge Arduino via serial
 
-
-
-
+Motor Carrier Documentation: https://github.com/arduino-libraries/ArduinoMotorCarrier

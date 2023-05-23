@@ -7,6 +7,7 @@ from random import random
 
 from monitorSerial import monitor
 from publishSerial import publish
+from handleMessage import handleBotMessage
 from gui.launchGUI import launchGUI
 
 def initialize():
@@ -14,8 +15,13 @@ def initialize():
     queueIn = queue.Queue()
     #thread safe queu for messages out of central
     queueOut = queue.Queue()
-    #queue for incomming gui requests
+    #queue for incomming gui requests - from GUI to central
     queueInGUI = queue.Queue()
+    #queue for outgoing gui messages - from central to GUI
+    queueOutGUI = queue.Queue()
+
+    #create Gui
+    launchGUI(queueInGUI, queueOutGUI)
 
     arduinios = [] 
     #wait for bridge connection
@@ -57,10 +63,7 @@ def initialize():
     publisherThread.daemon = True
     publisherThread.start()
 
-    #create Gui
-    launchGUI(queueInGUI)
-
-    return queueIn, queueOut, queueInGUI
+    return queueIn, queueOut, queueInGUI, queueOutGUI
 
 
 def cycle():
@@ -79,8 +82,9 @@ def cycle():
 def handleMessagesIn():
     #process incoming messages
     while(not queueIn.empty()):
-       print("Not Empty")
-       print(queueIn.get())
+       message = queueIn.get()
+       print(message)
+       handleBotMessage(message, queueOutGui)
 
 def handleGUIIn():
     while(not queueInGUI.empty()):
@@ -114,7 +118,7 @@ if __name__ == "__main__":
         quit()
 
     #define threads and their queues
-    queueIn, queueOut, queueInGUI = initialize()
+    queueIn, queueOut, queueInGUI, queueOutGui = initialize()
 
     while(True):
       cycle()
