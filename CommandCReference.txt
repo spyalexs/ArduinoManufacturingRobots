@@ -1,0 +1,13 @@
+Command Issue:
+    0: No Command
+    1:
+    255: Abort
+
+Command Status:
+    0: No Command
+    1: Starting (General)
+    2: Running(General)
+    3: Cleaning(General)
+    100-199: Running (Percent Complete - last two digits)
+    254: Finished(Success)
+    255: Finished(Abort)

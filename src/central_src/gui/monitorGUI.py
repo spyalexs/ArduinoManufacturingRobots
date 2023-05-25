@@ -1,5 +1,5 @@
 import PySimpleGUI as sg
-import datetime
+import threading
 
 from gui.GUIInMessage import GUIInMessage
 from gui.GUIOutMessage import GUIOutMessage
@@ -11,14 +11,14 @@ def make(queueIn, queueOut):
     theme = sg.theme(getTheme())
 
     layout = [  [sg.Text('Robot 1')],
+                [sg.Text("Command"), sg.Combo(['Follow Line', 'Follow Line Until Intersection'], enable_events=False, key="CommandMenu"), sg.Button("Send", key="Command", enable_events=True)],
                 [sg.Text("MindControl"), sg.Checkbox('Enable', enable_events=True, default=False,  key="EnableMindControl")],
                 [sg.Text("     Built In LED"), sg.Checkbox('Turn On', 0, enable_events=True, key="TurnOnBuiltInLED", disabled=True)],
                 [sg.Text("     Motor 1"), sg.Slider(key="M1Slider", orientation='h', range=(0,100), default_value=0, disabled=True)],
                 [sg.Text("     Motor 2"), sg.Slider(key="M2Slider", orientation='h', range=(0,100), default_value=0, disabled=True)],
                 [sg.Text("     Update Motors"), sg.Button("Update", key="MotorUpdate", enable_events=True, disabled=True)],
                 [sg.Text("     M1 Encoder: 0", key="E1"), sg.Button("Reset", key="M1Reset", enable_events=True, disabled=True)],
-                [sg.Text("     M2 Encoder: 0", key="E2"), sg.Button("Reset", key="M2Reset", enable_events=True, disabled=True)],
-                [sg.OK(), sg.Cancel()]]
+                [sg.Text("     M2 Encoder: 0", key="E2"), sg.Button("Reset", key="M2Reset", enable_events=True, disabled=True)]]
 
     window = sg.Window(title="Test", layout=layout, finalize=True)
     #let the gui runs
@@ -36,7 +36,6 @@ def monitor(window, queueIn, queueOut):
             handleEvents(event, values, window, queueIn)
             
         update(window, queueOut)
-
     
 def handleEvents(event, values, window, queueIn):
     #handle the gui events
@@ -99,3 +98,5 @@ def getTheme():
 
     #return "DarkRed1" #OSU theme but hurts eyes
     return "BrownBlue" #better to look at
+
+

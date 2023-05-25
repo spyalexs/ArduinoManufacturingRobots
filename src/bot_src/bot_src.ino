@@ -1,5 +1,6 @@
 #include <ArduinoBLE.h>
 #include <ArduinoMotorCarrier.h>
+#include "Command.h"
 
 bool PUBLISHDATA = true;
 
@@ -14,6 +15,8 @@ const char* A1CUuid = "19b10007-e8f2-537e-4f6c-d104768a1214";
 const char* A2CUuid = "19b10008-e8f2-537e-4f6c-d104768a1214";
 const char* A3CUuid = "19b10009-e8f2-537e-4f6c-d104768a1214";
 const char* A4CUuid = "19b10010-e8f2-537e-4f6c-d104768a1214";
+const char* commandIssueUuid = "19b10011-e8f2-537e-4f6c-d104768a1214";
+const char* commandStatusUuid = "19b10012-e8f2-537e-4f6c-d104768a1214";
 const char* batteryVoltageUuid = "19b10011-e8f2-537e-4f6c-d104768a1214";
 
 BLEService motorCarrierService(deviceServiceUuid); 
@@ -27,6 +30,8 @@ BLEByteCharacteristic A1C(A1CUuid, BLERead | BLEWrite);
 BLEByteCharacteristic A2C(A2CUuid, BLERead | BLEWrite);
 BLEByteCharacteristic A3C(A3CUuid, BLERead | BLEWrite);
 BLEByteCharacteristic A4C(A4CUuid, BLERead | BLEWrite);
+BLEByteCharacteristic commandIssueC(commandIssueUuid, BLERead | BLEWrite);
+BLEByteCharacteristic commandStatusC(commandStatusUuid, BLERead | BLEWrite);
 BLEByteCharacteristic batteryVoltageC(batteryVoltageUuid, BLERead | BLEWrite);
 
 void setup(){
@@ -57,6 +62,8 @@ void setup(){
   motorCarrierService.addCharacteristic(A2C);
   motorCarrierService.addCharacteristic(A3C);
   motorCarrierService.addCharacteristic(A4C);
+  motorCarrierService.addCharacteristic(commandIssueC);
+  motorCarrierService.addCharacteristic(commandStatusC);  
   motorCarrierService.addCharacteristic(batteryVoltageC);
   
   BLE.addService(motorCarrierService);
@@ -72,6 +79,8 @@ void setup(){
   A2C.writeValue(0);  
   A3C.writeValue(0);
   A4C.writeValue(0);
+  commandIssueC.writeValue(0);
+  commandStatusC.writeValue(0);
   batteryVoltageC.writeValue(0);
 
   BLE.advertise();
@@ -87,7 +96,7 @@ void loop(){
 
     if(bridge){
       Serial.println("I found central!");
-
+      delay(1000);
       while(bridge.connected()){
         connectedLoop();
       }
@@ -122,9 +131,23 @@ void connectedLoop(){
     batteryVoltageC.writeValue(getBatteryVoltage());
 
     delay(1000);
+  } else if(commandIssueC.value() != 0) {
+    int commandVal = commandIssueC.value();
+    commandIssueC.writeValue(0);
+
+    switch (commandVal){
+      case 1:
+
+        break;
+      case 2:
+        break;
+      default:
+        break;
+    }
+
   }
 
-
+  Command test(&A1C);
 }
 
 void setLEDStatus(int status){
