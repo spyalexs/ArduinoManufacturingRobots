@@ -137,14 +137,12 @@ void connectedLoop(){
 
     switch (commandVal){
       case 1:
-
         break;
       case 2:
         break;
       default:
         break;
     }
-
   }
 
   Command test(&A1C);

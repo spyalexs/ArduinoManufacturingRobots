@@ -9,9 +9,9 @@ class Command{
     public:
         Command(BLECharacteristic* StatusC, BLECharacteristic* IssueC);
 
-        void getStatus();
+        int getStatus();
         void updateStatus(int Status);
-        void checkForAbort();
+        bool checkForAbort();
 
         void startup();
         void cycle();

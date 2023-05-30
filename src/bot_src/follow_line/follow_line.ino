@@ -71,12 +71,19 @@ void loop(){
     double power1, power2;
     velocityControl(&power1, &power2);
 
-    double correction1, correction2;
-    lineControl(&correction1, &correction2);
-
-    M1.setDuty(-(power1 + correction1));
-    M2.setDuty((power2 + correction2));
+    M1.setDuty(-(power1));
+    M2.setDuty((power2));
   }
+
+  straightForDistance(210);
+
+  turnRight();
+  M1.setDuty(0);
+  M2.setDuty(0);
+  
+  iCounter = 0;
+
+
 
 
 
@@ -85,11 +92,10 @@ void loop(){
 
   void velocityControl(double* Power1, double* Power2){
 
+    delay(20);
 
     int counts1 = encoder1.getRawCount();
     int counts2 = encoder2.getRawCount();
-
-    delay(20);
 
     double time = double(micros()) / 1000000;
     double instantCPS1 = -(counts1 - previousCounts1) / (time - previousTime);
@@ -140,8 +146,75 @@ void lineControl(double* correction1, double* correction2){
 }
 
 void turnRight(){
-  int targetRightCounts = 0;
-  int targetLeftCounts = 0;
+  bool turning = true;
 
+  int initialCounts2 = getCounts2();
+  previousCounts2 = initialCounts2;
+  int targetCounts2 = 570 + initialCounts2;
 
+  previousTime = double(micros()) / 1000000;
+
+  while(turning){
+    delay(20);
+
+    int counts2 = getCounts2();
+    double time = double(micros()) / 1000000;
+
+    double instantCPS2 = (counts2 - previousCounts2) / (time - previousTime);
+
+    double vP = .02;
+    double vD = 0;//.000005;
+    double vFF = 25;
+
+    int power2 = vP * (targetCPS - instantCPS2) + vFF;
+    int power1 = 0;
+
+    setM1Duty(power1);
+    setM2Duty(power2);
+
+    previousTime = time;
+    previousCounts2 = counts2;
+
+    if(previousCounts2 >= targetCounts2){
+      //end turning process (implement more sphositicated control later?)
+      turning = false;
+    } else {
+      Serial.println(previousCounts2 - initialCounts2);
+    }
+  }
+}
+
+void straightForDistance(int counts){
+  int initialCounts1 = getCounts1();
+  int initialCounts2 = getCounts2();
+
+  double targetCounts = counts + (initialCounts1 + initialCounts2) / 2;
+  double power1, power2;
+
+  while((getCounts1() + getCounts2()) / 2 < targetCounts){
+    velocityControl(&power1, &power2);
+    setM1Duty(power1);
+    setM2Duty(power2);
+  }
+
+  //end straight process (implement more sphositicated control later?)
+
+  setM1Duty(0);
+  setM2Duty(0);
+}
+
+int getCounts1(){
+  return -encoder1.getRawCount();
+}
+
+int getCounts2(){
+  return encoder2.getRawCount();
+}
+
+void setM1Duty(int duty){
+  M1.setDuty(-duty);
+}
+
+void setM2Duty(int duty){
+  M2.setDuty(duty);
 }

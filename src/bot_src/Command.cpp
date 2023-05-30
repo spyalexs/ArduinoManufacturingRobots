@@ -16,7 +16,7 @@ int Command::getStatus(){
 
 void Command::updateStatus(int Status){
   if(this->getStatus() != 255){ //don't allow overrite if the command should abort
-    m_statusC->writeValue(Status)
+    m_statusC->writeValue(Status);
   }
 }
 
