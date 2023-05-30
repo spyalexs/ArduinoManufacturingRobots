@@ -1,8 +1,11 @@
 #include <ArduinoBLE.h>
 #include <ArduinoMotorCarrier.h>
-#include "Command.h"
+#include "FollowLineUntilMarker.h"
+#include "MotionController.h"
 
 bool PUBLISHDATA = true;
+
+MotionController MC = MotionController(&M1, &M2, &encoder1, &encoder2, A3, A6, A2);;
 
 const char* deviceServiceUuid = "19b10000-e8f2-537e-4f6c-d104768a1214";
 const char* LEDCUuid = "19b10001-e8f2-537e-4f6c-d104768a1214";
@@ -85,6 +88,8 @@ void setup(){
 
   BLE.advertise();
 
+  MC = MotionController(&M1, &M2, &encoder1, &encoder2, A3, A6, A2);
+
   Serial.println("I am a bot!");
 }
 
@@ -137,7 +142,6 @@ void connectedLoop(){
 
     switch (commandVal){
       case 1:
-        break;
       case 2:
         break;
       default:
@@ -145,7 +149,8 @@ void connectedLoop(){
     }
   }
 
-  Command test(&A1C);
+  FollowLineUntilMarker test(&A1C, &A1C, &MC);
+  test.run();
 }
 
 void setLEDStatus(int status){

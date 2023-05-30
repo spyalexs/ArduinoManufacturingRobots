@@ -82,11 +82,6 @@ void loop(){
   M2.setDuty(0);
   
   iCounter = 0;
-
-
-
-
-
 }
 
 

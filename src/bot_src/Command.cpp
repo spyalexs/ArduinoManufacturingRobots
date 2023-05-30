@@ -1,8 +1,9 @@
 #include "Command.h"
 
-Command::Command(BLECharacteristic* StatusC, BLECharacteristic* IssueC){
+Command::Command(BLECharacteristic* StatusC, BLECharacteristic* IssueC, String name){
     m_statusC = StatusC;
     m_issueC = IssueC;
+    m_name = name;
 }
 
 int Command::getStatus(){
@@ -16,7 +17,7 @@ int Command::getStatus(){
 
 void Command::updateStatus(int Status){
   if(this->getStatus() != 255){ //don't allow overrite if the command should abort
-    m_statusC->writeValue(Status);
+    m_statusC->writeValue(byte(Status));
   }
 }
 
@@ -32,26 +33,28 @@ bool Command::checkForAbort(){
   return false;
 }
 
-void startup(){
+void Command::startup(){
   // this should be overriden with tasks when starting command
   return;
 }
 
-void cycle(){
+void Command::cycle(){
   // this should be overriden to execute the commands cycle
   return;
 }
 
-bool ifEnd(){
+bool Command::ifEnd(){
   //this shoud be ovverride to return True when the cycling should be stopped
   return false;
 }
 
-void cleanup(){
+void Command::cleanup(){
   //this should be overriden with tasks when ending command
 }
 
-void run(){
+void Command::run(){
+  Serial.println("Starting to run: " + m_name);
+
   this->updateStatus(1);
   this->startup();
   this->updateStatus(2);
@@ -59,7 +62,7 @@ void run(){
   this->updateStatus(3);
   this->cleanup();
 
-  if(this->checkForAbort == false){
+  if(this->checkForAbort() == false){
     this->updateStatus(254);
   }else{
     this->updateStatus(255);
@@ -68,8 +71,8 @@ void run(){
   return;
 }
 
-void superCycle(){
-  while(this->checkForAbort == false && this->checkForAbort == false){
+void Command::superCycle(){
+  while(this->checkForAbort() == false && this->ifEnd() == false){
     cycle();
   }
 }

@@ -7,22 +7,24 @@
 
 class Command{
     public:
-        Command(BLECharacteristic* StatusC, BLECharacteristic* IssueC);
+        Command(BLECharacteristic* StatusC, BLECharacteristic* IssueC, String name);
 
         int getStatus();
         void updateStatus(int Status);
         bool checkForAbort();
 
-        void startup();
-        void cycle();
-        bool ifEnd();
-        void cleanup();
+        virtual void startup();
+        virtual void cycle();
+        virtual bool ifEnd();
+        virtual void cleanup();
 
         void run();
         void superCycle();
 
         BLECharacteristic* m_statusC;
         BLECharacteristic* m_issueC;
+
+        String m_name;
 
 
 };
