@@ -5,7 +5,7 @@
 
 class TEMPLATE : public Command{
   public:
-    TEMPLATE(BLECharacteristic* StatusC, BLECharacteristic* IssueC);
+    TEMPLATE(BLECharacteristic* StatusC, BLECharacteristic* IssueC, MotionController* MC);
 
     void startup();
     void cycle();

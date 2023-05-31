@@ -1,9 +1,10 @@
 #include "Command.h"
 
-Command::Command(BLECharacteristic* StatusC, BLECharacteristic* IssueC, String name){
+Command::Command(BLECharacteristic* StatusC, BLECharacteristic* IssueC, MotionController* MC, String name){
     m_statusC = StatusC;
     m_issueC = IssueC;
     m_name = name;
+    mp_MC = MC;
 }
 
 int Command::getStatus(){
@@ -26,7 +27,7 @@ bool Command::checkForAbort(){
   byte value = 0;
   m_issueC->readValue(value);
 
-  if(value == 255){
+  if(int(value) == 255){
     return true;
   }
 
@@ -74,5 +75,8 @@ void Command::run(){
 void Command::superCycle(){
   while(this->checkForAbort() == false && this->ifEnd() == false){
     cycle();
+
+    //refresh connections
+    mp_MC->refreshConnection();
   }
 }

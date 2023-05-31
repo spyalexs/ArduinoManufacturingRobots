@@ -1,5 +1,5 @@
-#ifndef followline_h
-#define followline_h
+#ifndef followlineuntilmarker_h
+#define followlineuntilmarker_h
 
 #include "Command.h"
 #include "MotionController.h"
@@ -13,7 +13,6 @@ class FollowLineUntilMarker : public Command{
     void cleanup();
     bool ifEnd();
 
-    MotionController* mp_MC;
     int m_intersectionCounter;
 };
 

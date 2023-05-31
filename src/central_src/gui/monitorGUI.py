@@ -5,14 +5,20 @@ from gui.GUIInMessage import GUIInMessage
 from gui.GUIOutMessage import GUIOutMessage
 
 UPDATE_INTERVAL = 250
-commandKeys = {"Test":1, "FollowLineTillMarker":2}
+commandKeys = {"Test":1, "FollowLineTillMarker":2, "FollowLineOnMarker" : 3, "TravelStraight" : 4, "TurnRight" : 5, "TurnLeft" : 6, "IntersectionRight" : 101, "IntersectionStraight" : 102, "IntersectionLeft": 103}
 
 def make(queueIn, queueOut):
     
     theme = sg.theme(getTheme())
 
+    #do a little processing to format the keys correctly
+    commands = []
+    for key in commandKeys.keys():
+        commands.append(key)
+
     layout = [  [sg.Text('Robot 1')],
-                [sg.Text("Command"), sg.Combo(['Test', 'FollowLineTillMarker'], enable_events=False, key="CommandMenu"), sg.Button("Send", key="Command", enable_events=True)],
+                [sg.Text("Command"), sg.Combo(commands, enable_events=False, key="CommandMenu"), sg.Button("Send", key="Command", enable_events=True)],
+                [sg.Text("     Status"), sg.ProgressBar(100, size=(13,17), key="CommandProgress"), sg.Button("Abort", key="AbortCommand", enable_events=True)],
                 [sg.Text("MindControl"), sg.Checkbox('Enable', enable_events=True, default=False,  key="EnableMindControl")],
                 [sg.Text("     Built In LED"), sg.Checkbox('Turn On', 0, enable_events=True, key="TurnOnBuiltInLED", disabled=True)],
                 [sg.Text("     Motor 1"), sg.Slider(key="M1Slider", orientation='h', range=(0,100), default_value=0, disabled=True)],
@@ -43,6 +49,7 @@ def handleEvents(event, values, window, queueIn):
     if(event == "EnableMindControl"):
         if values["EnableMindControl"] == True:
             queueIn.put(GUIInMessage("bot1", "mindControl", "1"))
+
             window["TurnOnBuiltInLED"].update(disabled=False)
             window["M1Slider"].update(disabled=False)
             window["M2Slider"].update(disabled=False)
@@ -51,13 +58,13 @@ def handleEvents(event, values, window, queueIn):
             window["M2Reset"].update(disabled=False)
         if values["EnableMindControl"] == False:
             queueIn.put(GUIInMessage("bot1", "mindControl", "0"))
+
             window["TurnOnBuiltInLED"].update(disabled=True)
             window["M1Slider"].update(disabled=True)
             window["M2Slider"].update(disabled=True)
             window["MotorUpdate"].update(disabled=True)
             window["M1Reset"].update(disabled=True)
             window["M2Reset"].update(disabled=True)
-
 
     if(event == "TurnOnBuiltInLED"):
         if values["TurnOnBuiltInLED"] == True:
@@ -72,10 +79,13 @@ def handleEvents(event, values, window, queueIn):
 
     if(event == "Command"):
         #publish command to bot
-        queueIn.put(GUIInMessage("bot1", "commandIssue", commandKeys[values["CommandMenu"]]))
+        if(values["CommandMenu"] != ''):
+            queueIn.put(GUIInMessage("bot1", "commandIssue", commandKeys[values["CommandMenu"]]))   
 
-    
-    
+    if(event == "AbortCommand"):
+        #abort the command currently running
+        queueIn.put(GUIInMessage("bot1", "commandIssue", 255))   
+
 
 def update(window, queueOut):
     # to effectively clear queue - do two stage message scanning
@@ -94,9 +104,6 @@ def update(window, queueOut):
 
         if(characteristic == "E2"):
             window["E2"].update(value="     M1 Encoder:" + str(inputDictionary[characteristic]))
-    
-    
-    
 
 def getTheme():
     #potentially implement custom theme

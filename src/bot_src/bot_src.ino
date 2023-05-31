@@ -1,7 +1,15 @@
+//libs
 #include <ArduinoBLE.h>
 #include <ArduinoMotorCarrier.h>
-#include "FollowLineUntilMarker.h"
+
 #include "MotionController.h"
+
+//commands
+#include "TurnRight.h"
+#include "TurnLeft.h"
+#include "FollowLineUntilMarker.h"
+#include "TravelStraight.h"
+#include "FollowLineOnMarker.h"
 
 bool PUBLISHDATA = true;
 
@@ -101,16 +109,20 @@ void loop(){
 
     if(bridge){
       Serial.println("I found central!");
+
+      //add bridge to MC
+      MC.setCentralPtr(&bridge);
+
       delay(1000);
       while(bridge.connected()){
-        connectedLoop();
+        connectedLoop(bridge);
       }
 
       Serial.println("Disconnected from the bridge! - Stopping until connection reaquirred.");
     }
 }
 
-void connectedLoop(){
+void connectedLoop(BLEDevice testd){
 //this runs while the bot is connected to the bridge
 
   if(mindControlC.value()){
@@ -146,9 +158,74 @@ void connectedLoop(){
         break;
       case 2:
         if(true){
-          //mild sketchy
-          FollowLineUntilMarker commandToRun(&A1C, &A1C, &MC);
+          FollowLineUntilMarker commandToRun(&commandStatusC, &commandIssueC, &MC);
           commandToRun.run();
+        }
+        break;
+      case 3:
+        if(true){
+          FollowLineOnMarker commandToRun(&commandStatusC, &commandIssueC, &MC);
+          commandToRun.run();
+        }
+        break;
+      case 4:
+        if(true){
+          TravelStraight commandToRun(&commandStatusC, &commandIssueC, &MC, 210);
+          commandToRun.run();
+        }
+        break;
+      case 5:
+        if(true){
+          TurnRight commandToRun(&commandStatusC, &commandIssueC, &MC);
+          commandToRun.run();
+        }
+        break;
+      case 6:
+        if(true){
+          TurnLeft commandToRun(&commandStatusC, &commandIssueC, &MC);
+          commandToRun.run();
+        }
+        break;
+      case 101:
+        //full right turn through intersection
+        if(true){
+          FollowLineOnMarker commandToRun(&commandStatusC, &commandIssueC, &MC);
+          commandToRun.run();
+          TravelStraight commandToRun2(&commandStatusC, &commandIssueC, &MC, 210);
+          commandToRun2.run();
+          TurnRight commandToRun3(&commandStatusC, &commandIssueC, &MC);
+          commandToRun3.run();
+        }
+        break;
+      case 102:
+        //full straight through intersection
+        if(true){
+          FollowLineOnMarker commandToRun(&commandStatusC, &commandIssueC, &MC);
+          commandToRun.run();
+          TravelStraight commandToRun2(&commandStatusC, &commandIssueC, &MC, 200);
+          commandToRun2.run();
+          FollowLineUntilMarker commandToRun3(&commandStatusC, &commandIssueC, &MC);
+          commandToRun3.run();
+          TravelStraight commandToRun4(&commandStatusC, &commandIssueC, &MC, 100);
+          commandToRun4.run();
+
+        }
+        break;
+      case 103:
+        //full left through intersection
+        if(true){
+          FollowLineOnMarker commandToRun(&commandStatusC, &commandIssueC, &MC);
+          commandToRun.run();
+          TravelStraight commandToRun2(&commandStatusC, &commandIssueC, &MC, 200);
+          commandToRun2.run();
+          FollowLineUntilMarker commandToRun3(&commandStatusC, &commandIssueC, &MC);
+          commandToRun3.run();
+          TravelStraight commandToRun4(&commandStatusC, &commandIssueC, &MC, 310);
+          commandToRun4.run();
+          TurnLeft commandToRun5(&commandStatusC, &commandIssueC, &MC);
+          commandToRun5.run();
+          TravelStraight commandToRun6(&commandStatusC, &commandIssueC, &MC, 40);
+          commandToRun6.run();
         }
         break;
       default:

@@ -1,6 +1,14 @@
 Command Issue:
     0: No Command
-    1:
+    1: Test
+    2: FollowLineTillMarker
+    3: FollowLineOnMarker
+    4: Drive Straight
+    5: TurnRight
+    6: TurnLeft
+    101: IntersectionRight
+    102: IntersectionStraight
+    103: IntersectionLeft
     255: Abort
 
 Command Status:

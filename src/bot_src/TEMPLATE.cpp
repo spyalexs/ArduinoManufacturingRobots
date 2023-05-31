@@ -1,6 +1,6 @@
 #include "TEMPLATE.h"
 
-TEMPLATE::TEMPLATE(BLECharacteristic* StatusC, BLECharacteristic* IssueC):Command(StatusC, IssueC, "FollowLine"){
+TEMPLATE::TEMPLATE(BLECharacteristic* StatusC, BLECharacteristic* IssueC, MotionController* MC):Command(StatusC, IssueC, MC, "TEMPLATE"){
   //do initialization here
 }
 

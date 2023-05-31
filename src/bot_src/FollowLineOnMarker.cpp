@@ -1,15 +1,14 @@
-#include "FollowLineUntilMarker.h"
+#include "FollowLineOnMarker.h"
 
-FollowLineUntilMarker::FollowLineUntilMarker(BLECharacteristic* StatusC, BLECharacteristic* IssueC, MotionController* MC):Command(StatusC, IssueC, MC, "FollowLineUntilMarker"){
+FollowLineOnMarker::FollowLineOnMarker(BLECharacteristic* StatusC, BLECharacteristic* IssueC, MotionController* MC):Command(StatusC, IssueC, MC, "FollowLineOnMarker"){
   //do initialization here
-  m_intersectionCounter = 0;
 }
 
-void FollowLineUntilMarker::startup(){
+void FollowLineOnMarker::startup(){
   //do startup tasks here
 }
 
-void FollowLineUntilMarker::cycle(){
+void FollowLineOnMarker::cycle(){
   //do cycle stuff here
   double power1, power2, correction1, correction2;
 
@@ -19,15 +18,10 @@ void FollowLineUntilMarker::cycle(){
   mp_MC->setMotor1(power1 + correction1);
   mp_MC->setMotor2(power2 + correction2);
 
-
-  if(mp_MC->isOnIntersectionMarker()){
-    m_intersectionCounter += 1;
-  }
-
   delay(20);
 }
 
-void FollowLineUntilMarker::cleanup(){
+void FollowLineOnMarker::cleanup(){
   //do cleanup tasks here
 
   //ensure motors are told to stop motion
@@ -35,9 +29,9 @@ void FollowLineUntilMarker::cleanup(){
   mp_MC->setMotor2(0);
 }
 
-bool FollowLineUntilMarker::ifEnd(){
+bool FollowLineOnMarker::ifEnd(){
   //return true to stop cycling, false to continue
-  if(m_intersectionCounter >= 3){
+  if(!mp_MC->isOnIntersectionMarker()){
     return true;
   }
 

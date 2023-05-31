@@ -2,6 +2,7 @@
 #define motioncontroller_h
 
 #include <ArduinoMotorCarrier.h>
+#include <ArduinoBLE.h>
 
 // a wrapper class around motion, allows for the easy utilization of subroutines and control methods
 
@@ -15,6 +16,8 @@ class MotionController{
 
     mc::Encoder* m_encoder1;
     mc::Encoder* m_encoder2;
+
+    BLEDevice* mp_central;
 
     uint8_t m_lineFollowerPin;
     uint8_t m_intersectionPin;
@@ -49,6 +52,9 @@ class MotionController{
     bool isCodePin();
 
     double getTime();
+  
+    bool refreshConnection();
+    void setCentralPtr(BLEDevice* central);
 
     //control functions
     void lineControl(double* Corrrection1, double* Correction2);

@@ -1,6 +1,7 @@
 #include "MotionController.h"
 
 MotionController::MotionController(mc::DCMotor* motor1, mc::DCMotor* motor2, mc::Encoder* encoder1, mc::Encoder* encoder2, uint8_t lineFollowerPinName, uint8_t intersectionPinName, uint8_t codePinName){
+  mp_central = NULL; //leave null for now update later
   m_motor1 = motor1;
   m_motor2 = motor2;
   m_encoder1 = encoder1;
@@ -8,7 +9,6 @@ MotionController::MotionController(mc::DCMotor* motor1, mc::DCMotor* motor2, mc:
   m_lineFollowerPin = lineFollowerPinName;
   m_intersectionPin = intersectionPinName;
   m_codePin = codePinName;
-
 }
 
 void MotionController::setMotor1(int duty){
@@ -41,6 +41,16 @@ bool MotionController::isCodePin(){
 
 double MotionController::getTime(){
   return micros() / 1000000.0;
+}
+
+bool MotionController::refreshConnection(){
+  if(mp_central){
+    return mp_central->connected();
+  }
+}
+
+void MotionController::setCentralPtr(BLEDevice* central){
+  mp_central = central;
 }
 
 void MotionController::lineControl(double* Correction1, double* Correction2){
