@@ -10,6 +10,8 @@ from publishSerial import publish
 from handleMessage import handleBotMessage
 from gui.launchGUI import launchGUI
 
+#this is the main thread for the central controller
+
 def initialize():
     #thread safe queue for messages into central
     queueIn = queue.Queue()
@@ -80,13 +82,14 @@ def cycle():
     time.sleep(.05)
 
 def handleMessagesIn():
-    #process incoming messages
+    #process incoming messages - from bridge/bots
     while(not queueIn.empty()):
        message = queueIn.get()
        print(message)
        handleBotMessage(message, queueOutGui)
 
 def handleGUIIn():
+    #processes messages from the GUI
     while(not queueInGUI.empty()):
         message = queueInGUI.get()
         #handle all messages in the queu
@@ -104,10 +107,12 @@ def sendMessageToBot(BotName, Characteristic, Value):
         print("Message failed to send: value is not an int")
         return
 
+    #formatting that the bridge can translate into a characteristic
     message = BotName + "$" + Characteristic + "$" + str(Value)
     queueOut.put(message)
 
 def sendStringToBot(string):
+    #put a string in the output queue - be sure that the string wil be recognized by the bridge
     queueOut.put(string)
 
 
@@ -121,4 +126,5 @@ if __name__ == "__main__":
     queueIn, queueOut, queueInGUI, queueOutGui = initialize()
 
     while(True):
+        #main cycle for the central controller thread - Gui/publishers/subscribers are threaded differently
       cycle()

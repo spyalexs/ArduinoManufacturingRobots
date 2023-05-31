@@ -1,6 +1,8 @@
 from gui.GUIOutMessage import GUIOutMessage
 
 def handleBotMessage(message, queueInGUI):
+    # handle messages coming in from the bridge
+
     #messages should be string in from serial
     messageArray = message.split('$')
     
@@ -9,9 +11,9 @@ def handleBotMessage(message, queueInGUI):
         print("Message corrupted, failed to handle: " + str(message))
         return
     
-    target = messageArray[0]
-    characteristic = messageArray[1]
-    value = int(messageArray[2])
+    target = messageArray[0]# the bot that sent in the message
+    characteristic = messageArray[1] # the characteristic the message is about
+    value = int(messageArray[2]) # the value of the message
 
     if(characteristic == "E1"):
         #messages concerning encoder 1
