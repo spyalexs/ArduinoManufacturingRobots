@@ -1,8 +1,9 @@
 #include <ArduinoBLE.h>
 
+//the service ID for bot 1
 const char* deviceServiceUuid = "19b10000-e8f2-537e-4f6c-d104768a1214";
 
-//Uuids for bot 1
+//All the Uuids for the bot 1 characterisitcs
 const char* bot1_LEDCUuid = "19b10001-e8f2-537e-4f6c-d104768a1214";
 const char* bot1_mindControlCUuid = "19b10002-e8f2-537e-4f6c-d104768a1214";
 const char* bot1_M1CUuid = "19b10003-e8f2-537e-4f6c-d104768a1214";
@@ -17,7 +18,10 @@ const char* bot1_batteryVoltageUuid = "19b10011-e8f2-537e-4f6c-d104768a1214";
 const char* bot1_statusCUuid = "19b10012-e8f2-537e-4f6c-d104768a1214";
 const char* bot1_issueCUuid = "19b10013-e8f2-537e-4f6c-d104768a1214";
 
+//the bluetooth object representing bot 1
 BLEDevice bot1;
+
+//all of the characteristic of bot1
 BLECharacteristic bot1_LEDC;
 BLECharacteristic bot1_mindControlC;
 BLECharacteristic bot1_M1C;
@@ -32,8 +36,8 @@ BLECharacteristic bot1_batteryVoltageC;
 BLECharacteristic bot1_issueC;
 BLECharacteristic bot1_statusC;
 
+//the last status value sent from the bot
 int bot1_statusCStoredValue = 0;
-
 
 bool bot1_mindControl = false;//whether the bot is in mindcontrol state or not
 
@@ -45,6 +49,7 @@ class MessageLine{
       //parse raw message to a target characterisitc and value
       int firstSeperator = message.indexOf("$");
 
+      //the target of the message
       m_target = message.substring(0, firstSeperator);
       String backString = message.substring(firstSeperator + 1);
       int secondSeperator = backString.indexOf("$");
@@ -88,18 +93,21 @@ void setup(){
   Serial.println("I am the bridge!");
 }
 
-void loop(){  
+void loop(){ 
+  //run this loop constantly - it allows for lost connections to be resume
+  //likely need to implement a scan phase and a run phase - scaning takes a while and it does not make sense to do this in loop
+
   //comunication with other bots
   connectToBot();
   //communicate with bots
   communicateWithBots();
   //communication with central
   communicateWithCentral();
-  
 }
 
 void connectToBot(){
   //check existing connections
+  //connected must be called to update characteristics
   if(bot1.connected()){
     return;
   }
@@ -115,6 +123,8 @@ void connectToBot(){
     //scan, wait then use connect to available
     BLE.scanForUuid(deviceServiceUuid);
     delay(1000);
+
+    //the avialble bot, bots?
     bot = BLE.available();
 
   }while(!bot);
@@ -130,8 +140,10 @@ void connectToBot(){
     Serial.print("* Advertised service UUID: ");
     Serial.println(bot.advertisedServiceUuid());
 
+    //stop scanning for BLE devices
     BLE.stopScan();
 
+    //establish a connection
     if(bot.connect()){
       Serial.println("Connected to bot1!");
       
@@ -197,8 +209,11 @@ void communicateWithBots(){
     message = MessageLine("bot1", "batteryVoltage", String(int(value)));
     Serial.println(message.getSerialString());
   }else{
+    //read the status of the commands on the robot
     byte value = 0;
     bot1_statusC.readValue(value);
+
+    //pass back command status if the status of the command has changed
     if(bot1_statusCStoredValue != int(value)){
       bot1_statusCStoredValue = int(value);
       MessageLine message("bot1", "commandStatus", String(int(value)));
@@ -215,6 +230,7 @@ void communicateWithCentral(){
   if(!(message == "")){
     //Serial.println(message);
 
+    //handle all messages from central
     processMessage(message);
   }
 }
@@ -222,12 +238,15 @@ void communicateWithCentral(){
 void processMessage(String message){
   //Message Line Format
   //TARGETBOT$CHARACTERISTIC$VALUE
+  //convert the message to a message line
   MessageLine line = MessageLine(message);
 
+  //write the message line string to central
   writeLine(line);
 }
 
 void writeLine(MessageLine line){
+  //make this into a member function
   BLEDevice target;
 
   //match up target and characteristic
