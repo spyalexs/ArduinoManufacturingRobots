@@ -11,6 +11,7 @@ def publish(COM, queueOut):
             try:
                 #get message from a queue
                 messageOut = queueOut.get()
+                print(messageOut)
             except queue.Empty:
                 #this should never happen...
                 print("Queue unexpectently went empty... odd.")

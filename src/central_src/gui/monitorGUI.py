@@ -5,13 +5,14 @@ from gui.GUIInMessage import GUIInMessage
 from gui.GUIOutMessage import GUIOutMessage
 
 UPDATE_INTERVAL = 250
+commandKeys = {"Test":1, "FollowLineTillMarker":2}
 
 def make(queueIn, queueOut):
     
     theme = sg.theme(getTheme())
 
     layout = [  [sg.Text('Robot 1')],
-                [sg.Text("Command"), sg.Combo(['Follow Line', 'Follow Line Until Intersection'], enable_events=False, key="CommandMenu"), sg.Button("Send", key="Command", enable_events=True)],
+                [sg.Text("Command"), sg.Combo(['Test', 'FollowLineTillMarker'], enable_events=False, key="CommandMenu"), sg.Button("Send", key="Command", enable_events=True)],
                 [sg.Text("MindControl"), sg.Checkbox('Enable', enable_events=True, default=False,  key="EnableMindControl")],
                 [sg.Text("     Built In LED"), sg.Checkbox('Turn On', 0, enable_events=True, key="TurnOnBuiltInLED", disabled=True)],
                 [sg.Text("     Motor 1"), sg.Slider(key="M1Slider", orientation='h', range=(0,100), default_value=0, disabled=True)],
@@ -68,6 +69,10 @@ def handleEvents(event, values, window, queueIn):
         #publish to motors
         queueIn.put(GUIInMessage("bot1", "M1", values["M1Slider"]))
         queueIn.put(GUIInMessage("bot1", "M2", values["M2Slider"]))
+
+    if(event == "Command"):
+        #publish command to bot
+        queueIn.put(GUIInMessage("bot1", "commandIssue", commandKeys[values["CommandMenu"]]))
 
     
     

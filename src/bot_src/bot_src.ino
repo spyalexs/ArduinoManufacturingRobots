@@ -18,9 +18,9 @@ const char* A1CUuid = "19b10007-e8f2-537e-4f6c-d104768a1214";
 const char* A2CUuid = "19b10008-e8f2-537e-4f6c-d104768a1214";
 const char* A3CUuid = "19b10009-e8f2-537e-4f6c-d104768a1214";
 const char* A4CUuid = "19b10010-e8f2-537e-4f6c-d104768a1214";
-const char* commandIssueUuid = "19b10011-e8f2-537e-4f6c-d104768a1214";
-const char* commandStatusUuid = "19b10012-e8f2-537e-4f6c-d104768a1214";
 const char* batteryVoltageUuid = "19b10011-e8f2-537e-4f6c-d104768a1214";
+const char* commandStatusUuid = "19b10012-e8f2-537e-4f6c-d104768a1214";
+const char* commandIssueUuid = "19b10013-e8f2-537e-4f6c-d104768a1214";
 
 BLEService motorCarrierService(deviceServiceUuid); 
 BLEByteCharacteristic LEDC(LEDCUuid, BLERead | BLEWrite);
@@ -138,19 +138,23 @@ void connectedLoop(){
     delay(1000);
   } else if(commandIssueC.value() != 0) {
     int commandVal = commandIssueC.value();
-    commandIssueC.writeValue(0);
+    commandIssueC.writeValue(byte(0));
 
     switch (commandVal){
       case 1:
+        Serial.println("Testing!");
+        break;
       case 2:
+        if(true){
+          //mild sketchy
+          FollowLineUntilMarker commandToRun(&A1C, &A1C, &MC);
+          commandToRun.run();
+        }
         break;
       default:
         break;
     }
   }
-
-  FollowLineUntilMarker test(&A1C, &A1C, &MC);
-  test.run();
 }
 
 void setLEDStatus(int status){

@@ -70,7 +70,7 @@ void MotionController::lineControl(double* Correction1, double* Correction2){
   m_linePreviousValue = value;
   m_linePreviousTime = time;
 
-  Serial.println("This is correction: " + String(correctionD));
+  //Serial.println("This is correction: " + String(correctionD));
 
   *Correction1 = correction;
   *Correction2 = -correction;
@@ -112,8 +112,8 @@ void MotionController::velocityControl(double* Power1, double* Power2){
   double power1 = (vP * (m_velTargetCPS - instantCPS1)) + vFF - vD * dCPS1;
   double power2 = (vP * (m_velTargetCPS - instantCPS2)) + vFF - vD * dCPS2;
 
-  Serial.println(String(instantCPS1) + "  " + String(dCPS1) + "  " + String(power1));
-  Serial.println(String(double(battery.getRaw()) / 236));
+  //Serial.println(String(instantCPS1) + "  " + String(dCPS1) + "  " + String(power1));
+  //Serial.println(String(double(battery.getRaw()) / 236));
 
   *Power1 = power1;
   *Power2 = power2;

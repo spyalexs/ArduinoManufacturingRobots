@@ -3,6 +3,7 @@
 FollowLineUntilMarker::FollowLineUntilMarker(BLECharacteristic* StatusC, BLECharacteristic* IssueC, MotionController* MC):Command(StatusC, IssueC, "FollowLine"){
   //do initialization here
   mp_MC = MC;
+  m_intersectionCounter = 0;
 }
 
 void FollowLineUntilMarker::startup(){
@@ -16,13 +17,12 @@ void FollowLineUntilMarker::cycle(){
   mp_MC->velocityControl(&power1, &power2);
   mp_MC->lineControl(&correction1, &correction2);
 
-  Serial.println(power1);
-  Serial.println(power2);
-  Serial.println(correction1);
-  Serial.println(correction2);
-
   mp_MC->setMotor1(power1 + correction1);
   mp_MC->setMotor2(power2 + correction2);
+
+  if(mp_MC->isOnIntersectionMarker()){
+    m_intersectionCounter += 1;
+  }
 
   delay(20);
 }
@@ -33,5 +33,9 @@ void FollowLineUntilMarker::cleanup(){
 
 bool FollowLineUntilMarker::ifEnd(){
   //return true to stop cycling, false to continue
+  if(m_intersectionCounter >= 3){
+    return true;
+  }
+
   return false;
 }

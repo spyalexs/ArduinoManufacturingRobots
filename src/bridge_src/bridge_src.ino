@@ -14,6 +14,8 @@ const char* bot1_A2CUuid = "19b10008-e8f2-537e-4f6c-d104768a1214";
 const char* bot1_A3CUuid = "19b10009-e8f2-537e-4f6c-d104768a1214";
 const char* bot1_A4CUuid = "19b10010-e8f2-537e-4f6c-d104768a1214";
 const char* bot1_batteryVoltageUuid = "19b10011-e8f2-537e-4f6c-d104768a1214";
+const char* bot1_statusCUuid = "19b10012-e8f2-537e-4f6c-d104768a1214";
+const char* bot1_issueCUuid = "19b10013-e8f2-537e-4f6c-d104768a1214";
 
 BLEDevice bot1;
 BLECharacteristic bot1_LEDC;
@@ -27,6 +29,11 @@ BLECharacteristic bot1_A2C;
 BLECharacteristic bot1_A3C;
 BLECharacteristic bot1_A4C;
 BLECharacteristic bot1_batteryVoltageC;
+BLECharacteristic bot1_issueC;
+BLECharacteristic bot1_statusC;
+
+int bot1_statusCStoredValue = 0;
+
 
 bool bot1_mindControl = false;//whether the bot is in mindcontrol state or not
 
@@ -144,6 +151,8 @@ void connectToBot(){
         bot1_A3C = bot.characteristic(bot1_A3CUuid);
         bot1_A4C = bot.characteristic(bot1_A4CUuid);
         bot1_batteryVoltageC = bot.characteristic(bot1_batteryVoltageUuid);
+        bot1_issueC = bot.characteristic(bot1_issueCUuid);
+        bot1_statusC = bot.characteristic(bot1_statusCUuid);
 
         bot1 = bot;
       }
@@ -187,6 +196,14 @@ void communicateWithBots(){
     bot1_batteryVoltageC.readValue(value);
     message = MessageLine("bot1", "batteryVoltage", String(int(value)));
     Serial.println(message.getSerialString());
+  }else{
+    byte value = 0;
+    bot1_statusC.readValue(value);
+    if(bot1_statusCStoredValue != int(value)){
+      bot1_statusCStoredValue = int(value);
+      MessageLine message("bot1", "commandStatus", String(int(value)));
+      Serial.println(message.getSerialString());
+    }
   }
 }
 
@@ -240,6 +257,10 @@ void writeLine(MessageLine line){
     }else if(line.m_characteristic == "M2"){
       if(bot1_M2C){
         bot1_M2C.writeValue(byte(line.m_value.toInt()));
+      }
+    }else if(line.m_characteristic == "commandIssue"){
+      if(bot1_issueC){
+        bot1_issueC.writeValue(byte(line.m_value.toInt()));
       }
     }
   }

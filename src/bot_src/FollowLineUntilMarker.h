@@ -14,6 +14,7 @@ class FollowLineUntilMarker : public Command{
     bool ifEnd();
 
     MotionController* mp_MC;
+    int m_intersectionCounter;
 };
 
 
