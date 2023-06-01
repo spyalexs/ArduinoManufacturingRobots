@@ -1,20 +1,47 @@
 <map>
-    <node name="Node1">
-        <subnode name="Node1A">
+    <node name="Node1" type="intersection" locationX="50" locationY="250">
+        <subnode name="Node1-A">
         </subnode>        
-        <subnode name="Node1B">
+        <subnode name="Node1-B">
         </subnode>        
-        <subnode name="Node1C">
+        <subnode name="Node1-C">
         </subnode>
-        <subnode name="Node1D">
+        <subnode name="Node1-D">
+        </subnode>        
+        <subnode name="Node1-E">
+            <connection direction="outbound" destination="Node2-H"></connection>
+        </subnode>        
+        <subnode name="Node1-F">
+        </subnode>        
+        <subnode name="Node1-G">
+        </subnode>        
+        <subnode name="Node1-H">
         </subnode>
     </node>
-    <node name="Node2">
-        <subnode name="Node2A">
+    <node name="Node2" type="intersection" locationX="50" locationY="50">
+        <subnode name="Node2-A">
+            <connection direction="outbound" destination="Node1-D"></connection>
         </subnode>        
-        <subnode name="Node2B">
+        <subnode name="Node2-B">
         </subnode>        
-        <subnode name="Node2C">
+        <subnode name="Node2-C">
+        </subnode>
+        <subnode name="Node2-D">
+        </subnode>
+        <subnode name="Node2-E">
+        </subnode>
+        <subnode name="Node2-F">
+        </subnode>
+        <subnode name="Node2-G">
+        </subnode>
+        <subnode name="Node2-H">
         </subnode>
     </node>
 </map>
+
+<!-- Sub Node locations on Node are clockwise starting at noon
+     H A
+   G     B
+   F     C
+     E D
+-->
