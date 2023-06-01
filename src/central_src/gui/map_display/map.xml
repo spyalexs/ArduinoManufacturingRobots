@@ -1,0 +1,20 @@
+<map>
+    <node name="Node1">
+        <subnode name="Node1A">
+        </subnode>        
+        <subnode name="Node1B">
+        </subnode>        
+        <subnode name="Node1C">
+        </subnode>
+        <subnode name="Node1D">
+        </subnode>
+    </node>
+    <node name="Node2">
+        <subnode name="Node2A">
+        </subnode>        
+        <subnode name="Node2B">
+        </subnode>        
+        <subnode name="Node2C">
+        </subnode>
+    </node>
+</map>

@@ -1,6 +1,6 @@
 #include "RobotContainer.h"
 
-RobotContainer::MotionController(mc::DCMotor* motor1, mc::DCMotor* motor2, mc::Encoder* encoder1, mc::Encoder* encoder2, uint8_t lineFollowerPinName, uint8_t intersectionPinName, uint8_t codePinName){
+RobotContainer::RobotContainer(mc::DCMotor* motor1, mc::DCMotor* motor2, mc::Encoder* encoder1, mc::Encoder* encoder2, uint8_t lineFollowerPinName, uint8_t intersectionPinName, uint8_t codePinName){
   mp_central = NULL; //leave null for now update later
   m_motor1 = motor1;
   m_motor2 = motor2;
