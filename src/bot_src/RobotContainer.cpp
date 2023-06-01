@@ -1,6 +1,6 @@
-#include "MotionController.h"
+#include "RobotContainer.h"
 
-MotionController::MotionController(mc::DCMotor* motor1, mc::DCMotor* motor2, mc::Encoder* encoder1, mc::Encoder* encoder2, uint8_t lineFollowerPinName, uint8_t intersectionPinName, uint8_t codePinName){
+RobotContainer::MotionController(mc::DCMotor* motor1, mc::DCMotor* motor2, mc::Encoder* encoder1, mc::Encoder* encoder2, uint8_t lineFollowerPinName, uint8_t intersectionPinName, uint8_t codePinName){
   mp_central = NULL; //leave null for now update later
   m_motor1 = motor1;
   m_motor2 = motor2;
@@ -11,49 +11,62 @@ MotionController::MotionController(mc::DCMotor* motor1, mc::DCMotor* motor2, mc:
   m_codePin = codePinName;
 }
 
-void MotionController::setMotor1(int duty){
+void RobotContainer::setMotor1(int duty){
   this->m_motor1->setDuty(-duty);
 }
 
-void MotionController::setMotor2(int duty){
+void RobotContainer::setMotor2(int duty){
   this->m_motor2->setDuty(duty);
 }
 
-int MotionController::getEncoder1Counts(){
+void RobotContainer::setLEDStatus(int status){
+  if(status == 0){
+    digitalWrite(LED_BUILTIN, LOW);
+  }else{
+    digitalWrite(LED_BUILTIN, HIGH);
+  }
+}
+
+int RobotContainer::getEncoder1Counts(){
   return -this->m_encoder1->getRawCount();
 }
 
-int MotionController::getEncoder2Counts(){
+int RobotContainer::getEncoder2Counts(){
   return this->m_encoder2->getRawCount();
 }
 
-int MotionController::getLineFollowerPinReading(){
+int RobotContainer::getLineFollowerPinReading(){
   return analogRead(m_lineFollowerPin);
 }
 
-bool MotionController::isOnIntersectionMarker(){
+bool RobotContainer::isOnIntersectionMarker(){
   return !digitalRead(m_intersectionPin);
 }
 
-bool MotionController::isCodePin(){
+bool RobotContainer::isCodePin(){
   return !digitalRead(m_codePin);
 }
 
-double MotionController::getTime(){
+double RobotContainer::getTime(){
   return micros() / 1000000.0;
 }
 
-bool MotionController::refreshConnection(){
+double RobotContainer::getBatteryVoltage(){
+  return battery.getRaw() / 236.0;
+
+}
+
+bool RobotContainer::refreshConnection(){
   if(mp_central){
     return mp_central->connected();
   }
 }
 
-void MotionController::setCentralPtr(BLEDevice* central){
+void RobotContainer::setCentralPtr(BLEDevice* central){
   mp_central = central;
 }
 
-void MotionController::lineControl(double* Correction1, double* Correction2){
+void RobotContainer::lineControl(double* Correction1, double* Correction2){
   // a in-the-loop pd controller for line following
 
   //be sure the previous results haven't gone bad
@@ -80,13 +93,11 @@ void MotionController::lineControl(double* Correction1, double* Correction2){
   m_linePreviousValue = value;
   m_linePreviousTime = time;
 
-  //Serial.println("This is correction: " + String(correctionD));
-
   *Correction1 = correction;
   *Correction2 = -correction;
 }
 
-void MotionController::velocityControl(double* Power1, double* Power2){
+void RobotContainer::velocityControl(double* Power1, double* Power2){
   //an in the loop controller for robot velocity
 
   //be sure the previous results haven't gone bad
@@ -121,9 +132,6 @@ void MotionController::velocityControl(double* Power1, double* Power2){
 
   double power1 = (vP * (m_velTargetCPS - instantCPS1)) + vFF - vD * dCPS1;
   double power2 = (vP * (m_velTargetCPS - instantCPS2)) + vFF - vD * dCPS2;
-
-  //Serial.println(String(instantCPS1) + "  " + String(dCPS1) + "  " + String(power1));
-  //Serial.println(String(double(battery.getRaw()) / 236));
 
   *Power1 = power1;
   *Power2 = power2;

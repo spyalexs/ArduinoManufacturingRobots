@@ -1,6 +1,6 @@
 #include "TurnRight.h"
 
-TurnRight::TurnRight(BLECharacteristic* StatusC, BLECharacteristic* IssueC, MotionController* MC):Command(StatusC, IssueC, MC, "Turn Right"){
+TurnRight::TurnRight(BLECharacteristic* StatusC, BLECharacteristic* IssueC, RobotContainer* MC):Command(StatusC, IssueC, MC, "Turn Right"){
   //do initialization here
 }
 

@@ -4,11 +4,11 @@
 #include <Arduino.h>
 #include <ArduinoBLE.h>
 
-#include "MotionController.h"
+#include "RobotContainer.h"
 
 class Command{
     public:
-        Command(BLECharacteristic* StatusC, BLECharacteristic* IssueC, MotionController* MC, String name);
+        Command(BLECharacteristic* StatusC, BLECharacteristic* IssueC, RobotContainer* MC, String name);
 
         int getStatus();
         void updateStatus(int Status);
@@ -22,7 +22,7 @@ class Command{
         void run();
         void superCycle();
 
-        MotionController* mp_MC;
+        RobotContainer* mp_MC;
 
         BLECharacteristic* m_statusC;
         BLECharacteristic* m_issueC;

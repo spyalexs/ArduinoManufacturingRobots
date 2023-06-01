@@ -2,11 +2,11 @@
 #define followlineonmarker_h
 
 #include "Command.h"
-#include "MotionController.h"
+#include "RobotContainer.h"
 
 class FollowLineOnMarker : public Command{
   public:
-    FollowLineOnMarker(BLECharacteristic* StatusC, BLECharacteristic* IssueC, MotionController* MC);
+    FollowLineOnMarker(BLECharacteristic* StatusC, BLECharacteristic* IssueC, RobotContainer* MC);
 
     void startup();
     void cycle();

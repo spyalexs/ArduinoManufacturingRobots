@@ -2,11 +2,11 @@
 #define turnright_h
 
 #include "Command.h"
-#include "MotionController.h"
+#include "RobotContainer.h"
 
 class TurnRight : public Command{
   public:
-    TurnRight(BLECharacteristic* StatusC, BLECharacteristic* IssueC, MotionController* MC);
+    TurnRight(BLECharacteristic* StatusC, BLECharacteristic* IssueC, RobotContainer* MC);
 
     void startup();
     void cycle();

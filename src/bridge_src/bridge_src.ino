@@ -242,11 +242,10 @@ void processMessage(String message){
   MessageLine line = MessageLine(message);
 
   //write the message line string to central
-  writeLine(line);
+  handleMessage(line);
 }
 
-void writeLine(MessageLine line){
-  //make this into a member function
+void handleMessage(MessageLine line){
   BLEDevice target;
 
   //match up target and characteristic

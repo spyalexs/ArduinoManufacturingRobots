@@ -2,11 +2,11 @@
 #define followlineuntilmarker_h
 
 #include "Command.h"
-#include "MotionController.h"
+#include "RobotContainer.h"
 
 class FollowLineUntilMarker : public Command{
   public:
-    FollowLineUntilMarker(BLECharacteristic* StatusC, BLECharacteristic* IssueC, MotionController* MC);
+    FollowLineUntilMarker(BLECharacteristic* StatusC, BLECharacteristic* IssueC, RobotContainer* MC);
 
     void startup();
     void cycle();

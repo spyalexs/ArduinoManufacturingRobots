@@ -2,7 +2,7 @@
 #include <ArduinoBLE.h>
 #include <ArduinoMotorCarrier.h>
 
-#include "MotionController.h"
+#include "RobotContainer.h"
 
 //commands
 #include "TurnRight.h"
@@ -13,9 +13,13 @@
 
 bool PUBLISHDATA = true;
 
-MotionController MC = MotionController(&M1, &M2, &encoder1, &encoder2, A3, A6, A2);;
+//the robot container that is a wrapper around periphral functions
+RobotContainer MC = RobotContainer(&M1, &M2, &encoder1, &encoder2, A3, A6, A2);;
 
+//Uuid for connection service
 const char* deviceServiceUuid = "19b10000-e8f2-537e-4f6c-d104768a1214";
+
+//Uuid for characteristics
 const char* LEDCUuid = "19b10001-e8f2-537e-4f6c-d104768a1214";
 const char* mindControlCUuid = "19b10002-e8f2-537e-4f6c-d104768a1214";
 const char* M1CUuid = "19b10003-e8f2-537e-4f6c-d104768a1214";
@@ -30,7 +34,10 @@ const char* batteryVoltageUuid = "19b10011-e8f2-537e-4f6c-d104768a1214";
 const char* commandStatusUuid = "19b10012-e8f2-537e-4f6c-d104768a1214";
 const char* commandIssueUuid = "19b10013-e8f2-537e-4f6c-d104768a1214";
 
+//Connection Services
 BLEService motorCarrierService(deviceServiceUuid); 
+
+//Characteristics
 BLEByteCharacteristic LEDC(LEDCUuid, BLERead | BLEWrite);
 BLEByteCharacteristic mindControlC(mindControlCUuid, BLERead | BLEWrite);
 BLEByteCharacteristic M1C(M1CUuid, BLERead | BLEWrite);
@@ -46,6 +53,8 @@ BLEByteCharacteristic commandStatusC(commandStatusUuid, BLERead | BLEWrite);
 BLEByteCharacteristic batteryVoltageC(batteryVoltageUuid, BLERead | BLEWrite);
 
 void setup(){
+  //initial startup for bot
+
   //start up led
   pinMode(LED_BUILTIN, OUTPUT);
 
@@ -59,6 +68,7 @@ void setup(){
     Serial.println("Failed to start motor controller!");
   }
 
+  //set local name (bluetooth) display name and advertise service
   BLE.setLocalName("TestBot");
   BLE.setAdvertisedService(motorCarrierService);
 
@@ -94,9 +104,8 @@ void setup(){
   commandStatusC.writeValue(0);
   batteryVoltageC.writeValue(0);
 
+  //advertise the bot on the bluetooth network
   BLE.advertise();
-
-  MC = MotionController(&M1, &M2, &encoder1, &encoder2, A3, A6, A2);
 
   Serial.println("I am a bot!");
 }
@@ -104,6 +113,7 @@ void setup(){
 void loop(){
     Serial.println("Searching for central...");
 
+    //this performs a scan for the bridge
     BLEDevice bridge = BLE.central();
     delay(500);
 
@@ -115,9 +125,11 @@ void loop(){
 
       delay(1000);
       while(bridge.connected()){
+        //run bot functions while in connected phase
         connectedLoop(bridge);
       }
 
+      //need to take a look at this - even when definetly disconnected, the bot never seems to register, although bridge easily reconnects
       Serial.println("Disconnected from the bridge! - Stopping until connection reaquirred.");
     }
 }
@@ -130,62 +142,81 @@ void connectedLoop(BLEDevice testd){
 
     if(LEDC.written()){
       //internal led
-      setLEDStatus(LEDC.value());
+      MC.setLEDStatus(LEDC.value());
     }
 
     if(M1C.written()){
       //Motor 1
-      //setM1(M1C.value());
+      MC.setMotor1(M1C.value());
     }
 
     if(M2C.written()){
       //motor 2
-      setM2(M2C.value());
+      MC.setMotor2(M2C.value());
     }
 
-    E1C.writeValue(getE2());
-    E2C.writeValue(getE2());
-    batteryVoltageC.writeValue(getBatteryVoltage());
+    //write back encoder values
+    E1C.writeValue(MC.getEncoder1Counts());
+    E2C.writeValue(MC.getEncoder2Counts());
+
+    //write back the integer battery voltage which in the voltage * 236
+    batteryVoltageC.writeValue(MC.getBatteryVoltage() * 236);
 
     delay(1000);
+
   } else if(commandIssueC.value() != 0) {
+    //if the robot is in command mode - normal operation 
+
+    //get which command and then write over it to over doing the command multiple times unnessecarily
     int commandVal = commandIssueC.value();
     commandIssueC.writeValue(byte(0));
 
+    //run commands
+    //0 - no command, shouldn't be in this switch anyways
+    //1 - testing
+    //2 to 99 - base actions
+    //101 to 199 - compound actions
+    //255 - abort!
     switch (commandVal){
       case 1:
         Serial.println("Testing!");
         break;
+
       case 2:
         if(true){
           FollowLineUntilMarker commandToRun(&commandStatusC, &commandIssueC, &MC);
           commandToRun.run();
         }
         break;
+
       case 3:
         if(true){
           FollowLineOnMarker commandToRun(&commandStatusC, &commandIssueC, &MC);
           commandToRun.run();
         }
         break;
+
       case 4:
         if(true){
           TravelStraight commandToRun(&commandStatusC, &commandIssueC, &MC, 210);
           commandToRun.run();
         }
         break;
+
       case 5:
         if(true){
           TurnRight commandToRun(&commandStatusC, &commandIssueC, &MC);
           commandToRun.run();
         }
         break;
+
       case 6:
         if(true){
           TurnLeft commandToRun(&commandStatusC, &commandIssueC, &MC);
           commandToRun.run();
         }
         break;
+
       case 101:
         //full right turn through intersection
         if(true){
@@ -197,6 +228,7 @@ void connectedLoop(BLEDevice testd){
           commandToRun3.run();
         }
         break;
+
       case 102:
         //full straight through intersection
         if(true){
@@ -211,6 +243,7 @@ void connectedLoop(BLEDevice testd){
 
         }
         break;
+
       case 103:
         //full left through intersection
         if(true){
@@ -228,55 +261,9 @@ void connectedLoop(BLEDevice testd){
           commandToRun6.run();
         }
         break;
+
       default:
         break;
     }
   }
-}
-
-void setLEDStatus(int status){
-  if(status == 0){
-    digitalWrite(LED_BUILTIN, LOW);
-  }else{
-    digitalWrite(LED_BUILTIN, HIGH);
-  }
-}
-
-void setM1(int duty){
-  //set motor 1 duty
-  M1.setDuty(duty);
-}
-
-void setM2(int duty){
-  //set motor 2 duty
-  M2.setDuty(duty);
-}
-
-int getE1(){
-  //get the value of encoder 1
-  Serial.println(encoder1.getRawCount());
-  return encoder1.getRawCount();
-}
-
-int getE2(){
-  //get the value of encoder 2
-  return encoder1.getRawCount();
-}
-
-int resetE1(){
-  //reset encoder 1
-  encoder1.resetCounter(0);
-  return getE1();
-}
-
-int resetE2(){
-  //reset encoder 2
-  encoder2.resetCounter(0);
-  return getE2();
-}
-
-float getBatteryVoltage(){
-  //return the battery voltage
-  //must adjust in the central processor / divide by 236
-  return battery.getRaw();
 }

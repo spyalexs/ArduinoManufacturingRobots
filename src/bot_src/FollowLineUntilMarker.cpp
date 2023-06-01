@@ -1,6 +1,6 @@
 #include "FollowLineUntilMarker.h"
 
-FollowLineUntilMarker::FollowLineUntilMarker(BLECharacteristic* StatusC, BLECharacteristic* IssueC, MotionController* MC):Command(StatusC, IssueC, MC, "FollowLineUntilMarker"){
+FollowLineUntilMarker::FollowLineUntilMarker(BLECharacteristic* StatusC, BLECharacteristic* IssueC, RobotContainer* MC):Command(StatusC, IssueC, MC, "FollowLineUntilMarker"){
   //do initialization here
   m_intersectionCounter = 0;
 }

@@ -2,11 +2,11 @@
 #define travelstraight_h
 
 #include "Command.h"
-#include "MotionController.h"
+#include "RobotContainer.h"
 
 class TravelStraight : public Command{
   public:
-    TravelStraight(BLECharacteristic* StatusC, BLECharacteristic* IssueC, MotionController* MC, int counts);
+    TravelStraight(BLECharacteristic* StatusC, BLECharacteristic* IssueC, RobotContainer* MC, int counts);
 
     void startup();
     void cycle();

@@ -6,9 +6,9 @@
 
 // a wrapper class around motion, allows for the easy utilization of subroutines and control methods
 
-class MotionController{
+class RobotContainer{
   public:
-    MotionController(mc::DCMotor* motor1, mc::DCMotor* motor2, mc::Encoder* encoder1, mc::Encoder* encoder2, uint8_t lineFollowerPinName, uint8_t intersectionPinName, uint8_t codePinName);
+    RobotContainer(mc::DCMotor* motor1, mc::DCMotor* motor2, mc::Encoder* encoder1, mc::Encoder* encoder2, uint8_t lineFollowerPinName, uint8_t intersectionPinName, uint8_t codePinName);
 
     //define robot periphrals
     mc::DCMotor* m_motor1;
@@ -44,6 +44,8 @@ class MotionController{
     void setMotor1(int duty);
     void setMotor2(int duty);
 
+    void setLEDStatus(int status);
+
     int getEncoder1Counts();
     int getEncoder2Counts();
 
@@ -52,6 +54,7 @@ class MotionController{
     bool isCodePin();
 
     double getTime();
+    double getBatteryVoltage();
   
     bool refreshConnection();
     void setCentralPtr(BLEDevice* central);
