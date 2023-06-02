@@ -5,11 +5,15 @@
         <subnode name="Node1-B">
         </subnode>        
         <subnode name="Node1-C">
+            <connection direction="outbound" destination="Node3-F"></connection>
         </subnode>
         <subnode name="Node1-D">
         </subnode>        
         <subnode name="Node1-E">
-            <connection direction="outbound" destination="Node2-H"></connection>
+            <connection direction="outbound" destination="Node2-H">
+                <action_point id="2"></action_point>
+                <action_point id="3"></action_point>
+            </connection>
         </subnode>        
         <subnode name="Node1-F">
         </subnode>        
@@ -25,6 +29,9 @@
         <subnode name="Node2-B">
         </subnode>        
         <subnode name="Node2-C">
+            <connection direction="outbound" destination="Node4-F">
+                <action_point id="1"></action_point>
+            </connection>
         </subnode>
         <subnode name="Node2-D">
         </subnode>
@@ -35,6 +42,49 @@
         <subnode name="Node2-G">
         </subnode>
         <subnode name="Node2-H">
+        </subnode>
+    </node><node name="Node3" type="intersection" locationX="250" locationY="250">
+        <subnode name="Node3-A">
+        </subnode>        
+        <subnode name="Node3-B">
+        </subnode>        
+        <subnode name="Node3-C">
+        </subnode>
+        <subnode name="Node3-D">
+        </subnode>        
+        <subnode name="Node3-E">
+            <connection direction="outbound" destination="Node4-H"></connection>
+        </subnode>        
+        <subnode name="Node3-F">
+        </subnode>        
+        <subnode name="Node3-G">
+            <connection direction="outbound" destination="Node1-B"></connection>
+        </subnode>        
+        <subnode name="Node3-H">
+        </subnode>
+    </node>
+    <node name="Node4" type="intersection" locationX="250" locationY="50">
+        <subnode name="Node4-A">
+            <connection direction="outbound" destination="Node3-D">
+                <action_point id="4"></action_point>
+            </connection>
+        </subnode>        
+        <subnode name="Node4-B">
+        </subnode>        
+        <subnode name="Node4-C">
+        </subnode>
+        <subnode name="Node4-D">
+        </subnode>
+        <subnode name="Node4-E">
+        </subnode>
+        <subnode name="Node4-F">
+        </subnode>
+        <subnode name="Node4-G">
+            <connection direction="outbound" destination="Node2-B">
+                <action_point id="5"></action_point>
+            </connection>
+        </subnode>
+        <subnode name="Node4-H">
         </subnode>
     </node>
 </map>
