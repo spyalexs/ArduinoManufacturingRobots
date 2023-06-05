@@ -175,7 +175,6 @@ void connectToBot(){
 void communicateWithBots(){
   //take all bot messages and send to central
 
- 
   delay(100);
 
   if(bot1_mindControl){

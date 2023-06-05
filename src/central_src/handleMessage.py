@@ -43,5 +43,8 @@ def handleBotMessage(message, queueInGUI):
         #messages concerning battery voltage
         queueInGUI.put(GUIOutMessage(target, characteristic, value))
 
+    if(characteristic == "status"):
+        #message concerning command status
+
 
 

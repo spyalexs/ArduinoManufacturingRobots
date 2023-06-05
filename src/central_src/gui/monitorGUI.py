@@ -1,11 +1,13 @@
 import PySimpleGUI as sg
 import threading
 
+from getConstants import getCommandKeys
 from gui.GUIInMessage import GUIInMessage
 from gui.GUIOutMessage import GUIOutMessage
+from createRoute import route
 
 #keys for the commands availible to be launched - the name of the command corrosponds to the name that will be launched on the robot
-commandKeys = {"Test":1, "FollowLineTillMarker":2, "FollowLineOnMarker" : 3, "TravelStraight" : 4, "TurnRight" : 5, "TurnLeft" : 6, "IntersectionRight" : 101, "IntersectionStraight" : 102, "IntersectionLeft": 103}
+commandKeys = getCommandKeys()
 
 def make(queueIn, queueOut):
     #create the GUI window for the first time
@@ -22,6 +24,7 @@ def make(queueIn, queueOut):
     layout = [  [sg.Text('Robot 1')],
                 [sg.Text("Command"), sg.Combo(commands, enable_events=False, key="CommandMenu"), sg.Button("Send", key="Command", enable_events=True)],
                 [sg.Text("     Status"), sg.ProgressBar(100, size=(13,17), key="CommandProgress"), sg.Button("Abort", key="AbortCommand", enable_events=True)],
+                [sg.Text("From:"), sg.Input("", key="RouteFrom", size=(10,7)), sg.Text("To:"), sg.Input("", key="RouteTo", size=(10,7)), sg.Button("Route", key="Route", enable_events=True)],
                 [sg.Text("MindControl"), sg.Checkbox('Enable', enable_events=True, default=False,  key="EnableMindControl")],
                 [sg.Text("     Built In LED"), sg.Checkbox('Turn On', 0, enable_events=True, key="TurnOnBuiltInLED", disabled=True)],
                 [sg.Text("     Motor 1"), sg.Slider(key="M1Slider", orientation='h', range=(0,100), default_value=0, disabled=True)],
@@ -97,7 +100,15 @@ def handleEvents(event, values, window, queueIn):
 
     if(event == "AbortCommand"):
         #abort the command currently running
-        queueIn.put(GUIInMessage("bot1", "commandIssue", 255))   
+        queueIn.put(GUIInMessage("bot1", "commandIssue", 255))  
+
+    if(event == "Route"):
+        #run a route between two points
+        if (not values["RouteFrom"] == "") and (not values["RouteTo"] == ""):
+            commands = route(values["RouteFrom"], values["RouteTo"])
+
+            #send commands to controlled to be processed
+            queueIn.put(GUIInMessage("bot1", "commandSequence", commands, Direct=False))
 
 
 def update(window, queueOut):

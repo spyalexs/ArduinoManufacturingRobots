@@ -9,6 +9,9 @@ from monitorSerial import monitor
 from publishSerial import publish
 from handleMessage import handleBotMessage
 from gui.launchGUI import launchGUI
+from execution.BotOverSeer import BotOverSeer
+
+overseerers = [] # a list of commander classes that tell robots what to do
 
 #this is the main thread for the central controller
 
@@ -65,6 +68,9 @@ def initialize():
     publisherThread.daemon = True
     publisherThread.start()
 
+    #TODO - have bridge communicate number of connections to determine the number of overseers
+    overseerers = [BotOverSeer("bot1", queueOut)]
+
     return queueIn, queueOut, queueInGUI, queueOutGUI
 
 
@@ -73,11 +79,15 @@ def cycle():
     #1. messages in should be handled
     #2. gui requests in should be handled
     #3. map managment should occur
-    #4. any messages (not sent out by other processes) needing sent should be sent
+    #4. robots commands should be checked
+    #5. any messages (not sent out by other processes) needing sent should be sent
 
     handleMessagesIn() #1
     
     handleGUIIn() #2
+
+    for overseer in overseerers: #3
+        overseer.cycle()
 
     time.sleep(.05)
 
@@ -93,9 +103,18 @@ def handleGUIIn():
     while(not queueInGUI.empty()):
         message = queueInGUI.get()
         #handle all messages in the queu
-        if message.direct == True:
+        if message.m_direct == True:
             #if the message is ment to go directly to the robot
             sendStringToBot(message.getDirectString())
+        else:
+            #if the message should first be controller processed
+            if message.m_characteristic == "commandSequence":
+                
+                # find the bot it belongs to and give the commands
+                for overseer in overseerers:
+                    if overseer.name == message.m_target:
+                        overseer.issueCommandSequences(message.m_value)
+                
 
 def sendMessageToBot(BotName, Characteristic, Value):
     #botname = string
