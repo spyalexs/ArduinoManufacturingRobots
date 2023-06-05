@@ -48,32 +48,7 @@ def prepPathPlanningXML(root):
             ppnode.set("name", ppnodeName)
 
             #create and save all of the valid intranode connections from the subnode
-            if(ppNodeNameArray[1] == 'A' or ppNodeNameArray[1] == 'C' or ppNodeNameArray[1] == 'E' or ppNodeNameArray[1] == 'G'):
-                pplink1 = ET.SubElement(ppnode, "pplink")
-                pplink1.set("cost", str(intraConnectionCost))
-                pplink1.set("intersection", ppNodeNameArray[0])
-                pplink1.set("locationX", node.get("locationX"))
-                pplink1.set("locationY", node.get("locationY"))   
-                pplink1.set("neighbor", ppNodeNameArray[0] + "-B")             
-                pplink2 = ET.SubElement(ppnode, "pplink")
-                pplink2.set("cost", str(intraConnectionCost))
-                pplink2.set("intersection", ppNodeNameArray[0])
-                pplink2.set("locationX", node.get("locationX"))
-                pplink2.set("locationY", node.get("locationY"))
-                pplink2.set("neighbor", ppNodeNameArray[0] + "-D")             
-                pplink3 = ET.SubElement(ppnode, "pplink")
-                pplink3.set("cost", str(intraConnectionCost))
-                pplink3.set("intersection", ppNodeNameArray[0])
-                pplink3.set("locationX", node.get("locationX"))
-                pplink3.set("locationY", node.get("locationY"))
-                pplink3.set("neighbor", ppNodeNameArray[0] + "-F")             
-                pplink4 = ET.SubElement(ppnode, "pplink")
-                pplink4.set("cost", str(intraConnectionCost))
-                pplink4.set("intersection", ppNodeNameArray[0])
-                pplink4.set("locationX", node.get("locationX"))
-                pplink4.set("locationY", node.get("locationY"))
-                pplink4.set("neighbor", ppNodeNameArray[0] + "-H")           
-            else:
+            if(ppNodeNameArray[1] == 'B' or ppNodeNameArray[1] == 'D' or ppNodeNameArray[1] == 'F' or ppNodeNameArray[1] == 'H'):
                 pplink1 = ET.SubElement(ppnode, "pplink")
                 pplink1.set("cost", str(intraConnectionCost))
                 pplink1.set("intersection", ppNodeNameArray[0])
@@ -97,7 +72,7 @@ def prepPathPlanningXML(root):
                 pplink4.set("intersection", ppNodeNameArray[0])
                 pplink4.set("locationX", node.get("locationX"))
                 pplink4.set("locationY", node.get("locationY"))
-                pplink4.set("neighbor", ppNodeNameArray[0] + "-F")  
+                pplink4.set("neighbor", ppNodeNameArray[0] + "-G")  
 
     return ppData
 
@@ -125,7 +100,7 @@ def drawMap(root):
     #write xml generated to file
     ppTree = ET.ElementTree(ppData)
     ET.indent(ppTree, " ")
-    ppTree.write("test.xml")
+    ppTree.write("ppData.xml")
 
     mapImage = Image.fromarray(np.uint8(map))
     return ImageTk.PhotoImage(mapImage)
@@ -219,6 +194,7 @@ def drawConnection(map, root, originSubNodeName, endSubNodeName, ppData):
                 pplink.set("cost", str(connectionLength))
                 pplink.set("locationX", str(subnodeOriginX))
                 pplink.set("locationY", str(round((subnodeOriginY + subnodeEndY) / 2)))   
+                pplink.set("intersection", "None")
                 pplink.set("neighbor", endSubNodeName)
         
         if not ppOriginSubnode:
@@ -252,6 +228,7 @@ def drawConnection(map, root, originSubNodeName, endSubNodeName, ppData):
 
                     while(counterY < (counter + 1) * spacing + subnodeOriginY + (NODESIZE - 1) / 2 - emptySpace):
                         map[counterY][counterX] = actionPointColor
+    
                         counterY +=1
 
                     counterX +=1
@@ -262,28 +239,33 @@ def drawConnection(map, root, originSubNodeName, endSubNodeName, ppData):
 
                 #add link from action point to end node
                 pplink = ET.SubElement(ppActionNode, "pplink")
-                pplink.set("cost", str((actionPointCount - counter - .5) * spacing + 1))
+                pplink.set("cost", str((actionPointCount - counter - .5) * spacing + (NODESIZE / 2) + 1))
                 pplink.set("locationX", str(subnodeOriginX))
                 pplink.set("locationY", str(round(subnodeOriginY + (NODESIZE - 1) / 2 + (counter + .75) * spacing)))
                 pplink.set("neighbor", endSubNodeName)
+                pplink.set("intersection", "None")
+
 
                 #add links from action point to action point
                 counter2 = counter + 1
                 while(counter2 < actionPointCount):
-                    pplink = ET.SubElement(ppActionNode, "pplink")
-                    pplink.set("cost", str((counter2 - counter - .5) * spacing + 1))
-                    pplink.set("locationX", str(subnodeOriginX))
-                    pplink.set("locationY", str(round(subnodeOriginY + (NODESIZE - 1) / 2 + (counter2 + .25) * spacing)))
-                    pplink.set("neighbor", "actionpoint" + actionPointIDs[counter2])
+                    pplink3 = ET.SubElement(ppActionNode, "pplink")
+                    pplink3.set("cost", str((counter2 - counter) * spacing + 1))
+                    pplink3.set("locationX", str(subnodeOriginX))
+                    pplink3.set("locationY", str(round(subnodeOriginY + (NODESIZE - 1) / 2 + (counter2 + .25) * spacing)))
+                    pplink3.set("neighbor", "actionpoint" + actionPointIDs[counter2])
+                    pplink3.set("intersection", "None")
+
                     counter2 +=1
 
                 #add link from origin to actionPoint
                 pplink2 = ET.SubElement(ppOriginSubnode, "pplink")
-                pplink2.set("cost", str((counter + .5) * spacing + 1))
+                pplink2.set("cost", str((counter + .5) * spacing + (NODESIZE / 2) + 1))
                 pplink2.set("locationX", str(subnodeOriginX))
                 pplink2.set("locationY", str(round(subnodeOriginY + (NODESIZE - 1) / 2 + (counter + .25) * spacing)))
                 pplink2.set("neighbor",  "actionpoint" + actionPointIDs[counter])
-                
+                pplink2.set("intersection", "None")
+ 
                 counter += 1
            
         else:
@@ -308,27 +290,33 @@ def drawConnection(map, root, originSubNodeName, endSubNodeName, ppData):
 
                 #add link from action point to end node
                 pplink = ET.SubElement(ppActionNode, "pplink")
-                pplink.set("cost", str((actionPointCount - counter - .5) * spacing + 1))
+                pplink.set("cost", str((actionPointCount - counter - .5) * spacing + (NODESIZE / 2) + 1))
                 pplink.set("locationX", str(subnodeOriginX))
                 pplink.set("locationY", str(round(subnodeEndY + (NODESIZE - 1) / 2 + (counter + .75) * spacing)))
                 pplink.set("neighbor", endSubNodeName)
+                pplink.set("intersection", "None")
+
 
                 #add links from action point to action point
                 counter2 = counter + 1
                 while(counter2 < actionPointCount):
-                    pplink = ET.SubElement(ppActionNode, "pplink")
-                    pplink.set("cost", str((counter2 - counter - .5) * spacing + 1))
-                    pplink.set("locationX", str(subnodeOriginX))
-                    pplink.set("locationY", str(round(subnodeEndY + (NODESIZE - 1) / 2 + (counter2 + .25) * spacing)))
-                    pplink.set("neighbor", "actionpoint" + actionPointIDs[counter2])
+                    pplink3 = ET.SubElement(ppActionNode, "pplink")
+                    pplink3.set("cost", str((counter2 - counter) * spacing + 1))
+                    pplink3.set("locationX", str(subnodeOriginX))
+                    pplink3.set("locationY", str(round(subnodeEndY + (NODESIZE - 1) / 2 + (counter2 + .25) * spacing)))
+                    pplink3.set("neighbor", "actionpoint" + actionPointIDs[counter2])
+                    pplink3.set("intersection", "None")
+
                     counter2 +=1
 
                 #add link from origin to actionPoint
                 pplink2 = ET.SubElement(ppOriginSubnode, "pplink")
-                pplink2.set("cost", str((counter + .5) * spacing + 1))
+                pplink2.set("cost", str((counter + .5) * spacing + (NODESIZE / 2) + 1))
                 pplink2.set("locationX", str(subnodeOriginX))
                 pplink2.set("locationY", str(round(subnodeEndY + (NODESIZE - 1) / 2 + (counter + .25) * spacing)))
                 pplink2.set("neighbor",  "actionpoint" + actionPointIDs[counter])
+                pplink2.set("intersection", "None")
+
 
                 counter += 1
     elif(subnodeOriginY == subnodeEndY):
@@ -364,6 +352,8 @@ def drawConnection(map, root, originSubNodeName, endSubNodeName, ppData):
                 pplink.set("locationX", str(round(subnodeOriginX + subnodeEndX) / 2))
                 pplink.set("locationY", str(subnodeOriginY))   
                 pplink.set("neighbor", endSubNodeName)
+                pplink.set("intersection", "None")
+
         
         if not ppOriginSubnode:
             print("Cannot find path planning subnode - something is up!")
@@ -406,27 +396,32 @@ def drawConnection(map, root, originSubNodeName, endSubNodeName, ppData):
 
                 #add link from action point to end node
                 pplink = ET.SubElement(ppActionNode, "pplink")
-                pplink.set("cost", str((actionPointCount - counter - .5) * spacing + 1))
+                pplink.set("cost", str((actionPointCount - counter - .5) * spacing + (NODESIZE / 2) + 1))
                 pplink.set("locationY", str(subnodeOriginY))
                 pplink.set("locationX", str(round(subnodeOriginX + (NODESIZE - 1) / 2 + (counter + .75) * spacing)))
                 pplink.set("neighbor", endSubNodeName)
+                pplink.set("intersection", "None")
 
                 #add links from action point to action point
                 counter2 = counter + 1
                 while(counter2 < actionPointCount):
-                    pplink = ET.SubElement(ppActionNode, "pplink")
-                    pplink.set("cost", str((counter2 - counter - .5) * spacing + 1))
-                    pplink.set("locationY", str(subnodeOriginY))
-                    pplink.set("locationX", str(round(subnodeOriginX + (NODESIZE - 1) / 2 + (counter2 + .25) * spacing)))
-                    pplink.set("neighbor", "actionpoint" + actionPointIDs[counter2])
+                    pplink3 = ET.SubElement(ppActionNode, "pplink")
+                    pplink3.set("cost", str((counter2 - counter) * spacing + 1))
+                    pplink3.set("locationY", str(subnodeOriginY))
+                    pplink3.set("locationX", str(round(subnodeOriginX + (NODESIZE - 1) / 2 + (counter2 + .25) * spacing)))
+                    pplink3.set("neighbor", "actionpoint" + actionPointIDs[counter2])
+                    pplink3.set("intersection", "None")
+
                     counter2 +=1
 
                 #add link from origin to actionPoint
                 pplink2 = ET.SubElement(ppOriginSubnode, "pplink")
-                pplink2.set("cost", str((counter + .5) * spacing + 1))
+                pplink2.set("cost", str((counter + .5) * spacing + (NODESIZE / 2) + 1))
                 pplink2.set("locationY", str(subnodeOriginY))
                 pplink2.set("locationX", str(round(subnodeOriginX + (NODESIZE - 1) / 2 + (counter + .25) * spacing)))
                 pplink2.set("neighbor",  "actionpoint" + actionPointIDs[counter])
+                pplink2.set("intersection", "None")
+
 
                 counter += 1
            
@@ -452,27 +447,31 @@ def drawConnection(map, root, originSubNodeName, endSubNodeName, ppData):
 
                 #add link from action point to end node
                 pplink = ET.SubElement(ppActionNode, "pplink")
-                pplink.set("cost", str((actionPointCount - counter - .5) * spacing + 1))
+                pplink.set("cost", str((actionPointCount - counter - .5) * spacing + (NODESIZE / 2) + 1))
                 pplink.set("locationY", str(subnodeOriginY))
                 pplink.set("locationX", str(round(subnodeEndX + (NODESIZE - 1) / 2 + (counter + .75) * spacing)))
                 pplink.set("neighbor", endSubNodeName)
+                pplink.set("intersection", "None")
 
                 #add links from action point to action point
                 counter2 = counter + 1
                 while(counter2 < actionPointCount):
-                    pplink = ET.SubElement(ppActionNode, "pplink")
-                    pplink.set("cost", str((counter2 - counter - .5) * spacing + 1))
-                    pplink.set("locationY", str(subnodeOriginY))
-                    pplink.set("locationX", str(round(subnodeEndX + (NODESIZE - 1) / 2 + (counter2 + .25) * spacing)))
-                    pplink.set("neighbor", "actionpoint" + actionPointIDs[counter2])
+                    pplink3 = ET.SubElement(ppActionNode, "pplink")
+                    pplink3.set("cost", str((counter2 - counter) * spacing + 1))
+                    pplink3.set("locationY", str(subnodeOriginY))
+                    pplink3.set("locationX", str(round(subnodeEndX + (NODESIZE - 1) / 2 + (counter2 + .25) * spacing)))
+                    pplink3.set("neighbor", "actionpoint" + actionPointIDs[counter2])
+                    pplink3.set("intersection", "None")
+
                     counter2 +=1
 
                 #add link from origin to actionPoint
                 pplink2 = ET.SubElement(ppOriginSubnode, "pplink")
-                pplink2.set("cost", str((counter + .5) * spacing + 1))
+                pplink2.set("cost", str((counter + .5) * spacing + (NODESIZE / 2) + 1))
                 pplink2.set("locationY", str(subnodeOriginY))
                 pplink2.set("locationX", str(round(subnodeEndX + (NODESIZE - 1) / 2 + (counter + .25) * spacing)))
-                pplink2.set("neighbor",  "actionpoint" + actionPointIDs[counter])
+                pplink2.set("neighbor",  "actionpoint" + actionPointIDs[counter])    
+                pplink2.set("intersection", "None")
 
                 counter += 1
     else:
