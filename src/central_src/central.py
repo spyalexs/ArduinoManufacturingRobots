@@ -69,7 +69,7 @@ def initialize():
     publisherThread.start()
 
     #TODO - have bridge communicate number of connections to determine the number of overseers
-    overseerers = [BotOverSeer("bot1", queueOut)]
+    overseerers.append(BotOverSeer("bot1", queueOut))
 
     return queueIn, queueOut, queueInGUI, queueOutGUI
 
@@ -96,7 +96,7 @@ def handleMessagesIn():
     while(not queueIn.empty()):
        message = queueIn.get()
        print(message)
-       handleBotMessage(message, queueOutGui)
+       handleBotMessage(message, queueOutGui, overseerers)
 
 def handleGUIIn():
     #processes messages from the GUI
@@ -112,7 +112,7 @@ def handleGUIIn():
                 
                 # find the bot it belongs to and give the commands
                 for overseer in overseerers:
-                    if overseer.name == message.m_target:
+                    if overseer.m_name == message.m_target:
                         overseer.issueCommandSequences(message.m_value)
                 
 

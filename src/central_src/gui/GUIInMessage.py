@@ -14,6 +14,6 @@ class GUIInMessage:
 
     def getDirectString(self):
         #the string version of the message to be passed by serial to the bridge
-        if(self.direct):
+        if(self.m_direct):
             return str(self.m_target) + "$" + str(self.m_characteristic) + "$" + str(self.m_value)
 

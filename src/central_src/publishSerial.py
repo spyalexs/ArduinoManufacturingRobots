@@ -21,6 +21,9 @@ def publish(COM, queueOut):
             COM.write(bytes(messageOut, "utf-8"))
             time.sleep(.01)
 
+    while(True):
+        print("The matrix has broken!")
+
         
 
             

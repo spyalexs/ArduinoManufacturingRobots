@@ -104,6 +104,10 @@ void setup(){
   commandStatusC.writeValue(0);
   batteryVoltageC.writeValue(0);
 
+  //stop motors by default
+  M1.setDuty(0);
+  M2.setDuty(0);
+
   //advertise the bot on the bluetooth network
   BLE.advertise();
 

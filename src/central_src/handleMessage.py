@@ -1,6 +1,6 @@
 from gui.GUIOutMessage import GUIOutMessage
 
-def handleBotMessage(message, queueInGUI):
+def handleBotMessage(message, queueInGUI, overseers):
     # handle messages coming in from the bridge
 
     #messages should be string in from serial
@@ -43,8 +43,13 @@ def handleBotMessage(message, queueInGUI):
         #messages concerning battery voltage
         queueInGUI.put(GUIOutMessage(target, characteristic, value))
 
-    if(characteristic == "status"):
+    if(characteristic == "commandStatus"):
         #message concerning command status
+
+        # find overseer
+        for overseer in overseers:
+            if (overseer.m_name == target):
+                overseer.updateStatus(int(value))
 
 
 

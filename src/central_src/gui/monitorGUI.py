@@ -107,8 +107,11 @@ def handleEvents(event, values, window, queueIn):
         if (not values["RouteFrom"] == "") and (not values["RouteTo"] == ""):
             commands = route(values["RouteFrom"], values["RouteTo"])
 
-            #send commands to controlled to be processed
-            queueIn.put(GUIInMessage("bot1", "commandSequence", commands, Direct=False))
+            if not commands == None:
+                #ensure their are commands - fairly easy to make an impossible route
+
+                #send commands to controlled to be processed
+                queueIn.put(GUIInMessage("bot1", "commandSequence", commands, Direct=False))
 
 
 def update(window, queueOut):

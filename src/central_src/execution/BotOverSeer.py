@@ -23,6 +23,8 @@ class BotOverSeer:
     def updateStatus(self, status):
         self.m_status = status
 
+        print("My status is: " + str(status))
+
     def externalSentMessage(self, characteristic, value):
         #TODO - implement this via publisher
 
@@ -48,6 +50,8 @@ class BotOverSeer:
 
         if len(self.m_commands) == 0:
             self.m_commands = sequence
+
+            print("New command sequence added: " + str(sequence))
         else:
             print("Failed to add new command sequence to bot: " + str(self.m_name) + ". The sequence is already full.")
 
@@ -67,7 +71,7 @@ class BotOverSeer:
                     self.m_lastIssue = time.time()
 
                     #write command to bot
-                    self.m_queue.put(self.m_name + "$commandIssue$" + self.m_commands[0])
+                    self.m_queue.put(self.m_name + "$commandIssue$" + str(self.m_commands[0]))
         else:
             if(self.m_attemptingToWrite):
                 #if the command had been attempted to been written and now has been

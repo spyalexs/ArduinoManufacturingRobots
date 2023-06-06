@@ -51,7 +51,7 @@ def getRoute(ppData, startingNodeName, endingNodeName):
     #a*
 
     #check to ensure nodes are actually nodes
-    if((not findNode(ppData, startingNodeName) == None) or (not findNode(ppData, endingNodeName) == None)):
+    if((findNode(ppData, startingNodeName) == None) or (findNode(ppData, endingNodeName) == None)):
         print("Invalid Nodes, not routing!")
         return
 
@@ -115,7 +115,7 @@ def getRoute(ppData, startingNodeName, endingNodeName):
     if endNode == None:
         print("No valid path could be found!")
         return
-
+    
     return endNode.m_parentalStructure
 
 def findNode(nodes, name):
@@ -267,10 +267,12 @@ def getStepsFromRoute(route):
                 commandNumbers.append(commandKeys["FollowLineTillMarker"])
 
         counter +=1
+    
+    return commandNumbers
 
 if __name__ == "__main__":
     data = loadPPData()
-    route = getRoute(data, "Nod3e1-H", "Node3-F")
+    route = getRoute(data, "Node1-H", "Node3-F")
 
     if not route == None:
         getStepsFromRoute(route)
