@@ -38,6 +38,20 @@ bool Command::checkForAbort(){
   return false;
 }
 
+bool Command::checkForConfirmation(){
+  //check if the controller has given the robot permission to run the command...
+  //confirmation is value of 253 over the issue characteristic
+
+  byte value = 0;
+  m_issueC->readValue(value);
+
+  if(int(value) == 253){
+    return true;
+  }
+
+  return false;
+}
+
 void Command::startup(){
   // this should be overriden with tasks when starting command
   return;
@@ -64,6 +78,15 @@ void Command::run(){
   //sequence on operations with status updates for controller
   this->updateStatus(1);
   this->startup();
+
+  //request confirmation
+  this->updateStatus(253);
+  while(!this->checkForConfirmation()){
+    //wait for confirmation
+    mp_MC->refreshConnection();
+
+  }
+
   this->updateStatus(2);
   this->superCycle();
   this->updateStatus(3);

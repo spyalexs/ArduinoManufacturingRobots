@@ -12,7 +12,9 @@ class Command{
 
         int getStatus();
         void updateStatus(int Status);
+
         bool checkForAbort();
+        bool checkForConfirmation();
 
         virtual void startup();
         virtual void cycle();

@@ -18,12 +18,15 @@ class BotOverSeer:
         self.m_name = name
         self.m_queue = queueToBots
 
-        self.m_lastIssue = time.time()
+        self.m_lastIssue = 0
 
     def updateStatus(self, status):
         self.m_status = status
 
         print("My status is: " + str(status))
+
+        #also clear the patience timer so next command is immediate
+        self.m_lastIssue = 0
 
     def externalSentMessage(self, characteristic, value):
         #TODO - implement this via publisher
@@ -61,6 +64,7 @@ class BotOverSeer:
             #if a command was aborted
             self.m_commands = [] # clear all commands
         elif(self.m_status == 254) or (self.m_status == 0):
+
             if(len(self.m_commands) > 0):
                 #if a command needs written
 
@@ -72,6 +76,18 @@ class BotOverSeer:
 
                     #write command to bot
                     self.m_queue.put(self.m_name + "$commandIssue$" + str(self.m_commands[0]))
+        elif(self.m_status == 253):
+            # if the status is 253, the robot is waiting for confirmation to run the command - essential for ensure commands do not get issued twice
+            # sorta - kinda a handshake
+
+            self.m_attemptingToWrite = True # mark so the system know if the system is attempting to write a command
+
+            #if the robot is waiting or doing nothing
+            if(time.time() > self.m_lastIssue + self.m_patience):
+                self.m_lastIssue = time.time()
+
+                #issue confirmation
+                self.m_queue.put(self.m_name + "$commandIssue$" + str(253))
         else:
             if(self.m_attemptingToWrite):
                 #if the command had been attempted to been written and now has been

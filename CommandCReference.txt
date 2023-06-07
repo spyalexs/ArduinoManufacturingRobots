@@ -10,6 +10,7 @@ Command Issue:
     102: IntersectionStraight
     103: IntersectionLeft
     104: IntersectionU
+    253: Confirm Running 
     255: Abort
 
 Command Status:
@@ -18,5 +19,6 @@ Command Status:
     2: Running(General)
     3: Cleaning(General)
     100-199: Running (Percent Complete - last two digits)
+    253: Waiting for Confirmation
     254: Finished(Success)
     255: Finished(Abort)
