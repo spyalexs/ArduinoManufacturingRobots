@@ -80,8 +80,6 @@ class BotOverSeer:
             # if the status is 253, the robot is waiting for confirmation to run the command - essential for ensure commands do not get issued twice
             # sorta - kinda a handshake
 
-            self.m_attemptingToWrite = True # mark so the system know if the system is attempting to write a command
-
             #if the robot is waiting or doing nothing
             if(time.time() > self.m_lastIssue + self.m_patience):
                 self.m_lastIssue = time.time()
