@@ -2,7 +2,7 @@
 #define bot_h
 
 #include <ArduinoBLE.h>
-#include <bits/stdc++.h>
+#include <string>
 
 // a class to hold connection features for a single bot
 class Bot{
@@ -10,42 +10,44 @@ class Bot{
         int m_number;
         String m_name;
         BLEDevice* mp_bot;
+        bool m_mindControlState;
 
 
         //UUIDS
-        std::string bot1_LEDCUuid;
-        const char* bot1_mindControlCUuid;
-        const char* bot1_M1CUuid;
-        const char* bot1_M2CUuid;
-        const char* bot1_E1CUuid;
-        const char* bot1_E2CUuid;
-        const char* bot1_A1CUuid;
-        const char* bot1_A2CUuid;
-        const char* bot1_A3CUuid;
-        const char* bot1_A4CUuid;
-        const char* bot1_batteryVoltageUuid;
-        const char* bot1_statusCUuid;
-        const char* bot1_issueCUuid;
-
+        std::string m_deviceServiceUUID;
+        std::string m_LEDCUuid;
+        std::string m_mindControlCUuid;
+        std::string m_M1CUuid;
+        std::string m_M2CUuid;
+        std::string m_E1CUuid;
+        std::string m_E2CUuid;
+        std::string m_A1CUuid;
+        std::string m_A2CUuid;
+        std::string m_A3CUuid;
+        std::string m_A4CUuid;
+        std::string m_batteryVoltageUuid;
+        std::string m_statusCUuid;
+        std::string m_issueCUuid;
 
         //Characteristics
-        BLECharacteristic bot1_LEDC;
-        BLECharacteristic bot1_mindControlC;
-        BLECharacteristic bot1_M1C;
-        BLECharacteristic bot1_M2C;
-        BLECharacteristic bot1_E1C;
-        BLECharacteristic bot1_E2C;
-        BLECharacteristic bot1_A1C;
-        BLECharacteristic bot1_A2C;
-        BLECharacteristic bot1_A3C;
-        BLECharacteristic bot1_A4C;
-        BLECharacteristic bot1_batteryVoltageC;
-        BLECharacteristic bot1_issueC;
-        BLECharacteristic bot1_statusC;
+        BLECharacteristic m_LEDC;
+        BLECharacteristic m_mindControlC;
+        BLECharacteristic m_M1C;
+        BLECharacteristic m_M2C;
+        BLECharacteristic m_E1C;
+        BLECharacteristic m_E2C;
+        BLECharacteristic m_A1C;
+        BLECharacteristic m_A2C;
+        BLECharacteristic m_A3C;
+        BLECharacteristic m_A4C;
+        BLECharacteristic m_batteryVoltageC;
+        BLECharacteristic m_issueC;
+        BLECharacteristic m_statusC;
 
 
         //connection
-        double m_reattemptConnection = 5;
+        double m_reattemptConnection = 2.0;
+        double m_lastScan = 0; // the last time the connection scan was run
         bool m_isConnected = false;
 
     public:
@@ -53,7 +55,11 @@ class Bot{
         void cycle();
         void sustainConnection();
 
-        std::string generateUUID(std::string MacAddress, std::string CharacteristicNumber)
+        void publishMessageToBot(String characteristic, int value);
+
+        std::string generateUUID(std::string MacAddress, std::string CharacteristicNumber);
+
+        bool isConnected();
 
 
 };
