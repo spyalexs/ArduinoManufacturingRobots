@@ -1,53 +1,56 @@
 #include "Bot.h"
 
 Bot::Bot(BLEDevice* bot, int number){
-    //this should run after connected() and discoverAttributes()
-    m_isConnected = true;
+  //this should run after connected() and discoverAttributes()
+  m_isConnected = true;
 
-    //generate basic information
-    this->mp_bot = bot;
-    this->m_number = number;
-    this->m_name = "bot" + String(number);
-    this->m_mindControlState = false;
+  //generate basic information
+  this->mp_bot = bot;
+  this->m_number = number;
+  this->m_name = "bot" + String(number);
+  this->m_mindControlState = false;
 
-    //harvest data from bot
-    std::string macAddress = mp_bot->address().c_str();
+  //harvest data from bot
+  std::string macAddress = mp_bot->address().c_str();
 
-    //get the service UUID 
-    m_deviceServiceUUID = this->generateUUID(macAddress, "0000");
+  //get the service UUID 
+  m_deviceServiceUUID = this->generateUUID(macAddress, "0000");
 
-    //assign UUids from Characteristics and Mac Address
-    m_LEDCUuid = this->generateUUID(macAddress, "0001");
-    m_mindControlCUuid = this->generateUUID(macAddress, "0002");
-    m_M1CUuid = this->generateUUID(macAddress, "0003");
-    m_M2CUuid = this->generateUUID(macAddress, "0004");
-    m_E1CUuid = this->generateUUID(macAddress, "0005");
-    m_E2CUuid = this->generateUUID(macAddress, "0006");
-    m_A1CUuid = this->generateUUID(macAddress, "0007");
-    m_A2CUuid = this->generateUUID(macAddress, "0008");
-    m_A3CUuid = this->generateUUID(macAddress, "0009");
-    m_A4CUuid = this->generateUUID(macAddress, "0010");
-    m_batteryVoltageUuid = this->generateUUID(macAddress, "0011");
-    m_statusCUuid = this->generateUUID(macAddress, "0012");
-    m_issueCUuid = this->generateUUID(macAddress, "00013");
+  //assign UUids from Characteristics and Mac Address
+  m_LEDCUuid = this->generateUUID(macAddress, "0001");
+  m_mindControlCUuid = this->generateUUID(macAddress, "0002");
+  m_M1CUuid = this->generateUUID(macAddress, "0003");
+  m_M2CUuid = this->generateUUID(macAddress, "0004");
+  m_E1CUuid = this->generateUUID(macAddress, "0005");
+  m_E2CUuid = this->generateUUID(macAddress, "0006");
+  m_A1CUuid = this->generateUUID(macAddress, "0007");
+  m_A2CUuid = this->generateUUID(macAddress, "0008");
+  m_A3CUuid = this->generateUUID(macAddress, "0009");
+  m_A4CUuid = this->generateUUID(macAddress, "0010");
+  m_batteryVoltageUuid = this->generateUUID(macAddress, "0011");
+  m_statusCUuid = this->generateUUID(macAddress, "0012");
+  m_issueCUuid = this->generateUUID(macAddress, "00013");
 
-    //attach characteristics from UUIDs
-    m_LEDC = mp_bot->characteristic(m_LEDCUuid.c_str());
-    m_mindControlC = mp_bot->characteristic(m_mindControlCUuid.c_str());
-    m_M1C = mp_bot->characteristic(m_M1CUuid.c_str());
-    m_M2C = mp_bot->characteristic(m_M2CUuid.c_str());
-    m_E1C = mp_bot->characteristic(m_E1CUuid.c_str());
-    m_E2C = mp_bot->characteristic(m_E2CUuid.c_str());
-    m_A1C = mp_bot->characteristic(m_A1CUuid.c_str());
-    m_A2C = mp_bot->characteristic(m_A2CUuid.c_str());
-    m_A3C = mp_bot->characteristic(m_A3CUuid.c_str());
-    m_A4C = mp_bot->characteristic(m_A4CUuid.c_str());
-    m_batteryVoltageC = mp_bot->characteristic(m_batteryVoltageUuid.c_str());
-    m_issueC = mp_bot->characteristic(m_issueCUuid.c_str());
-    m_statusC = mp_bot->characteristic(m_statusCUuid.c_str());
+  //attach characteristics from UUIDs
+  m_LEDC = mp_bot->characteristic(m_LEDCUuid.c_str());
+  m_mindControlC = mp_bot->characteristic(m_mindControlCUuid.c_str());
+  m_M1C = mp_bot->characteristic(m_M1CUuid.c_str());
+  m_M2C = mp_bot->characteristic(m_M2CUuid.c_str());
+  m_E1C = mp_bot->characteristic(m_E1CUuid.c_str());
+  m_E2C = mp_bot->characteristic(m_E2CUuid.c_str());
+  m_A1C = mp_bot->characteristic(m_A1CUuid.c_str());
+  m_A2C = mp_bot->characteristic(m_A2CUuid.c_str());
+  m_A3C = mp_bot->characteristic(m_A3CUuid.c_str());
+  m_A4C = mp_bot->characteristic(m_A4CUuid.c_str());
+  m_batteryVoltageC = mp_bot->characteristic(m_batteryVoltageUuid.c_str());
+  m_issueC = mp_bot->characteristic(m_issueCUuid.c_str());
+  m_statusC = mp_bot->characteristic(m_statusCUuid.c_str());
 
-    Serial.println("Bot is connected.");
-    Serial.println(String(m_statusCUuid.c_str()));
+  Serial.println(m_name + " is connected and setup.");
+}
+
+Bot::Bot(){
+  //dummy constructor
 }
 
 void Bot::publishMessageToBot(String characteristic, int value){
@@ -85,67 +88,83 @@ void Bot::publishMessageToBot(String characteristic, int value){
     }
 }
 
-void Bot::cycle(){
+void Bot::cycle(bool isConnected){
     //perform nessecary processes and communication
-    sustainConnection();
+    sustainConnection(isConnected);
 
-    if(m_isConnected){
+    Serial.println(isConnected);
+
+    if(this->m_isConnected){
         //do things
     }
 }
 
-void Bot::sustainConnection(){
-    //three main steps
-    //1. check for connection / update characteristics
-    //2. if connection lost attempt to reaqquire
-    //3. if failed attempt to reaqquire, try again in a while(loop through for a time)
+void Bot::sustainConnection(bool isConnected){
+  //three main steps
+  //1. check for connection / update characteristics
+  //2. if connection lost attempt to reaqquire
+  //3. if failed attempt to reaqquire, try again in a while(loop through for a time)
 
-    if(mp_bot->connected() && m_isConnected == true){
-        //connection is good        
+  if((isConnected == true) && (m_isConnected == true)){
+    this->mp_bot->connected();
+    //connection is good        
+    return;
+  } else {
+    //not connected!
+    m_isConnected = false;
 
-        return;
-    } else {
-        //not connected!
-        m_isConnected = false;
+    Serial.println("Bad Connection");
 
-        //try to evaluate scan at intervals
-        if(m_lastScan + m_reattemptConnection < micros() / 1000000.0){
-            BLEDevice bot = BLE.available();
+    //try to evaluate scan at intervals
+    if(m_lastScan + m_reattemptConnection < micros() / 1000000.0){
 
-            if(bot){
-                //attempt to reaqquire connection
-                BLE.scanForUuid(this->m_deviceServiceUUID.c_str());
-                double m_lastScan =  micros() / 1000000.0;
-            } else {
+      //TODO:this part of the system needs to be looked at
 
-                //redo connection
-                if(bot.connect()){
-                    if(bot.discoverAttributes()){
-                        mp_bot = &bot;
-                        //attach characteristics from UUIDs
-                        m_LEDC = mp_bot->characteristic(m_LEDCUuid.c_str());
-                        m_mindControlC = mp_bot->characteristic(m_mindControlCUuid.c_str());
-                        m_M1C = mp_bot->characteristic(m_M1CUuid.c_str());
-                        m_M2C = mp_bot->characteristic(m_M2CUuid.c_str());
-                        m_E1C = mp_bot->characteristic(m_E1CUuid.c_str());
-                        m_E2C = mp_bot->characteristic(m_E2CUuid.c_str());
-                        m_A1C = mp_bot->characteristic(m_A1CUuid.c_str());
-                        m_A2C = mp_bot->characteristic(m_A2CUuid.c_str());
-                        m_A3C = mp_bot->characteristic(m_A3CUuid.c_str());
-                        m_A4C = mp_bot->characteristic(m_A4CUuid.c_str());
-                        m_batteryVoltageC = mp_bot->characteristic(m_batteryVoltageUuid.c_str());
-                        m_issueC = mp_bot->characteristic(m_issueCUuid.c_str());
-                        m_statusC = mp_bot->characteristic(m_statusCUuid.c_str());
+        Serial.println(this->m_name + " lost connection. Rescanning!");
 
-                        BLE.stopScan();
-                        m_isConnected = true;
+        //attempt to reaqquire connection
+        Serial.println(String(this->m_deviceServiceUUID.c_str()));
+        BLE.scanForUuid(String(this->m_deviceServiceUUID.c_str()));
+        this->m_lastScan =  micros() / 1000000.0;
 
-                        return;
-                    }
+        delay(50);
+
+        BLEDevice bot = BLE.available();
+
+        if(bot) {
+
+          Serial.println(bot.address());
+
+            //redo connection
+            if(bot.connect()){
+                if(bot.discoverAttributes()){
+                    mp_bot = &bot;
+                    //attach characteristics from UUIDs
+                    m_LEDC = mp_bot->characteristic(m_LEDCUuid.c_str());
+                    m_mindControlC = mp_bot->characteristic(m_mindControlCUuid.c_str());
+                    m_M1C = mp_bot->characteristic(m_M1CUuid.c_str());
+                    m_M2C = mp_bot->characteristic(m_M2CUuid.c_str());
+                    m_E1C = mp_bot->characteristic(m_E1CUuid.c_str());
+                    m_E2C = mp_bot->characteristic(m_E2CUuid.c_str());
+                    m_A1C = mp_bot->characteristic(m_A1CUuid.c_str());
+                    m_A2C = mp_bot->characteristic(m_A2CUuid.c_str());
+                    m_A3C = mp_bot->characteristic(m_A3CUuid.c_str());
+                    m_A4C = mp_bot->characteristic(m_A4CUuid.c_str());
+                    m_batteryVoltageC = mp_bot->characteristic(m_batteryVoltageUuid.c_str());
+                    m_issueC = mp_bot->characteristic(m_issueCUuid.c_str());
+                    m_statusC = mp_bot->characteristic(m_statusCUuid.c_str());
+
+                    BLE.stopScan();
+                    m_isConnected = true;
+
+                    Serial.println("Found!");
+
+                    return;
                 }
             }
         }
     }
+  }
 }
 
 std::string Bot::generateUUID(std::string MACAddress, std::string characteristicNumber){
@@ -175,4 +194,12 @@ std::string Bot::generateUUID(std::string MACAddress, std::string characteristic
 
 bool Bot::isConnected(){
     return this->m_isConnected;
+}
+
+std::string Bot::getName(){
+  return this->m_name.c_str();
+}
+
+std::string Bot::getAddress(){
+  return this->mp_bot->address().c_str(); 
 }

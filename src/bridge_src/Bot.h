@@ -50,16 +50,20 @@ class Bot{
         double m_lastScan = 0; // the last time the connection scan was run
         bool m_isConnected = false;
 
+        void sustainConnection(bool isConnected);
+
     public:
         Bot(BLEDevice* bot, int number);
-        void cycle();
-        void sustainConnection();
+        Bot();
+        void cycle(bool isConnected);
 
         void publishMessageToBot(String characteristic, int value);
 
         std::string generateUUID(std::string MacAddress, std::string CharacteristicNumber);
 
         bool isConnected();
+        std::string getName();
+        std::string getAddress();
 
 
 };

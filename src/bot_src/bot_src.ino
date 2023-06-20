@@ -184,13 +184,14 @@ void setup(){
 
   //this is rediculous but i spent like 4 hours trying to figure out a better way and I got nothin
   //string.h steals all the memory :( - no strcpy
-  static const char* test = new const char[36] {deviceServiceUUID[0], deviceServiceUUID[1], deviceServiceUUID[2], deviceServiceUUID[3], deviceServiceUUID[4], deviceServiceUUID[5], deviceServiceUUID[6], deviceServiceUUID[7], 
+  static const char* deviceServiceCUUID = new const char[36] {deviceServiceUUID[0], deviceServiceUUID[1], deviceServiceUUID[2], deviceServiceUUID[3], deviceServiceUUID[4], deviceServiceUUID[5], deviceServiceUUID[6], deviceServiceUUID[7], 
     '-', deviceServiceUUID[9], deviceServiceUUID[10], deviceServiceUUID[11], deviceServiceUUID[12], 
     '-', deviceServiceUUID[14], deviceServiceUUID[15], deviceServiceUUID[16], deviceServiceUUID[17],
     '-', deviceServiceUUID[19], deviceServiceUUID[20], deviceServiceUUID[21], deviceServiceUUID[22], 
     '-', deviceServiceUUID[24], deviceServiceUUID[25], deviceServiceUUID[26], deviceServiceUUID[27], deviceServiceUUID[28], deviceServiceUUID[29], deviceServiceUUID[30], deviceServiceUUID[31], deviceServiceUUID[32], deviceServiceUUID[33], deviceServiceUUID[34], deviceServiceUUID[35]};
+  *((char *)deviceServiceCUUID + 36) = '\0';
 
-  BLEService motorCarrierService = BLEService(test); 
+  BLEService motorCarrierService = BLEService(deviceServiceCUUID); 
 
   //Characteristics
   BLEByteCharacteristic LEDC(LEDCUuid, BLERead | BLEWrite);
