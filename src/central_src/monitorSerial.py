@@ -20,7 +20,6 @@ def monitor(COM, queueIn):
             #decode from bytes
             message = message.decode("utf-8")  
 
-
             #add message to the queue for the main thread to find if signalled
             if("$$$$$" == message[:5]):
                 queueIn.put(message[5:])

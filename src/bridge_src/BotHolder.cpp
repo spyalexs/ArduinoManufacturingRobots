@@ -14,8 +14,6 @@ bool BotHolder::appendNewBot(Bot bot){
     //adds a new bot to the bot holder
     //returns if the bot is successfully added
 
-    Serial.println("Appending new bot");
-
     if(this->m_botCount < this->m_maxNumberOfBots){
      //add bot to array
 
@@ -85,14 +83,14 @@ void BotHolder::setConnectionsPtr(Connection* ptr){
 void BotHolder::cycle(){
     //run the cycle for each of the bots
 
-    BLE.poll(10);
+    BLE.poll();
 
     if(this->m_botCount >= 1){
         m_bot1.cycle((mp_connections)->m_isConnected);
     }
     
     if(this->m_botCount >= 2){
-        //m_bot2.cycle((mp_connections + 1)->m_isConnected);
+        m_bot2.cycle((mp_connections + 1)->m_isConnected);
     }
 
     if(this->m_botCount >= 3){
@@ -126,4 +124,78 @@ void BotHolder::cycle(){
     if(this->m_botCount >= 10){
         m_bot10.cycle((mp_connections + 9)->m_isConnected);
     }
+}
+
+Bot* BotHolder::getBotByName(std::string name){
+  //returns a pointer to the bot who has the matching name
+
+    if(this->m_botCount >= 1){
+      if(this->m_bot1.getName() == name){
+        return &(this->m_bot1);
+      }
+    }
+
+    if(this->m_botCount >= 2){
+      if(this->m_bot2.getName() == name){
+        return &(this->m_bot2);
+      }
+    }
+
+    if(this->m_botCount >= 3){
+      if(this->m_bot3.getName() == name){
+        return &(this->m_bot3);
+      }
+    }
+
+    if(this->m_botCount >= 4){
+      if(this->m_bot4.getName() == name){
+        return &(this->m_bot4);
+      }
+    }
+
+        if(this->m_botCount >= 5){
+      if(this->m_bot5.getName() == name){
+        return &(this->m_bot5);
+      }
+    }
+
+        if(this->m_botCount >= 6){
+      if(this->m_bot6.getName() == name){
+        return &(this->m_bot6);
+      }
+    }
+
+    if(this->m_botCount >= 7){
+      if(this->m_bot7.getName() == name){
+        return &(this->m_bot7);
+      }
+    }
+
+        if(this->m_botCount >= 8){
+      if(this->m_bot8.getName() == name){
+        return &(this->m_bot8);
+      }
+    }
+
+        if(this->m_botCount >= 9){
+      if(this->m_bot9.getName() == name){
+        return &(this->m_bot9);
+      }
+    }
+
+        if(this->m_botCount >= 10){
+      if(this->m_bot10.getName() == name){
+        return &(this->m_bot10);
+      }
+    }
+}
+
+void BotHolder::sendMessageToBot(MessageLine message){
+  //send a message to the bot
+
+  //get the target bot class
+  Bot* target = this->getBotByName(message.m_target.c_str());
+
+  //send message via class
+  target->publishMessageToBot(message.m_characteristic, message.m_value.toInt());
 }

@@ -2,44 +2,12 @@
 #include "Bot.h"
 #include "BotHolder.h"
 #include "Connection.h"
+#include "MessageLine.h"
 
 BotHolder botHolder(10);
 static Connection connections[10];
 
-class MessageLine{
-  //class to hold data gotten from the serial port
-
-  public:
-    MessageLine(String message){
-      //parse raw message to a target characterisitc and value
-      int firstSeperator = message.indexOf("$");
-
-      //the target of the message
-      m_target = message.substring(0, firstSeperator);
-      String backString = message.substring(firstSeperator + 1);
-      int secondSeperator = backString.indexOf("$");
-
-      m_characteristic = backString.substring(0, secondSeperator);
-      m_value = backString.substring(secondSeperator + 1);
-
-      //Serial.println("$$$$$" + m_characteristic);
-    }
-
-    MessageLine(String target, String characteristic, String value){
-      m_target = target;
-      m_characteristic = characteristic;
-      m_value = value;
-    }
-
-    String getSerialString(){
-      return "$$$$$" + m_target + "$" + m_characteristic + "$" + m_value;
-    }
-
-    String m_target;
-    String m_characteristic;
-    String m_value;
-};
-
+double connectionTimeout = .5; //seconds
 
 static void BLEDisconnectHandler(BLEDevice bot){
   // a disconnection has been detected
@@ -69,6 +37,7 @@ static void BLEConnectHandler(BLEDevice bot){
 void setup(){
   //set baud rate
   Serial.begin(38400);
+  Serial.setTimeout(100);
 
   //start up bluetooth module
   if(!BLE.begin()){
@@ -88,6 +57,18 @@ void setup(){
   botHolder.setConnectionsPtr(connections);
 
   Serial.println("I am the bridge!");
+
+  //begin connecting to devices
+  bool connectionMode = true;
+  while(connectionMode){
+    connectToBot();
+
+    //check serial to see if brige has sent a message to stop
+    String string  = Serial.readString();
+    if(string == "bridge$connections$stop"){
+      connectionMode = false;
+    }
+  }
 }
 
 void loop(){ 
@@ -95,12 +76,20 @@ void loop(){
   // //likely need to implement a scan phase and a run phase - scaning takes a while and it does not make sense to do this in loop
 
   // //comunication with other bots
-  while(botHolder.getBotCount() < 2){
-    connectToBot();
-  }
 
   //maintain bot connections
   botHolder.cycle();
+
+  //communicate with central
+  String string  = Serial.readString();
+  string.trim();
+
+  if(string != ""){
+    Serial.println("Here - message recieved");
+
+    MessageLine message(string);
+    botHolder.sendMessageToBot(message);
+  }
 }
 
 void connectToBot(){
@@ -110,7 +99,8 @@ void connectToBot(){
   //this is the bot
   BLEDevice bot;
 
-  Serial.println("Discovering Bot...");
+  //Serial.println("Discovering Bot...");
+  double timeoutTime = micros() / 1000000.0 + connectionTimeout;
 
   do{
 
@@ -121,17 +111,16 @@ void connectToBot(){
     //the avialble bot, bots?
     bot = BLE.available();
 
-  }while(!bot);
+  }while(!bot && (micros() / 1000000.0 < timeoutTime));
 
   if(bot){
     
     //if a bot has been fround
-    Serial.println("I found a device!");
 
-    Serial.print("* Device MAC address: ");
-    Serial.println(bot.address());
-    Serial.print("* Device name: ");
-    Serial.println(bot.localName());
+    // Serial.print("* Device MAC address: ");
+    // Serial.println(bot.address());
+    // Serial.print("* Device name: ");
+    // Serial.println(bot.localName());
 
     if(bot.advertisedServiceUuid() != "" && bot.localName() == "TestBot"){
       //if the device is really a bot
@@ -144,7 +133,7 @@ void connectToBot(){
 
         //discover characteristics on bot
         if(bot.discoverAttributes()){
-          botHolder.appendNewBot(Bot(&bot, 1));
+          botHolder.appendNewBot(Bot(&bot, botHolder.getBotCount() + 1));
 
           Serial.println(botHolder.getConnectionsString().c_str()); 
         }

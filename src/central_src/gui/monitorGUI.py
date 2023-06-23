@@ -1,5 +1,5 @@
 import PySimpleGUI as sg
-import threading
+import queue
 
 from getConstants import getCommandKeys
 from gui.GUIInMessage import GUIInMessage
@@ -9,35 +9,65 @@ from createRoute import route
 #keys for the commands availible to be launched - the name of the command corrosponds to the name that will be launched on the robot
 commandKeys = getCommandKeys()
 
-def make(queueIn, queueOut):
+def make(queueIn, queueOut, robots):
     #create the GUI window for the first time
     
     #apply gui theme
     sg.theme(getTheme())
 
-    #do a little processing to format the keys correctly
-    commands = []
-    for key in commandKeys.keys():
-        commands.append(key)
+    #make a frame containing all of the robot subframes
+    robotRows = []
+    counter = 0
+    #divy up robots into groups
+    while (counter < len(robots)):
+        #number of robots to put into a row
+        robotsInRow = 3
+        row = []
+
+        #fill row with robots
+        innerCounter = 0
+        while (counter + innerCounter < len(robots) and innerCounter < robotsInRow):
+            row.append(robots[counter + innerCounter])
+            innerCounter += 1
+
+        #new row
+        robotRows.append(row)
+        counter += innerCounter
+
+    robotsFrameLayout = []
+
+    for robotRow in robotRows:
+        #each row of robot pannels
+        robotRowLayout = []
+        for robot in robotRow:
+            #get frame for each robot
+            frameLayout= getRobotFrameLayout(robot)
+            robotRowLayout.append(sg.Frame(robot, frameLayout))
+
+        robotsFrameLayout.append(robotRowLayout)
 
     #all the elements on the gui are defined here - similar to XML formating...
-    layout = [  [sg.Text('Robot 1')],
-                [sg.Text("Command"), sg.Combo(commands, enable_events=False, key="CommandMenu"), sg.Button("Send", key="Command", enable_events=True)],
-                [sg.Text("     Status"), sg.ProgressBar(100, size=(13,17), key="CommandProgress"), sg.Button("Abort", key="AbortCommand", enable_events=True)],
-                [sg.Text("From:"), sg.Input("", key="RouteFrom", size=(10,7)), sg.Text("To:"), sg.Input("", key="RouteTo", size=(10,7)), sg.Button("Route", key="Route", enable_events=True)],
-                [sg.Text("MindControl"), sg.Checkbox('Enable', enable_events=True, default=False,  key="EnableMindControl")],
-                [sg.Text("     Built In LED"), sg.Checkbox('Turn On', 0, enable_events=True, key="TurnOnBuiltInLED", disabled=True)],
-                [sg.Text("     Motor 1"), sg.Slider(key="M1Slider", orientation='h', range=(0,100), default_value=0, disabled=True)],
-                [sg.Text("     Motor 2"), sg.Slider(key="M2Slider", orientation='h', range=(0,100), default_value=0, disabled=True)],
-                [sg.Text("     Update Motors"), sg.Button("Update", key="MotorUpdate", enable_events=True, disabled=True)],
-                [sg.Text("     M1 Encoder: 0", key="E1"), sg.Button("Reset", key="M1Reset", enable_events=True, disabled=True)],
-                [sg.Text("     M2 Encoder: 0", key="E2"), sg.Button("Reset", key="M2Reset", enable_events=True, disabled=True)]]
+    layout = [[sg.Frame("",robotsFrameLayout)]]
 
     #links the layout to the window
     window = sg.Window(title="Test", layout=layout, finalize=True)
     
     #keeps an eye on the gui for event and such as it runs
     monitor(window, queueIn, queueOut)
+
+def getRobotFrameLayout(name):
+    #do a little processing to format the keys correctly
+    commands = []
+    for key in commandKeys.keys():
+        commands.append(key)
+
+    #returns the layout for a particular robot frame
+    robotFrameLayout = [
+        [sg.Text("Command"), sg.Combo(commands, enable_events=False, key=(str(name) + "CommandMenu")), sg.Button("Send", key=(str(name) + "Command"), enable_events=True)],
+        [sg.Text("     Status"), sg.ProgressBar(100, size=(13,17), key=(str(name) + "CommandProgress")), sg.Button("Abort", key=(str(name)) + "AbortCommand", enable_events=True)],
+        [sg.Text("From:"), sg.Input("", key=(str(name) + "RouteFrom"), size=(10,7)), sg.Text("To:"), sg.Input("", key=(str(name) + "RouteTo"), size=(10,7)), sg.Button("Route", key=(str(name) + "Route"), enable_events=True)]]
+    
+    return robotFrameLayout
 
 def monitor(window, queueIn, queueOut):
     #monitor the Gui for events
@@ -59,7 +89,7 @@ def monitor(window, queueIn, queueOut):
     
 def handleEvents(event, values, window, queueIn):
     #handle the gui events
-    if(event == "EnableMindControl"):
+    if("EnableMindControl" in event):
         if values["EnableMindControl"] == True:
             # turn off mindcontrol mode
             queueIn.put(GUIInMessage("bot1", "mindControl", "1"))
@@ -81,28 +111,28 @@ def handleEvents(event, values, window, queueIn):
             window["M1Reset"].update(disabled=True)
             window["M2Reset"].update(disabled=True)
 
-    if(event == "TurnOnBuiltInLED"):
+    if("TurnOnBuiltInLED" in event):
         #set the built-in LED
         if values["TurnOnBuiltInLED"] == True:
             queueIn.put(GUIInMessage("bot1", "BUILTIN_LED", "1"))
         if values ["TurnOnBuiltInLED"] == False:
             queueIn.put(GUIInMessage("bot1", "BUILTIN_LED", "0"))
 
-    if(event == "MotorUpdate"):
+    if("MotorUpdate" in event):
         #publish to motors
         queueIn.put(GUIInMessage("bot1", "M1", values["M1Slider"]))
         queueIn.put(GUIInMessage("bot1", "M2", values["M2Slider"]))
 
-    if(event == "Command"):
-        #publish command to bot
-        if(values["CommandMenu"] != ''):
-            queueIn.put(GUIInMessage("bot1", "commandIssue", commandKeys[values["CommandMenu"]]))   
-
-    if(event == "AbortCommand"):
+    if("AbortCommand" in event):
         #abort the command currently running
         queueIn.put(GUIInMessage("bot1", "commandIssue", 255))  
+    elif("Command" in event):       
+        #publish command to bot
+        if(values[event + "Menu"] != ''):
+            queueIn.put(GUIInMessage("bot1", "commandIssue", commandKeys[values[event + "Menu"]]))   
 
-    if(event == "Route"):
+ 
+    if("Route" in event):
         #run a route between two points
         if (not values["RouteFrom"] == "") and (not values["RouteTo"] == ""):
             commands = route(values["RouteFrom"], values["RouteTo"])
@@ -121,7 +151,7 @@ def update(window, queueOut):
     while(not queueOut.empty()):
         # the queue should be full of GUIOutMessages
         #ensure the GUI is only updated based on the latest messages
-        print(queueOut.qsize())
+        #print(queueOut.qsize())
 
         message = queueOut.get()
         inputDictionary[message.m_characteristic] = message.m_value
@@ -138,5 +168,4 @@ def getTheme():
 
     #return "DarkRed1" #OSU theme but hurts eyes
     return "BrownBlue" #better to look at
-
 

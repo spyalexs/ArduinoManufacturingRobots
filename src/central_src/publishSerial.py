@@ -17,6 +17,8 @@ def publish(COM, queueOut):
                 print("Queue unexpectently went empty... odd.")
                 break
             
+            print(messageOut)
+
             #write the message out to the bot
             COM.write(bytes(messageOut, "utf-8"))
             time.sleep(.01)

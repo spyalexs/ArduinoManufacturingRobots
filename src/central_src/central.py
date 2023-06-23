@@ -16,21 +16,12 @@ overseerers = [] # a list of commander classes that tell robots what to do
 #this is the main thread for the central controller
 
 def initialize():
-    #thread safe queue for messages into central
-    queueIn = queue.Queue()
-    #thread safe queu for messages out of central
-    queueOut = queue.Queue()
-    #queue for incomming gui requests - from GUI to central
-    queueInGUI = queue.Queue()
-    #queue for outgoing gui messages - from central to GUI
-    queueOutGUI = queue.Queue()
-
-    #create Gui
-    launchGUI(queueInGUI, queueOutGUI)
+    #run startup / connection protocol
 
     arduinios = [] 
     #wait for bridge connection
     searchStart = time.time()
+    print("Searching for bridge.")
     while len(arduinios) < 1:
         #get serial ports - connected and unsused
         ports = serial.tools.list_ports.comports()
@@ -58,18 +49,60 @@ def initialize():
     #set read time
     bridge.timeout = 0.001  
 
+    #thread safe queue for messages into central
+    queueIn = queue.Queue()
+    #thread safe queu for messages out of central
+    queueOut = queue.Queue()
+
+    #queue for incomming gui requests - from GUI to central
+    queueInGUI = queue.Queue()
+    #queue for outgoing gui messages - from central to GUI
+    queueOutGUI = queue.Queue()
+
     #create the thread to monitor the serial inbox
     monitorThread = Thread(target=monitor,args=(bridge, queueIn))
     monitorThread.daemon = True
     monitorThread.start()
-
+    
     #create a thread to send messages out serial
     publisherThread = Thread(target=publish, args=(bridge, queueOut))
     publisherThread.daemon = True
     publisherThread.start()
 
-    #TODO - have bridge communicate number of connections to determine the number of overseers
-    overseerers.append(BotOverSeer("bot1", queueOut))
+    #launch the gui
+    launchGUI(queueInGUI, queueOutGUI)
+
+    connectedRobots = []
+    while(queueInGUI.empty()):
+        #wait for connections until menu closed
+        time.sleep(.05)
+
+        while(not queueIn.empty()):
+            print("Found Something--------------------!")
+
+            connection = queueIn.get()
+            queueOutGUI.put(connection)
+
+            #get bot name from message
+            name = str(connection).split(": ")[0]
+
+            #add bot overseerer to new connection
+            overseerers.append(BotOverSeer(name, queueOut, queueOutGUI))
+            connectedRobots.append(name)
+
+    #see what to do next based on menu result
+    startUpAction = queueInGUI.get()
+
+    #send a string to the bridge telling it to stop trying to connect
+    queueOut.put("bridge$connections$stop")
+
+    if(str(startUpAction) == "Stop" or len(connectedRobots) == 0):
+        #if stop then return - kinda crashes but thats cool cause it should just stop
+        return
+
+    time.sleep(1.0)
+
+    #create Gui
 
     return queueIn, queueOut, queueInGUI, queueOutGUI
 

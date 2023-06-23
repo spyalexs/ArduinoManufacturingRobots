@@ -4,6 +4,7 @@
 #include "Bot.h"
 #include "Connection.h"
 #include <string>
+#include "MessageLine.h"
 
 class BotHolder{
     //outfitted for 
@@ -36,6 +37,9 @@ class BotHolder{
 
         int getBotCount();
         std::string getConnectionsString();
+
+        Bot* getBotByName(std::string name);
+        void sendMessageToBot(MessageLine message);
 
 };
 

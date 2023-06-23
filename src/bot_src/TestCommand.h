@@ -1,0 +1,20 @@
+#ifndef TEMPLATE_h
+#define TEMPLATE_h
+
+#include "Command.h"
+
+class TestCommand : public Command{
+  public:
+    TestCommand(BLECharacteristic* StatusC, BLECharacteristic* IssueC, RobotContainer* MC);
+
+    void startup();
+    void cycle();
+    void cleanup();
+    bool ifEnd();
+
+    double m_lastToggle = 0;
+    bool m_togglesLeft = 11;
+};
+
+
+#endif

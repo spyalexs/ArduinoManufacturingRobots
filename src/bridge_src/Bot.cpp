@@ -29,7 +29,7 @@ Bot::Bot(BLEDevice* bot, int number){
   m_A4CUuid = this->generateUUID(macAddress, "0010");
   m_batteryVoltageUuid = this->generateUUID(macAddress, "0011");
   m_statusCUuid = this->generateUUID(macAddress, "0012");
-  m_issueCUuid = this->generateUUID(macAddress, "00013");
+  m_issueCUuid = this->generateUUID(macAddress, "0013");
 
   //attach characteristics from UUIDs
   m_LEDC = mp_bot->characteristic(m_LEDCUuid.c_str());
@@ -46,7 +46,7 @@ Bot::Bot(BLEDevice* bot, int number){
   m_issueC = mp_bot->characteristic(m_issueCUuid.c_str());
   m_statusC = mp_bot->characteristic(m_statusCUuid.c_str());
 
-  Serial.println(m_name + " is connected and setup.");
+  Serial.println("$$$$$" + m_name + ": " + String(macAddress.c_str()));
 }
 
 Bot::Bot(){
@@ -54,6 +54,8 @@ Bot::Bot(){
 }
 
 void Bot::publishMessageToBot(String characteristic, int value){
+  Serial.println(characteristic);
+
     //write a message to the resepctive bot
     
     if(characteristic == "BUILTIN_LED"){
@@ -83,6 +85,9 @@ void Bot::publishMessageToBot(String characteristic, int value){
       }
     }else if(characteristic == "commandIssue"){
       if(this->m_issueC){
+        Serial.print("Attempting to send message on: ");
+        Serial.println(m_issueCUuid.c_str());
+
         m_issueC.writeValue(byte(value));
       }
     }
@@ -90,9 +95,8 @@ void Bot::publishMessageToBot(String characteristic, int value){
 
 void Bot::cycle(bool isConnected){
     //perform nessecary processes and communication
-    sustainConnection(isConnected);
 
-    Serial.println(isConnected);
+    sustainConnection(isConnected);
 
     if(this->m_isConnected){
         //do things
@@ -106,7 +110,7 @@ void Bot::sustainConnection(bool isConnected){
   //3. if failed attempt to reaqquire, try again in a while(loop through for a time)
 
   if((isConnected == true) && (m_isConnected == true)){
-    this->mp_bot->connected();
+    //this->mp_bot->connected();
     //connection is good        
     return;
   } else {

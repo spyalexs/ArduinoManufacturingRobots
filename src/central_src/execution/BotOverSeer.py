@@ -1,4 +1,5 @@
 import time
+from gui.GUIOutMessage import GUIOutMessage
 
 class BotOverSeer:
     # a class to monitor an individual bot's function on the controller end
@@ -13,10 +14,12 @@ class BotOverSeer:
 
     m_status = 0 # keeps track of the bot's status
     m_commands = []
-
-    def __init__(self, name, queueToBots):
+    
+    
+    def __init__(self, name, queueToBots, queueToGUI):
         self.m_name = name
         self.m_queue = queueToBots
+        self.m_queueGui = queueToGUI
 
         self.m_lastIssue = 0
 
@@ -24,6 +27,9 @@ class BotOverSeer:
         self.m_status = status
 
         print("My status is: " + str(status))
+
+        #send status to gui
+        self.sendStatusToGui(status)
 
         #also clear the patience timer so next command is immediate
         self.m_lastIssue = 0
@@ -91,6 +97,11 @@ class BotOverSeer:
                 #if the command had been attempted to been written and now has been
                 self.m_attemptingToWrite = False
                 self.m_commands.pop(0)
+
+    def sendStatusToGui(self, status):
+        #put a gui message in the GUI queue
+        message = GUIOutMessage(self.m_name, "commandStatus", status)
+        self.m_queueGui.put(message)
             
 
 
