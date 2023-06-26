@@ -13,33 +13,9 @@ def handleBotMessage(message, queueInGUI, overseers):
     
     target = messageArray[0]# the bot that sent in the message
     characteristic = messageArray[1] # the characteristic the message is about
-    value = int(messageArray[2]) # the value of the message
+    value = float(messageArray[2]) # the value of the message
 
-    if(characteristic == "E1"):
-        #messages concerning encoder 1
-        queueInGUI.put(GUIOutMessage(target, characteristic, value))
-
-    if(characteristic == "E2"):
-        #messages concerning encoder 2
-        queueInGUI.put(GUIOutMessage(target, characteristic, value))
-
-    if(characteristic == "A1"):
-        #messages concerning analog input 1
-        queueInGUI.put(GUIOutMessage(target, characteristic, value))
-
-    if(characteristic == "A2"):
-        #messages concerning analog input 2
-        queueInGUI.put(GUIOutMessage(target, characteristic, value))
-
-    if(characteristic == "A3"):
-        #messages concerning analog input 3
-        queueInGUI.put(GUIOutMessage(target, characteristic, value))
-
-    if(characteristic == "A4"):
-        #messages concerning analog input 4
-        queueInGUI.put(GUIOutMessage(target, characteristic, value))
-
-    if(characteristic == "batteryVoltage"):
+    if(characteristic == "bat"):
         #messages concerning battery voltage
         queueInGUI.put(GUIOutMessage(target, characteristic, value))
 
@@ -48,8 +24,13 @@ def handleBotMessage(message, queueInGUI, overseers):
 
         # find overseer
         for overseer in overseers:
-            if (overseer.m_name == target):
+            if (overseer.m_port == target):
                 overseer.updateStatus(int(value))
+
+    #log connection so the bot overseer know the bot is still connected
+    for overseer in overseers:
+        if (overseer.m_port == target):
+            overseer.connectionHeard()
 
 
 

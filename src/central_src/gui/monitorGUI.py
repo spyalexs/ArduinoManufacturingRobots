@@ -65,7 +65,8 @@ def getRobotFrameLayout(name):
     robotFrameLayout = [
         [sg.Text("Command"), sg.Combo(commands, enable_events=False, key=(str(name) + "CommandMenu")), sg.Button("Send", key=(str(name) + "Command"), enable_events=True)],
         [sg.Text("     Status"), sg.ProgressBar(100, size=(13,17), key=(str(name) + "CommandProgress")), sg.Button("Abort", key=(str(name)) + "AbortCommand", enable_events=True)],
-        [sg.Text("From:"), sg.Input("", key=(str(name) + "RouteFrom"), size=(10,7)), sg.Text("To:"), sg.Input("", key=(str(name) + "RouteTo"), size=(10,7)), sg.Button("Route", key=(str(name) + "Route"), enable_events=True)]]
+        [sg.Text("From:"), sg.Input("", key=(str(name) + "RouteFrom"), size=(10,7)), sg.Text("To:"), sg.Input("", key=(str(name) + "RouteTo"), size=(10,7)), sg.Button("Route", key=(str(name) + "Route"), enable_events=True)],
+        [sg.Text("Battery Voltage: "), sg.Text("0.00", key=str(name) + "BatteryVoltage"), sg.Text("Connection Status: "), sg.Radio("", "1", key=str(name) + "connectionStatus", circle_color="white")]]
     
     return robotFrameLayout
 
@@ -89,49 +90,14 @@ def monitor(window, queueIn, queueOut):
     
 def handleEvents(event, values, window, queueIn):
     #handle the gui events
-    if("EnableMindControl" in event):
-        if values["EnableMindControl"] == True:
-            # turn off mindcontrol mode
-            queueIn.put(GUIInMessage("bot1", "mindControl", "1"))
-
-            window["TurnOnBuiltInLED"].update(disabled=False)
-            window["M1Slider"].update(disabled=False)
-            window["M2Slider"].update(disabled=False)
-            window["MotorUpdate"].update(disabled=False)
-            window["M1Reset"].update(disabled=False)
-            window["M2Reset"].update(disabled=False)
-        if values["EnableMindControl"] == False:
-            #turn on mind control mode
-            queueIn.put(GUIInMessage("bot1", "mindControl", "0"))
-
-            window["TurnOnBuiltInLED"].update(disabled=True)
-            window["M1Slider"].update(disabled=True)
-            window["M2Slider"].update(disabled=True)
-            window["MotorUpdate"].update(disabled=True)
-            window["M1Reset"].update(disabled=True)
-            window["M2Reset"].update(disabled=True)
-
-    if("TurnOnBuiltInLED" in event):
-        #set the built-in LED
-        if values["TurnOnBuiltInLED"] == True:
-            queueIn.put(GUIInMessage("bot1", "BUILTIN_LED", "1"))
-        if values ["TurnOnBuiltInLED"] == False:
-            queueIn.put(GUIInMessage("bot1", "BUILTIN_LED", "0"))
-
-    if("MotorUpdate" in event):
-        #publish to motors
-        queueIn.put(GUIInMessage("bot1", "M1", values["M1Slider"]))
-        queueIn.put(GUIInMessage("bot1", "M2", values["M2Slider"]))
-
     if("AbortCommand" in event):
         #abort the command currently running
         queueIn.put(GUIInMessage("bot1", "commandIssue", 255))  
     elif("Command" in event):       
         #publish command to bot
         if(values[event + "Menu"] != ''):
-            queueIn.put(GUIInMessage("bot1", "commandIssue", commandKeys[values[event + "Menu"]]))   
+            queueIn.put(GUIInMessage(event.split("Command")[0], "commandIssue", commandKeys[values[event + "Menu"]], Direct=False))   
 
- 
     if("Route" in event):
         #run a route between two points
         if (not values["RouteFrom"] == "") and (not values["RouteTo"] == ""):
@@ -154,14 +120,39 @@ def update(window, queueOut):
         #print(queueOut.qsize())
 
         message = queueOut.get()
-        inputDictionary[message.m_characteristic] = message.m_value
+        inputDictionary[message.m_target + "$" + message.m_characteristic] = message.m_value
 
-    for characteristic in inputDictionary:
-        if(characteristic == "E1"):
-            window["E1"].update(value="     M1 Encoder:" + str(inputDictionary[characteristic]))
+    for topic in inputDictionary:
+        if("bat" in topic):
+            #get the target robot
+            target = str(topic).split("$")[0]
+            
+            #update battery voltage display
+            window[target + "BatteryVoltage"].update(value=f'{inputDictionary[topic]:0,.2f}')
 
-        if(characteristic == "E2"):
-            window["E2"].update(value="     M1 Encoder:" + str(inputDictionary[characteristic]))
+        if("connectionStatus" in topic):
+            #get the target robot
+            target = str(topic).split("$")[0]
+
+            #link value to color
+            #2 - unknown = white
+            #1 - connected = green
+            #0 - disconnected = red
+
+            color = ""# the color to set the radio to
+            match inputDictionary[topic]:
+                case 1:
+                    color = "green"
+                case 0:
+                    color = "red"
+                case 2:
+                    color = "white"
+                case _:
+                    color = "purple"
+
+            #update connection radio
+            window[target + "connectionStatus"].update(circle_color = color)
+
 
 def getTheme():
     #potentially implement custom theme

@@ -52,7 +52,7 @@ double RobotContainer::getTime(){
 }
 
 double RobotContainer::getBatteryVoltage(){
-  return battery.getRaw() / 236.0;
+  return battery.getRaw() / 77.0;
 
 }
 

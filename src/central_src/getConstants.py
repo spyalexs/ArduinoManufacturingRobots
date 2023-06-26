@@ -15,3 +15,20 @@ def getCommandKeys():
             }
 
     return keys
+
+def getConnectionPorts():
+    #ports for communication to be assigneed
+        #this limit is 20(could be higher) -- need a router for more than 8(hardware)
+
+
+    LOWER_COM_PORT = 5010
+    UPPER_COM_PORT = 5029
+
+    return (LOWER_COM_PORT, UPPER_COM_PORT)
+
+def getListeningPort():
+    #return the port the bot is listening on
+
+    BOT_LISTENING_PORT = 5005
+    
+    return BOT_LISTENING_PORT

@@ -5,11 +5,12 @@ import queue
 from threading import Thread
 from random import random
 
-from monitorSerial import monitor
-from publishSerial import publish
+from monitorIn import monitor
+from publishToBot import publish
 from handleMessage import handleBotMessage
 from gui.launchGUI import launchGUI
 from execution.BotOverSeer import BotOverSeer
+from execution.connectBots import launchBotConnector
 
 overseerers = [] # a list of commander classes that tell robots what to do
 
@@ -17,37 +18,6 @@ overseerers = [] # a list of commander classes that tell robots what to do
 
 def initialize():
     #run startup / connection protocol
-
-    arduinios = [] 
-    #wait for bridge connection
-    searchStart = time.time()
-    print("Searching for bridge.")
-    while len(arduinios) < 1:
-        #get serial ports - connected and unsused
-        ports = serial.tools.list_ports.comports()
-
-        for port in ports:
-            #go through ports and try to open a serial COM
-            try:
-                #if arduino connected, save the port
-                if("Arduino" in port.description):
-                    arduinios.append(port.name)
-            except (OSError, serial.SerialException, AttributeError):
-                pass
-
-        if(searchStart + 100 < time.time()):
-            #cannot find arduinos - timeout
-            print("Timeout. Cannot find bridge. Quitting!")
-            quit()
-
-        time.sleep(0.1)
-
-    #initialize bridge port - assume the only port found 
-    bridge = serial.Serial(arduinios[0])
-    #set baud rate to match arduino
-    bridge.baudrate = 38400; 
-    #set read time
-    bridge.timeout = 0.001  
 
     #thread safe queue for messages into central
     queueIn = queue.Queue()
@@ -59,42 +29,43 @@ def initialize():
     #queue for outgoing gui messages - from central to GUI
     queueOutGUI = queue.Queue()
 
+    #queue for new bot connections
+    connectionQueue = queue.Queue()
+
     #create the thread to monitor the serial inbox
-    monitorThread = Thread(target=monitor,args=(bridge, queueIn))
+    monitorThread = Thread(target=monitor,args=(queueIn,))
     monitorThread.daemon = True
     monitorThread.start()
     
     #create a thread to send messages out serial
-    publisherThread = Thread(target=publish, args=(bridge, queueOut))
+    publisherThread = Thread(target=publish, args=(queueOut,))
     publisherThread.daemon = True
     publisherThread.start()
 
     #launch the gui
     launchGUI(queueInGUI, queueOutGUI)
+    #launch the connection thread
+    launchBotConnector(connectionQueue)
 
     connectedRobots = []
     while(queueInGUI.empty()):
         #wait for connections until menu closed
         time.sleep(.05)
 
-        while(not queueIn.empty()):
-            print("Found Something--------------------!")
-
-            connection = queueIn.get()
+        while(not connectionQueue.empty()):
+            connection = connectionQueue.get()
             queueOutGUI.put(connection)
 
-            #get bot name from message
-            name = str(connection).split(": ")[0]
+            #get bot info from message
+            connectionInfo = str(connection).split("$")
 
             #add bot overseerer to new connection
-            overseerers.append(BotOverSeer(name, queueOut, queueOutGUI))
-            connectedRobots.append(name)
+            if(len(connectionInfo) >= 3):
+                overseerers.append(BotOverSeer(connectionInfo[0], connectionInfo[1], connectionInfo[2], queueOut, queueOutGUI))
+                connectedRobots.append(connectionInfo[0])
 
     #see what to do next based on menu result
     startUpAction = queueInGUI.get()
-
-    #send a string to the bridge telling it to stop trying to connect
-    queueOut.put("bridge$connections$stop")
 
     if(str(startUpAction) == "Stop" or len(connectedRobots) == 0):
         #if stop then return - kinda crashes but thats cool cause it should just stop
@@ -128,7 +99,7 @@ def handleMessagesIn():
     #process incoming messages - from bridge/bots
     while(not queueIn.empty()):
        message = queueIn.get()
-       print(message)
+        #print(message)
        handleBotMessage(message, queueOutGui, overseerers)
 
 def handleGUIIn():
@@ -145,10 +116,18 @@ def handleGUIIn():
                 
                 # find the bot it belongs to and give the commands
                 for overseer in overseerers:
-                    if overseer.m_name == message.m_target:
+                    if overseer.m_port == message.m_target:
                         overseer.issueCommandSequences(message.m_value)
-                
 
+            if message.m_characteristic == "commandIssue":
+                # find the bot it belongs to and give the command
+
+                print(message.m_target)
+
+                for overseer in overseerers:
+                    if overseer.m_port == message.m_target:
+                        overseer.issueCommandSequences([message.m_value])
+                 
 def sendMessageToBot(BotName, Characteristic, Value):
     #botname = string
     #characteristic = string

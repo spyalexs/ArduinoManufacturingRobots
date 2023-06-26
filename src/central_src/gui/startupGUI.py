@@ -46,9 +46,17 @@ def monitorStartUpGUI(window, queueIn, queueOut):
         #write robots to output
         while(not queueIn.empty()):
             connection = queueIn.get()
-            window["startupOutput"].print(str(connection))
+            #make the message more friendly
+            connectionInfo = str(connection).split("$")
+            if(len(connectionInfo) >= 3):
+                connectionString = connectionInfo[1] + ": " + connectionInfo[0] + "  " + connectionInfo[2]
+
+                window["startupOutput"].print(str(connectionString))
                         
-            connectedBots.append(str(connection.split(": ")[0]))
+                connectedBots.append(str(connectionInfo[1]))
+
+                #update bot counter
+                window["connectedCount"].update(value=str(len(connectedBots)))
 
         
     window.close()
