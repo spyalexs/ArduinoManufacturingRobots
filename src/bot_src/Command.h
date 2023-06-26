@@ -2,36 +2,45 @@
 #define command_h
 
 #include <Arduino.h>
-#include <ArduinoBLE.h>
+#include "WiFiUdp.h"
 
 #include "RobotContainer.h"
 
 class Command{
-    public:
-        Command(BLECharacteristic* StatusC, BLECharacteristic* IssueC, RobotContainer* MC, String name);
+  public:
+    Command(RobotContainer* MC, String name, int packetSize = 50, WiFiUDP* UDP);
+    Command(); //default constructor
 
-        int getStatus();
-        void updateStatus(int Status);
+    void setStatus(int status);
 
-        bool checkForAbort();
-        bool checkForConfirmation();
+    void abort();
+    void confirmCommand();
 
-        virtual void startup();
-        virtual void cycle();
-        virtual bool ifEnd();
-        virtual void cleanup();
+    virtual void startup();
+    virtual void cycle();
+    virtual bool ifEnd();
+    virtual void cleanup();
 
-        void run();
-        void superCycle();
+    void run();
+    void superCycle();
 
-        RobotContainer* mp_MC;
+    RobotContainer* mp_MC;
 
-        BLECharacteristic* m_statusC;
-        BLECharacteristic* m_issueC;
+    String m_name;
 
-        String m_name;
+  private:
+    int m_status = 0; //governs when the command is in terms of its lifecycle
+    bool m_completed = false; //if the command has been completed and is ready to be removed
 
+    void updateStatus(int Status);
 
+    double m_confirmationRequestTime = 0.0;// the time of the confirmation request
+    double m_confirmationPatience = 1.0; // how long to wait to see if confirmation needs requesting
+
+    int m_packetSize;
+    byte* m_packetBuffer;
+
+    WiFiUDP* mp_UDP
 };
 
 

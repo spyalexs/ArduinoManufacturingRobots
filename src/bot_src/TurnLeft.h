@@ -6,7 +6,7 @@
 
 class TurnLeft : public Command{
   public:
-    TurnLeft(BLECharacteristic* StatusC, BLECharacteristic* IssueC, RobotContainer* MC);
+    TurnLeft(RobotContainer* MC);
 
     void startup();
     void cycle();

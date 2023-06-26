@@ -6,7 +6,7 @@
 
 class TravelStraight : public Command{
   public:
-    TravelStraight(BLECharacteristic* StatusC, BLECharacteristic* IssueC, RobotContainer* MC, int counts);
+    TravelStraight(RobotContainer* MC, int counts);
 
     void startup();
     void cycle();

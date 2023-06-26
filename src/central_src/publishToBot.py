@@ -20,7 +20,8 @@ def publish(queueOut):
                     address = messageArray[0]
                     message = messageArray[1]
    
-                    messageBytes = bytes(message, "utf-8")
+                    messageBytes = bytes(message + "\0", "utf-8")
+                    print(len(messageBytes))
 
                     #write the message out to the bot
                     outSocket.sendto(messageBytes, (address,listeningPort))

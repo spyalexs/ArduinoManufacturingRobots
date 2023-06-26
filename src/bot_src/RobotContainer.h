@@ -2,7 +2,6 @@
 #define motioncontroller_h
 
 #include <ArduinoMotorCarrier.h>
-#include <ArduinoBLE.h>
 
 // a wrapper class around motion, allows for the easy utilization of subroutines and control methods
 
@@ -16,8 +15,6 @@ class RobotContainer{
 
     mc::Encoder* m_encoder1;
     mc::Encoder* m_encoder2;
-
-    BLEDevice* mp_central;
 
     uint8_t m_lineFollowerPin;
     uint8_t m_intersectionPin;
@@ -56,9 +53,6 @@ class RobotContainer{
     double getTime();
     double getBatteryVoltage();
   
-    bool refreshConnection();
-    void setCentralPtr(BLEDevice* central);
-
     //control functions
     void lineControl(double* Corrrection1, double* Correction2);
     void velocityControl(double* Power1, double* Power2);

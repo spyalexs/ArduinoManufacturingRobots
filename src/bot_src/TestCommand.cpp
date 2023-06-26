@@ -1,6 +1,6 @@
 #include "TestCommand.h"
 
-TestCommand::TestCommand(BLECharacteristic* StatusC, BLECharacteristic* IssueC, RobotContainer* MC):Command(StatusC, IssueC, MC, "TestCommand"){
+TestCommand::TestCommand(RobotContainer* MC):Command(MC, "TestCommand"){
   //do initialization here
 }
 

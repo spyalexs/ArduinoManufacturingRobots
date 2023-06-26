@@ -6,7 +6,7 @@
 
 class FollowLineOnMarker : public Command{
   public:
-    FollowLineOnMarker(BLECharacteristic* StatusC, BLECharacteristic* IssueC, RobotContainer* MC);
+    FollowLineOnMarker(RobotContainer* MC);
 
     void startup();
     void cycle();

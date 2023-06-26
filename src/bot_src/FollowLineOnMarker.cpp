@@ -1,6 +1,6 @@
 #include "FollowLineOnMarker.h"
 
-FollowLineOnMarker::FollowLineOnMarker(BLECharacteristic* StatusC, BLECharacteristic* IssueC, RobotContainer* MC):Command(StatusC, IssueC, MC, "FollowLineOnMarker"){
+FollowLineOnMarker::FollowLineOnMarker(RobotContainer* MC):Command(MC, "FollowLineOnMarker"){
   //do initialization here
 }
 

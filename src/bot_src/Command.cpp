@@ -1,69 +1,72 @@
 #include "Command.h"
 
-Command::Command(BLECharacteristic* StatusC, BLECharacteristic* IssueC, RobotContainer* MC, String name){
+Command::Command(RobotContainer* MC, String name, int packetSize = 50, WiFiUDP* UDP){
   //general command structure to run a drawn out task on a bot
-  m_statusC = StatusC;
-  m_issueC = IssueC;
   m_name = name;
   mp_MC = MC;
+  m_packetSize = packetSize;
+  m_packetBuffer = new byte[m_packetSize];
+  mp_UDP = UDP;
 }
 
-int Command::getStatus(){
-  //read the command status
-
-  byte value = 0;
-  m_statusC->readValue(value);
-
-  return int(value);
+Command::Command(){
+  m_name = "Empty";
+  mp_MC = nullptr;
 }
 
-void Command::updateStatus(int Status){
+void Command::setStatus(int status){
+  //allows the listener to set the commands status
+  this->m_status = status;
+
+  //send the controller the updated status
+  updateStatus(status);
+}
+
+void Command::updateStatus(int status){
   //update the command's status and write to controller
-  
-  if(this->getStatus() != 255){ //don't allow overrite if the command should abort
-    m_statusC->writeValue(byte(Status));
+  if(status == 253){
+    this->m_confirmationRequestTime = this->mp_MC->getTime();
   }
+
+  statusString
+
+
+  mp_UDP->beginPacket(serverIPAddress, assignedUDPPort);
+  mp_UDP->write(packetBuffer, bufferSize);
+  mp_UDP->endPacket();
+
 }
 
-bool Command::checkForAbort(){
+void Command::abort(){
   // check if the command needs to be aborted - command to abort will be sent from controller 
   // TODO - exceptions added later for collisions detected by robot 
-  byte value = 0;
-  m_issueC->readValue(value);
-
-  if(int(value) == 255){
-    return true;
-  }
-
-  return false;
+  this->setStatus(255);
 }
 
-bool Command::checkForConfirmation(){
+void Command::confirmCommand(){
   //check if the controller has given the robot permission to run the command...
   //confirmation is value of 253 over the issue characteristic
 
-  byte value = 0;
-  m_issueC->readValue(value);
-
-  if(int(value) == 253){
-    return true;
+  //only work if the command is in the 253 status
+  if(this->m_status == 253){
+    this->m_status = 2;
   }
-
-  return false;
 }
 
 void Command::startup(){
   // this should be overriden with tasks when starting command
+  // this may not be blocking and will only occur one time
   return;
 }
 
 void Command::cycle(){
-  // this should be overriden to execute the commands cycle
+  // this should be overriden to execute the commands cycle 
+  // this may not be blocking and will cycle as many times as needed
   return;
 }
 
 bool Command::ifEnd(){
-  //this shoud be ovverride to return True when the cycling should be stopped
+  //this shoud be ovverriden to return True when the cycling should be stopped
   return false;
 }
 
@@ -77,37 +80,49 @@ void Command::run(){
 
   //sequence on operations with status updates for controller
   this->updateStatus(1);
-  this->startup();
-
-  //request confirmation
-  this->updateStatus(253);
-  while(!this->checkForConfirmation()){
-    //wait for confirmation
-    mp_MC->refreshConnection();
-
-  }
-
-  this->updateStatus(2);
-  this->superCycle();
-  this->updateStatus(3);
-  this->cleanup();
-
-  //send final status back based on how command ended
-  if(this->checkForAbort() == false){
-    this->updateStatus(254);
-  }else{
-    this->updateStatus(255);
-  }
-
-  return;
 }
 
 void Command::superCycle(){
-  // a wrapper around the cycle function that allows it to run until the command is ended
-  while(this->checkForAbort() == false && this->ifEnd() == false){
-    cycle();
+  //check which state the command is in and determine farther action based on that
 
-    //refresh connections
-    mp_MC->refreshConnection();
+  switch (this->m_status){
+    case 1:
+      //do startup action
+      this->startup();
+
+      //request confirmation
+      this->setStatus(253);
+    break;
+
+    case 253:
+      //do nothing as waiting for confirmation
+      break;
+
+    case 2:
+
+      if(!this->ifEnd()){
+        this->cycle();
+      } else {
+        this->setStatus(3);
+      }
+
+      break;
+
+    case 3:
+      this->cleanup();
+      this->m_completed = true;
+      this->setStatus(254);
+     break;
+
+    case 255:
+      this->cleanup();
+      this->m_completed = true;
+      break;
+
+    default:
+      Serial.println("Unknown status! Something must have gone terribly wrong!");
+      break;
   }
+
+  
 }

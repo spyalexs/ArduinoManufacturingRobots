@@ -1,6 +1,6 @@
 #include "TEMPLATE.h"
 
-TEMPLATE::TEMPLATE(BLECharacteristic* StatusC, BLECharacteristic* IssueC, RobotContainer* MC):Command(StatusC, IssueC, MC, "TEMPLATE"){
+TEMPLATE::TEMPLATE(RobotContainer* MC):Command(MC, "TEMPLATE"){
   //do initialization here
 }
 

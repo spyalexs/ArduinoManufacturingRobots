@@ -1,7 +1,6 @@
 #include "RobotContainer.h"
 
 RobotContainer::RobotContainer(mc::DCMotor* motor1, mc::DCMotor* motor2, mc::Encoder* encoder1, mc::Encoder* encoder2, uint8_t lineFollowerPinName, uint8_t intersectionPinName, uint8_t codePinName){
-  mp_central = NULL; //leave null for now update later
   m_motor1 = motor1;
   m_motor2 = motor2;
   m_encoder1 = encoder1;
@@ -54,16 +53,6 @@ double RobotContainer::getTime(){
 double RobotContainer::getBatteryVoltage(){
   return battery.getRaw() / 77.0;
 
-}
-
-bool RobotContainer::refreshConnection(){
-  if(mp_central){
-    return mp_central->connected();
-  }
-}
-
-void RobotContainer::setCentralPtr(BLEDevice* central){
-  mp_central = central;
 }
 
 void RobotContainer::lineControl(double* Correction1, double* Correction2){

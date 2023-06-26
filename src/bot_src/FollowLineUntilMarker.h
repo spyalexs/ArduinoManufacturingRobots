@@ -6,7 +6,7 @@
 
 class FollowLineUntilMarker : public Command{
   public:
-    FollowLineUntilMarker(BLECharacteristic* StatusC, BLECharacteristic* IssueC, RobotContainer* MC);
+    FollowLineUntilMarker(RobotContainer* MC);
 
     void startup();
     void cycle();

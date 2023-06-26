@@ -5,7 +5,7 @@
 
 class TestCommand : public Command{
   public:
-    TestCommand(BLECharacteristic* StatusC, BLECharacteristic* IssueC, RobotContainer* MC);
+    TestCommand(RobotContainer* MC);
 
     void startup();
     void cycle();

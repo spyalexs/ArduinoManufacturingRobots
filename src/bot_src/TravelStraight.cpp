@@ -1,6 +1,6 @@
 #include "TravelStraight.h"
 
-TravelStraight::TravelStraight(BLECharacteristic* StatusC, BLECharacteristic* IssueC, RobotContainer* MC, int counts):Command(StatusC, IssueC, MC, "TravelStraight"){
+TravelStraight::TravelStraight(RobotContainer* MC, int counts):Command(MC, "TravelStraight"){
   //do initialization here
   m_straightCounts = counts;
 }
