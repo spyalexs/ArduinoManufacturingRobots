@@ -6,7 +6,7 @@
 
 class FollowLineOnMarker : public Command{
   public:
-    FollowLineOnMarker(RobotContainer* MC);
+    FollowLineOnMarker(RobotContainer* MC, Communicator* CC);
 
     void startup();
     void cycle();

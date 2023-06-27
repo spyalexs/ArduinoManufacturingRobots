@@ -1,6 +1,6 @@
 #include "FollowLineOnMarker.h"
 
-FollowLineOnMarker::FollowLineOnMarker(RobotContainer* MC):Command(MC, "FollowLineOnMarker"){
+FollowLineOnMarker::FollowLineOnMarker(RobotContainer* MC, Communicator* CC):Command(MC, CC, "FollowLineOnMarker"){
   //do initialization here
 }
 

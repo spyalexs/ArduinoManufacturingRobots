@@ -5,7 +5,7 @@
 
 class TEMPLATE : public Command{
   public:
-    TEMPLATE(RobotContainer* MC);
+    TEMPLATE(RobotContainer* MC, Communicator* CC);
 
     void startup();
     void cycle();

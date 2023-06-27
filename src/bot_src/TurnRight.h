@@ -6,7 +6,7 @@
 
 class TurnRight : public Command{
   public:
-    TurnRight(RobotContainer* MC);
+    TurnRight(RobotContainer* MC, Communicator* CC);
 
     void startup();
     void cycle();

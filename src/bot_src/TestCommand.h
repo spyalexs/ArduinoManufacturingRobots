@@ -5,7 +5,7 @@
 
 class TestCommand : public Command{
   public:
-    TestCommand(RobotContainer* MC);
+    TestCommand(RobotContainer* MC, Communicator CC);
 
     void startup();
     void cycle();

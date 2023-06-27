@@ -1,6 +1,6 @@
 #include "TestCommand.h"
 
-TestCommand::TestCommand(RobotContainer* MC):Command(MC, "TestCommand"){
+TestCommand::TestCommand(RobotContainer* MC, Communicator CC):Command(MC, CC, "TestCommand"){
   //do initialization here
 }
 

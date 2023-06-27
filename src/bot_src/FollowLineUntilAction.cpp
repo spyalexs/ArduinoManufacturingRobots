@@ -1,6 +1,6 @@
 #include "FollowLineUntilAction.h"
 
-FollowLineUntilAction::FollowLineUntilAction(RobotContainer* MC):Command(MC, "FollowLineUntilMarker"){
+FollowLineUntilAction::FollowLineUntilAction(RobotContainer* MC, Communicator* CC):Command(MC, CC, "FollowLineUntilMarker"){
   //do initialization here
   m_intersectionCounter = 0;
 }

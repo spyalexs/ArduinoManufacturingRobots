@@ -1,6 +1,6 @@
 #include "TurnRight.h"
 
-TurnRight::TurnRight(RobotContainer* MC):Command(MC, "Turn Right"){
+TurnRight::TurnRight(RobotContainer* MC, Communicator* CC):Command(MC, CC, "Turn Right"){
   //do initialization here
 }
 

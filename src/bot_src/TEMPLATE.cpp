@@ -1,6 +1,6 @@
 #include "TEMPLATE.h"
 
-TEMPLATE::TEMPLATE(RobotContainer* MC):Command(MC, "TEMPLATE"){
+TEMPLATE::TEMPLATE(RobotContainer* MC, Communicator* CC):Command(MC, CC, "TEMPLATE"){
   //do initialization here
 }
 

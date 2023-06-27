@@ -10,7 +10,12 @@
 class Communicator{
     public:
         Communicator();
-        bool connect();
+        bool connectToNetwork();
+        bool connectToCentral();
+
+        void writeMessageToCentral(String message);
+        void writeMessageToCentral(String characteristic, String value);
+        void cycle();
 
     private:
         WiFiSSLClient m_wifiClient;
@@ -34,8 +39,10 @@ class Communicator{
 
         bool m_ready = false; //if the wifi module is ready to commincate
         bool m_connected = false; //if the commincator is connected and has a port #
-        double m_connectionTimeout = 10000; //timeout for connection protocol
+        double m_connectionTimeout = 1000; //timeout for connection protocol
 
+        double getTime();
+        String checkForPackets();
 };
 
 #endif

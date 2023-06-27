@@ -1,17 +1,16 @@
 #include "Command.h"
 
-Command::Command(RobotContainer* MC, String name, int packetSize = 50, WiFiUDP* UDP){
+Command::Command(RobotContainer* MC, Communicator* CC, String name){
   //general command structure to run a drawn out task on a bot
   m_name = name;
   mp_MC = MC;
-  m_packetSize = packetSize;
-  m_packetBuffer = new byte[m_packetSize];
-  mp_UDP = UDP;
+  mp_CC = CC;
 }
 
 Command::Command(){
   m_name = "Empty";
   mp_MC = nullptr;
+  mp_CC = nullptr;
 }
 
 void Command::setStatus(int status){
@@ -28,13 +27,7 @@ void Command::updateStatus(int status){
     this->m_confirmationRequestTime = this->mp_MC->getTime();
   }
 
-  statusString
-
-
-  mp_UDP->beginPacket(serverIPAddress, assignedUDPPort);
-  mp_UDP->write(packetBuffer, bufferSize);
-  mp_UDP->endPacket();
-
+  mp_CC->writeMessageToCentral("CommandStatus", String(status));
 }
 
 void Command::abort(){

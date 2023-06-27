@@ -5,10 +5,11 @@
 #include "WiFiUdp.h"
 
 #include "RobotContainer.h"
+#include "Communicator.h"
 
 class Command{
   public:
-    Command(RobotContainer* MC, String name, int packetSize = 50, WiFiUDP* UDP);
+    Command(RobotContainer* MC, Communicator* CC, String name);
     Command(); //default constructor
 
     void setStatus(int status);
@@ -24,7 +25,9 @@ class Command{
     void run();
     void superCycle();
 
+  protected:
     RobotContainer* mp_MC;
+    Communicator* mp_CC;
 
     String m_name;
 
@@ -36,11 +39,6 @@ class Command{
 
     double m_confirmationRequestTime = 0.0;// the time of the confirmation request
     double m_confirmationPatience = 1.0; // how long to wait to see if confirmation needs requesting
-
-    int m_packetSize;
-    byte* m_packetBuffer;
-
-    WiFiUDP* mp_UDP
 };
 
 
