@@ -18,7 +18,7 @@ bool PUBLISHDATA = true;
 
 //the robot container that is a wrapper around periphral functions
 RobotContainer MC = RobotContainer(&M1, &M2, &encoder1, &encoder2, A3, A6, A2);
-
+Communicator CC = Communicator();
 
 int lastUpdate = 0; //last time the update was sent to central
 int updateFrequency = 1; //Hz
@@ -33,9 +33,11 @@ void setup(){
     Serial.println("Failed to start controller!");
   }
 
+  //get coms set up with central
+  CC.connectToNetwork();
+  CC.connectToCentral();
 
   Serial.println("I am a bot!");
-  Serial.println("I was assigned: " + String(assignedUDPPort));
 }
 
 void loop(){
@@ -49,133 +51,136 @@ void loop(){
 }
 
 
-// void commandLoop(){
-// //this runs while the bot is connected to the bridge
+void commandLoop(){
+//this runs while the bot is connected to the bridge
 
-//   if(CC.readIssue() != 0) {
-//     //if the robot is in command mode - normal operation 
+  if(CC.readIssue() != 0) {
+    //if the robot is in command mode - normal operation 
 
-//     //get which command and then write over it to over doing the command multiple times unnessecarily
-//     int commandVal = CC.readIssue();
-//     CC.writeIssue(0);
+    //get which command and then write over it to over doing the command multiple times unnessecarily
+    int commandVal = CC.readIssue();
+    CC.writeIssue(0);
 
-//     //run commands
-//     //0 - no command, shouldn't be in this switch anyways
-//     //1 - testing
-//     //2 to 99 - base actions
-//     //101 to 199 - compound actions
-//     //255 - abort!
-//     switch (commandVal){
-//       case 1:
-//         if(true){
-//           TestCommand commandToRun(CC.GetStatusCPointer(), CC.GetIssueCPointer(), &MC);
-//           commandToRun.run();
-//         }
-//         break;
+    //run commands
+    //0 - no command, shouldn't be in this switch anyways
+    //1 - testing
+    //2 to 99 - base actions
+    //101 to 199 - compound actions
+    //255 - abort!
+    switch (commandVal){
+      case 1:
+        if(true){
+          TestCommand commandToRun(CC.GetStatusCPointer(), CC.GetIssueCPointer(), &MC);
+          commandToRun.run();
+        }
+        break;
 
-//       case 2:
-//         if(true){
-//           FollowLineUntilMarker commandToRun(CC.GetStatusCPointer(), CC.GetIssueCPointer(), &MC);
-//           commandToRun.run();
-//         }
-//         break;
+      case 2:
+        if(true){
+          FollowLineUntilMarker commandToRun(CC.GetStatusCPointer(), CC.GetIssueCPointer(), &MC);
+          commandToRun.run();
+        }
+        break;
 
-//       case 3:
-//         if(true){
-//           FollowLineOnMarker commandToRun(CC.GetStatusCPointer(), CC.GetIssueCPointer(), &MC);
-//           commandToRun.run();
-//         }
-//         break;
+      case 3:
+        if(true){
+          FollowLineOnMarker commandToRun(CC.GetStatusCPointer(), CC.GetIssueCPointer(), &MC);
+          commandToRun.run();
+        }
+        break;
 
-//       case 4:
-//         if(true){
-//           TravelStraight commandToRun(CC.GetStatusCPointer(), CC.GetIssueCPointer(), &MC, 210);
-//           commandToRun.run();
-//         }
-//         break;
+      case 4:
+        if(true){
+          TravelStraight commandToRun(CC.GetStatusCPointer(), CC.GetIssueCPointer(), &MC, 210);
+          commandToRun.run();
+        }
+        break;
 
-//       case 5:
-//         if(true){
-//           TurnRight commandToRun(CC.GetStatusCPointer(), CC.GetIssueCPointer(), &MC);
-//           commandToRun.run();
-//         }
-//         break;
+      case 5:
+        if(true){
+          TurnRight commandToRun(CC.GetStatusCPointer(), CC.GetIssueCPointer(), &MC);
+          commandToRun.run();
+        }
+        break;
 
-//       case 6:
-//         if(true){
-//           TurnLeft commandToRun(CC.GetStatusCPointer(), CC.GetIssueCPointer(), &MC);
-//           commandToRun.run();
-//         }
-//         break;
+      case 6:
+        if(true){
+          TurnLeft commandToRun(CC.GetStatusCPointer(), CC.GetIssueCPointer(), &MC);
+          commandToRun.run();
+        }
+        break;
 
-//       case 101:
-//         //full right turn through intersection
-//         if(true){
-//           FollowLineOnMarker commandToRun(CC.GetStatusCPointer(), CC.GetIssueCPointer(), &MC);
-//           commandToRun.run();
-//           TravelStraight commandToRun2(CC.GetStatusCPointer(), CC.GetIssueCPointer(), &MC, 210);
-//           commandToRun2.run();
-//           TurnRight commandToRun3(CC.GetStatusCPointer(), CC.GetIssueCPointer(), &MC);
-//           commandToRun3.run();
-//         }
-//         break;
+      case 101:
+        //full right turn through intersection
+        if(true){
+          FollowLineOnMarker commandToRun(CC.GetStatusCPointer(), CC.GetIssueCPointer(), &MC);
+          commandToRun.run();
+          TravelStraight commandToRun2(CC.GetStatusCPointer(), CC.GetIssueCPointer(), &MC, 210);
+          commandToRun2.run();
+          TurnRight commandToRun3(CC.GetStatusCPointer(), CC.GetIssueCPointer(), &MC);
+          commandToRun3.run();
+        }
+        break;
 
-//       case 102:
-//         //full straight through intersection
-//         if(true){
-//           FollowLineOnMarker commandToRun(CC.GetStatusCPointer(), CC.GetIssueCPointer(), &MC);
-//           commandToRun.run();
-//           TravelStraight commandToRun2(CC.GetStatusCPointer(), CC.GetIssueCPointer(), &MC, 200);
-//           commandToRun2.run();
-//           FollowLineUntilMarker commandToRun3(CC.GetStatusCPointer(), CC.GetIssueCPointer(), &MC);
-//           commandToRun3.run();
-//           TravelStraight commandToRun4(CC.GetStatusCPointer(), CC.GetIssueCPointer(), &MC, 100);
-//           commandToRun4.run();
+      case 102:
+        //full straight through intersection
+        if(true){
+          FollowLineOnMarker commandToRun(CC.GetStatusCPointer(), CC.GetIssueCPointer(), &MC);
+          commandToRun.run();
+          TravelStraight commandToRun2(CC.GetStatusCPointer(), CC.GetIssueCPointer(), &MC, 200);
+          commandToRun2.run();
+          FollowLineUntilMarker commandToRun3(CC.GetStatusCPointer(), CC.GetIssueCPointer(), &MC);
+          commandToRun3.run();
+          TravelStraight commandToRun4(CC.GetStatusCPointer(), CC.GetIssueCPointer(), &MC, 100);
+          commandToRun4.run();
 
-//         }
-//         break;
+        }
+        break;
 
-//       case 103:
-//         //full left through intersection
-//         if(true){
-//           FollowLineOnMarker commandToRun(CC.GetStatusCPointer(), CC.GetIssueCPointer(), &MC);
-//           commandToRun.run();
-//           TravelStraight commandToRun2(CC.GetStatusCPointer(), CC.GetIssueCPointer(), &MC, 200);
-//           commandToRun2.run();
-//           FollowLineUntilMarker commandToRun3(CC.GetStatusCPointer(), CC.GetIssueCPointer(), &MC);
-//           commandToRun3.run();
-//           TravelStraight commandToRun4(CC.GetStatusCPointer(), CC.GetIssueCPointer(), &MC, 310);
-//           commandToRun4.run();
-//           TurnLeft commandToRun5(CC.GetStatusCPointer(), CC.GetIssueCPointer(), &MC);
-//           commandToRun5.run();
-//           TravelStraight commandToRun6(CC.GetStatusCPointer(), CC.GetIssueCPointer(), &MC, 40);
-//           commandToRun6.run();
-//         }
-//         break;
+      case 103:
+        //full left through intersection
+        if(true){
+          FollowLineOnMarker commandToRun(CC.GetStatusCPointer(), CC.GetIssueCPointer(), &MC);
+          commandToRun.run();
+          TravelStraight commandToRun2(CC.GetStatusCPointer(), CC.GetIssueCPointer(), &MC, 200);
+          commandToRun2.run();
+          FollowLineUntilMarker commandToRun3(CC.GetStatusCPointer(), CC.GetIssueCPointer(), &MC);
+          commandToRun3.run();
+          TravelStraight commandToRun4(CC.GetStatusCPointer(), CC.GetIssueCPointer(), &MC, 310);
+          commandToRun4.run();
+          TurnLeft commandToRun5(CC.GetStatusCPointer(), CC.GetIssueCPointer(), &MC);
+          commandToRun5.run();
+          TravelStraight commandToRun6(CC.GetStatusCPointer(), CC.GetIssueCPointer(), &MC, 40);
+          commandToRun6.run();
+        }
+        break;
 
-//       case 104:
-//         //full u turn
-//         if(true){
-//           FollowLineOnMarker commandToRun(CC.GetStatusCPointer(), CC.GetIssueCPointer(), &MC);
-//           commandToRun.run();
-//           TravelStraight commandToRun2(CC.GetStatusCPointer(), CC.GetIssueCPointer(), &MC, 390);
-//           commandToRun2.run();
-//           TurnLeft commandToRun3(CC.GetStatusCPointer(), CC.GetIssueCPointer(), &MC);
-//           commandToRun3.run();
-//           TravelStraight commandToRun4(CC.GetStatusCPointer(), CC.GetIssueCPointer(), &MC, 265);
-//           commandToRun4.run();
-//           TurnLeft commandToRun5(CC.GetStatusCPointer(), CC.GetIssueCPointer(), &MC);
-//           commandToRun5.run();
-//         }
-//         break;
+      case 104:
+        //full u turn
+        if(true){
+          FollowLineOnMarker commandToRun(CC.GetStatusCPointer(), CC.GetIssueCPointer(), &MC);
+          commandToRun.run();
+          TravelStraight commandToRun2(CC.GetStatusCPointer(), CC.GetIssueCPointer(), &MC, 390);
+          commandToRun2.run();
+          TurnLeft commandToRun3(CC.GetStatusCPointer(), CC.GetIssueCPointer(), &MC);
+          commandToRun3.run();
+          TravelStraight commandToRun4(CC.GetStatusCPointer(), CC.GetIssueCPointer(), &MC, 265);
+          commandToRun4.run();
+          TurnLeft commandToRun5(CC.GetStatusCPointer(), CC.GetIssueCPointer(), &MC);
+          commandToRun5.run();
+        }
+        break;
 
-//       default:
-//         break;
-//     }
-//   }
-// }
+      default:
+        break;
+    }
+  }
+}
 
 void update(){
+  //send information to central
+  //something must be sent every five seconds to maintain connection
+
   double time = MC.getTime();
 
   // if it is time to update central
@@ -183,29 +188,7 @@ void update(){
     lastUpdate = time;
 
     //update must be less than 50 bytes
-    String update = "bat$" + String(MC.getBatteryVoltage()) + "$$$";
-
-    update.getBytes(packetBuffer, bufferSize);
-    Udp.beginPacket(serverIPAddress, assignedUDPPort);
-    Udp.write(packetBuffer, bufferSize);
-    Udp.endPacket();
+    CC.writeMessageToCentral("bat", String(MC.getBatteryVoltage()));
   }
-}
-
-int listen(){
-  //listen for updates from central
-  //return the command number if there is ine
-
-  if(Udp.parsePacket()){
-    //read in packet
-    Udp.read(packetBuffer, bufferSize);
-
-    //copy packet to string to be processed
-    String packet = (char*)packetBuffer;
-
-    
-  }
-
-  return 0;
 }
 
