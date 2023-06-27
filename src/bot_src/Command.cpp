@@ -5,12 +5,18 @@ Command::Command(RobotContainer* MC, Communicator* CC, String name){
   m_name = name;
   mp_MC = MC;
   mp_CC = CC;
+
+  m_completed = false; 
 }
 
 Command::Command(){
+  //initialize a placeholder command
   m_name = "Empty";
   mp_MC = nullptr;
   mp_CC = nullptr;
+
+  //mark as completed so the system knows it can replace the command at any time
+  m_completed = true; 
 }
 
 void Command::setStatus(int status){
@@ -27,7 +33,7 @@ void Command::updateStatus(int status){
     this->m_confirmationRequestTime = this->mp_MC->getTime();
   }
 
-  mp_CC->writeMessageToCentral("CommandStatus", String(status));
+  mp_CC->writeMessageToCentral("commandStatus", String(status));
 }
 
 void Command::abort(){
@@ -46,39 +52,45 @@ void Command::confirmCommand(){
   }
 }
 
-void Command::startup(){
-  // this should be overriden with tasks when starting command
-  // this may not be blocking and will only occur one time
-  return;
-}
+// void Command::startup(){
+//   // this should be overriden with tasks when starting command
+//   // this may not be blocking and will only occur one time
+//   return;
+// }
 
-void Command::cycle(){
-  // this should be overriden to execute the commands cycle 
-  // this may not be blocking and will cycle as many times as needed
-  return;
-}
+// void Command::cycle(){
+//   // this should be overriden to execute the commands cycle 
+//   // this may not be blocking and will cycle as many times as needed
+//   return;
+// }
 
-bool Command::ifEnd(){
-  //this shoud be ovverriden to return True when the cycling should be stopped
-  return false;
-}
+// bool Command::ifEnd(){
+//   //this shoud be ovverriden to return True when the cycling should be stopped
+//   return false;
+// }
 
-void Command::cleanup(){
-  //this should be overriden with tasks when ending command
-}
+// void Command::cleanup(){
+//   //this should be overriden with tasks when ending command
+// }
 
 void Command::run(){
   //call run to excute command
   Serial.println("Starting to run: " + m_name);
 
   //sequence on operations with status updates for controller
-  this->updateStatus(1);
+  this->setStatus(1);
 }
 
 void Command::superCycle(){
   //check which state the command is in and determine farther action based on that
 
   switch (this->m_status){
+    case 0:
+      //the command is not yet ready to be run
+      break;
+    case 254:
+      //the command has been completed and is waiting to be replaced
+      break;
     case 1:
       //do startup action
       this->startup();
@@ -110,12 +122,17 @@ void Command::superCycle(){
     case 255:
       this->cleanup();
       this->m_completed = true;
+
+      //set status of command to complete so it does not clean up -- avoid sending status to central so the abort status still show on GUI
+      this->m_status = 254;
       break;
 
     default:
       Serial.println("Unknown status! Something must have gone terribly wrong!");
       break;
   }
+}
 
-  
+bool Command::isCompleted(){
+  return this->m_completed;
 }

@@ -9,9 +9,9 @@ from createRoute import route
 #keys for the commands availible to be launched - the name of the command corrosponds to the name that will be launched on the robot
 commandKeys = getCommandKeys()
 
-def make(queueIn, queueOut, robots):
+def make(queueIn, queueOut, robots, killQueue):
     #create the GUI window for the first time
-    
+
     #apply gui theme
     sg.theme(getTheme())
 
@@ -53,7 +53,7 @@ def make(queueIn, queueOut, robots):
     window = sg.Window(title="Test", layout=layout, finalize=True)
     
     #keeps an eye on the gui for event and such as it runs
-    monitor(window, queueIn, queueOut)
+    monitor(window, queueIn, queueOut, killQueue)
 
 def getRobotFrameLayout(name):
     #do a little processing to format the keys correctly
@@ -70,10 +70,14 @@ def getRobotFrameLayout(name):
     
     return robotFrameLayout
 
-def monitor(window, queueIn, queueOut):
+def monitor(window, queueIn, queueOut, killQueue):
     #monitor the Gui for events
 
     while True:  
+        #sequence that allows program to gracefully exit
+        if(not killQueue.empty()):
+            break
+
         #wait for events(UI element interaction) on gui
         # timeout allows for the window to be updated without an event occuring         
         event, values = window.read(timeout=1000)

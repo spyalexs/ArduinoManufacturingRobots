@@ -66,8 +66,6 @@ bool Communicator::connectToNetwork(){
     }
 
     this->m_ready = true;
-
-
 }
 
 bool Communicator::connectToCentral(){
@@ -152,19 +150,22 @@ void Communicator::cycle(){
 
 }
 
-String Communicator::checkForPackets(){
+std::queue<String> Communicator::checkForPackets(){
     //return a packet if there is one
     //if not return an empty string ""
-    String packetMessage = "";
 
-    if(this->m_Udp.parsePacket()){
+    std::queue<String> packets;
+
+    //go through and collect all packets that came in 
+    while(this->m_Udp.parsePacket()){
+
         this->m_Udp.readBytes(m_packetBuffer, m_bufferSize);
 
         //this only works when there is a "\0" character at the end of the string
-        packetMessage = String((char*)m_packetBuffer);
-    } else{
-        return "";
-    }
+        String packetMessage = String((char*)m_packetBuffer);
+        packets.push(packetMessage);
 
-    return packetMessage;
+    }
+    
+    return packets;
 }

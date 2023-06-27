@@ -17,13 +17,15 @@ class Command{
     void abort();
     void confirmCommand();
 
-    virtual void startup();
-    virtual void cycle();
-    virtual bool ifEnd();
-    virtual void cleanup();
+    virtual void startup() = 0;
+    virtual void cycle() = 0;
+    virtual bool ifEnd() = 0;
+    virtual void cleanup() = 0;
 
     void run();
     void superCycle();
+
+    bool isCompleted();
 
   protected:
     RobotContainer* mp_MC;

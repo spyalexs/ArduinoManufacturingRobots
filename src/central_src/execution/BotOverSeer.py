@@ -8,9 +8,11 @@ class BotOverSeer:
     m_directToBotOverride = True
     m_localizing = False # if the robot is currently being localized by the controller
 
-    m_patience = 0.5 # how long to wait before attempting to reissue a command
+    m_patience = .5 # how long to wait before attempting to reissue a command
     m_lastIssue = None
-    m_attemptingToWrite = False
+    m_written = False
+    m_confirmed = False
+    m_messageNumber = 1
 
     m_status = 0 # keeps track of the bot's status
     m_commands = []
@@ -82,6 +84,12 @@ class BotOverSeer:
                 #tell the gui to update the connection only if it has changed
                 self.sendConnectionStatusToGui()
 
+            #if disconnected, clear all commands
+            self.m_commands = []
+                                    
+            self.m_written = False
+            self.m_confirmed = False
+            self.updateStatus(0)
 
         #check the bots status
         if(self.m_status == 255):
@@ -92,11 +100,9 @@ class BotOverSeer:
             if(len(self.m_commands) > 0):
                 #if a command needs written
 
-                self.m_attemptingToWrite = True # mark so the system knows if the system is attempting to write a command
-
-                #if the robot is waiting or doing nothing
-                if(time.time() > self.m_lastIssue + self.m_patience):
-                    self.m_lastIssue = time.time()
+                if(not self.m_written):
+                    self.m_written = True # mark so the system knows if the systemhas already written a command
+                    self.m_confirmed = False #command has not yet been confirmed
 
                     #write command to bot
                     self.sendMessageToBot(self.m_port + "$commandIssue$" + str(self.m_commands[0]))
@@ -105,15 +111,19 @@ class BotOverSeer:
             # sorta - kinda a handshake
 
             #if the robot is waiting or doing nothing
-            if(time.time() > self.m_lastIssue + self.m_patience):
-                self.m_lastIssue = time.time()
+            self.m_written = False
+
+            if(not self.m_confirmed):
+                self.m_confirmed = True
 
                 #issue confirmation
-                self.sendMessageToBotF(self.m_port + "$commandIssue$" + str(253))
+                self.sendMessageToBot(self.m_port + "$commandIssue$" + str(253))
         else:
-            if(self.m_attemptingToWrite):
+            if(self.m_written):
                 #if the command had been attempted to been written and now has been
-                self.m_attemptingToWrite = False
+
+                self.m_written = False
+                self.m_confirmed = False
                 self.m_commands.pop(0)
 
     def sendStatusToGui(self, status):

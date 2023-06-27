@@ -1,12 +1,16 @@
 #include "TestCommand.h"
 
-TestCommand::TestCommand(RobotContainer* MC, Communicator CC):Command(MC, CC, "TestCommand"){
+TestCommand::TestCommand(RobotContainer* MC, Communicator* CC):Command(MC, CC, "TestCommand"){
   //do initialization here
+
+  Serial.println("Here");
 }
 
 void TestCommand::startup(){
   //do startup tasks here
   this->m_lastToggle = mp_MC->getTime();
+
+  Serial.println("Starting Test");
 }
 
 void TestCommand::cycle(){
@@ -20,6 +24,9 @@ void TestCommand::cycle(){
     }
 
     m_togglesLeft = m_togglesLeft - 1;
+    m_lastToggle = mp_MC->getTime();
+
+    Serial.println("Cycling Test");
   }
 }
 
@@ -33,6 +40,8 @@ bool TestCommand::ifEnd(){
   if(m_lastToggle > 0){
     return false;
   }
+
+  Serial.println("Ending Test");
 
   return true;
 }

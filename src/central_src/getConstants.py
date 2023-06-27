@@ -32,3 +32,10 @@ def getListeningPort():
     BOT_LISTENING_PORT = 5005
     
     return BOT_LISTENING_PORT
+
+def getPacketLength():
+    #return the maximum length of a packet
+
+    MAX_PACKET_LENGTH = 50
+
+    return MAX_PACKET_LENGTH

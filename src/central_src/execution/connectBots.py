@@ -5,7 +5,12 @@ import time
 
 from getConstants import getConnectionPorts
 
-LOCAL_IP = socket.gethostbyname("Alexsmen.mshome.net")
+try:
+    LOCAL_IP = socket.gethostbyname("Alexsmen.mshome.net")
+except socket.gaierror:
+    print("Could not find LOCALIP, is the Hotspot/Network up?")
+    quit()
+
 CONNECTION_MESSAGE = "I'm a bot! MAC:"
 CONNECTION_REPLY = "Connection Established on:"
 REPLY_FREQUENCY = 20 #Hz
@@ -17,12 +22,17 @@ CONNECTION_PORT = 5005
 def launchBotConnector(connectorQueue):
     #start a thread to manage bot connnection
 
-    connectorThread = Thread(target=connectBots, args=(connectorQueue,))
+    killQueue = queue.Queue()
+
+    connectorThread = Thread(target=connectBots, args=(connectorQueue, killQueue))
     connectorThread.isDaemon = True
     connectorThread.start()
 
+    #return thread id
+    return killQueue
 
-def connectBots(connectorQueue):
+
+def connectBots(connectorQueue, killQueue):
     lowerComPort, higherComPort = getConnectionPorts()
     #create a dictionary of known MAC addresses and the ports the bot has been assigned to
     #allows for reconnections
@@ -39,6 +49,11 @@ def connectBots(connectorQueue):
 
     searching = True
     while(searching):
+
+        #sequence that allows program to gracefully exit
+        if(not killQueue.empty()):
+            break
+
         #run until entire system is down
         try:
             message, addr = sock.recvfrom(50)

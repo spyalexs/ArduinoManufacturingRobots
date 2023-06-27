@@ -1,12 +1,28 @@
-import serial
+import queue
 import socket
+import threading
 
 from getConstants import getConnectionPorts
 
-LOCAL_IP = socket.gethostbyname("Alexsmen.mshome.net")
+try:
+    LOCAL_IP = socket.gethostbyname("Alexsmen.mshome.net")
+except socket.gaierror:
+    print("Could not find LOCALIP, is the Hotspot/Network up?")
+    quit()
+    
 BUFFER_LENGTH = 50
 
-def monitor(queueIn):
+def launchPacketMonitor(queueIn):
+    #queue to pass the kill signal
+    killQueue = queue.Queue()
+
+    monitorThread = threading.Thread(target=monitor,args=(queueIn, killQueue))
+    monitorThread.daemon = True
+    monitorThread.start()
+
+    return killQueue
+    
+def monitor(queueIn, killQueue):
     #monitor the updp ports input for messages
 
     lowerComPort, higherComPort = getConnectionPorts()
@@ -24,6 +40,10 @@ def monitor(queueIn):
 
     read = True
     while(read):
+        #sequence that allows program to gracefully exit
+        if(not killQueue.empty()):
+            break
+
         #read each socket
         for key in sockets.keys():
             try:

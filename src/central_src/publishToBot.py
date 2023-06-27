@@ -1,9 +1,20 @@
 import socket
 import queue
-import time
+import threading
 from getConstants import getListeningPort
 
-def publish(queueOut):
+def launchPacketPublisher(queueOut):
+    #queue to pass the kill signal to the thread
+    killQueue = queue.Queue()
+
+    publisherThread = threading.Thread(target=publish, args=(queueOut, killQueue))
+    publisherThread.daemon = True
+    publisherThread.start()
+
+    return killQueue
+
+
+def publish(queueOut, killQueue):
     #COM - the serial port to be published to
     #queueOut - the queue to publish messages from
 
@@ -11,6 +22,10 @@ def publish(queueOut):
     outSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
     while(True):
+        #sequence that allows program to gracefully exit
+        if(not killQueue.empty()):
+            break
+
         if not queueOut.empty():
             try:
                 #get message from a queue
@@ -20,8 +35,12 @@ def publish(queueOut):
                     address = messageArray[0]
                     message = messageArray[1]
    
+                    print(message)
+
                     messageBytes = bytes(message + "\0", "utf-8")
-                    print(len(messageBytes))
+
+                    if(len(messageBytes) >= 49):
+                        print("Cannot publish")
 
                     #write the message out to the bot
                     outSocket.sendto(messageBytes, (address,listeningPort))
@@ -34,9 +53,7 @@ def publish(queueOut):
                 print("Queue unexpectently went empty... odd.")
                 break
 
-
-    while(True):
-        print("The matrix has broken!")
+    print("The matrix has broken!")
 
         
 

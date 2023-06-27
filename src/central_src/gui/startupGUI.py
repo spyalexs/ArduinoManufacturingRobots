@@ -5,7 +5,7 @@ import sys
 from gui.monitorGUI import getTheme
 
 
-def createStartupGui(queueIn, queueOut):
+def createStartupGui(queueIn, queueOut, killQueue):
     #this is blocking -- everything should wait until the bridge has started
 
     #queue should just contain simple strings
@@ -25,12 +25,16 @@ def createStartupGui(queueIn, queueOut):
     window = sg.Window("Model StartUp", layout, finalize=True)
     window.close_destroys_window = True
 
-    return monitorStartUpGUI(window, queueIn, queueOut)
+    return monitorStartUpGUI(window, queueIn, queueOut, killQueue)
 
-def monitorStartUpGUI(window, queueIn, queueOut):
+def monitorStartUpGUI(window, queueIn, queueOut, killQueue):
     connectedBots = []
 
     while(True):
+        #sequence that allows program to gracefully exit
+        if(not killQueue.empty()):
+            break
+
         event, values = window.read(timeout=100)
 
         #handle events

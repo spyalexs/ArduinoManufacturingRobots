@@ -6,6 +6,8 @@
 #include <WiFiNINA.h>
 #include <WiFiUdp.h>
 
+#include <queue>
+
 
 class Communicator{
     public:
@@ -13,8 +15,11 @@ class Communicator{
         bool connectToNetwork();
         bool connectToCentral();
 
+        std::queue<String> checkForPackets();
+
         void writeMessageToCentral(String message);
         void writeMessageToCentral(String characteristic, String value);
+        
         void cycle();
 
     private:
@@ -42,7 +47,6 @@ class Communicator{
         double m_connectionTimeout = 1000; //timeout for connection protocol
 
         double getTime();
-        String checkForPackets();
 };
 
 #endif

@@ -1,18 +1,20 @@
-import serial, serial.tools.list_ports
+import signal
 import sys
+import os
 import time
 import queue
 from threading import Thread
 from random import random
 
-from monitorIn import monitor
-from publishToBot import publish
+from monitorIn import launchPacketMonitor
+from publishToBot import launchPacketPublisher
 from handleMessage import handleBotMessage
 from gui.launchGUI import launchGUI
 from execution.BotOverSeer import BotOverSeer
 from execution.connectBots import launchBotConnector
 
 overseerers = [] # a list of commander classes that tell robots what to do
+subThreadKills = [] #a list of all the thread PIDS
 
 #this is the main thread for the central controller
 
@@ -33,19 +35,15 @@ def initialize():
     connectionQueue = queue.Queue()
 
     #create the thread to monitor the serial inbox
-    monitorThread = Thread(target=monitor,args=(queueIn,))
-    monitorThread.daemon = True
-    monitorThread.start()
+    subThreadKills.append(launchPacketMonitor(queueIn))
     
     #create a thread to send messages out serial
-    publisherThread = Thread(target=publish, args=(queueOut,))
-    publisherThread.daemon = True
-    publisherThread.start()
+    subThreadKills.append(launchPacketPublisher(queueOut))
 
     #launch the gui
-    launchGUI(queueInGUI, queueOutGUI)
+    subThreadKills.append(launchGUI(queueInGUI, queueOutGUI))
     #launch the connection thread
-    launchBotConnector(connectionQueue)
+    subThreadKills.append(launchBotConnector(connectionQueue))
 
     connectedRobots = []
     while(queueInGUI.empty()):
@@ -146,8 +144,20 @@ def sendStringToBot(string):
     #put a string in the output queue - be sure that the string wil be recognized by the bridge
     queueOut.put(string)
 
+def cleanKill(signum, frame):
+    print("Cleanly shutting down!")
+
+    for threadQueue in subThreadKills:
+        #add something to the kill queue so the thread knows its time to end
+        threadQueue.put("Kill")
+
+    quit()
+
 
 if __name__ == "__main__":
+    #redefine ctrl+c to cleanly kill the program... otherwise some processes like to hang around
+    signal.signal(signal.SIGINT, cleanKill)
+
     if not sys.platform.startswith('win'):
         #ensure windows is being used
         print("This program was designed to run only on a Windows operating system! Quitting.")
