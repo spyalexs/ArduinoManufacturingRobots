@@ -38,7 +38,9 @@ void Command::updateStatus(int status){
 
 void Command::abort(){
   // check if the command needs to be aborted - command to abort will be sent from controller 
-  // TODO - exceptions added later for collisions detected by robot 
+  // TODO - exceptions added later for collisions detected by robot
+  Serial.println("Abort signal recieved to end command: " + this->getName());
+
   this->setStatus(255);
 }
 
@@ -48,7 +50,7 @@ void Command::confirmCommand(){
 
   //only work if the command is in the 253 status
   if(this->m_status == 253){
-    this->m_status = 2;
+    this->setStatus(2);
   }
 }
 
@@ -124,7 +126,6 @@ void Command::superCycle(){
       this->m_completed = true;
 
       //set status of command to complete so it does not clean up -- avoid sending status to central so the abort status still show on GUI
-      this->m_status = 254;
       break;
 
     default:
@@ -139,4 +140,8 @@ bool Command::isCompleted(){
 
 String Command::getName(){
   return this->m_name;
+}
+
+int Command::getStatus(){
+  return this->m_status;
 }

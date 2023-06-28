@@ -1,7 +1,7 @@
 #include "Sequencer.h"
 
 Sequencer::Sequencer(){
-
+    this->mp_CC = nullptr;
 }
 
 void Sequencer::loadInCommand(TurnRight command){
@@ -61,8 +61,25 @@ void Sequencer::loadInCommand(FollowLineUntilMarker command){
 }
 
 void Sequencer::removeCurrentCommand(){
+    //clear the entire queue if need be
+    if(this->m_clearQueue == true){
+      while(!this->isEmpty()){
+          this->m_clearQueue = false;
+          this->removeCurrentCommand();
+      }
+
+      //send a status to central to let it know that the abort has been handled
+      if(mp_CC != nullptr){
+        mp_CC->writeMessageToCentral("commandStatus", "0");
+      }
+
+      return;
+    }
+
     //find last command and pop it
     String lastCommandName = this->m_sequence.front();
+
+    Serial.println("Removing Last Command: " + lastCommandName);
 
     if(lastCommandName == "FollowLineUntilMarker"){
         this->m_followLineUntilMarkerQueue.pop();
@@ -79,7 +96,7 @@ void Sequencer::removeCurrentCommand(){
     }else if(lastCommandName == "TestCommand"){
         this->m_testCommandQueue.pop();
     }else{
-        Serial.println("Unknown command name detected!");
+        Serial.println("Unknown command name detected: " + lastCommandName);
     }
 
     //remove last command from sequencer
@@ -120,7 +137,7 @@ Command* Sequencer::getCurrentCommand(){
     }else if(currentCommandName == "TestCommand"){
         return &(this->m_testCommandQueue.front());
     }else{
-        Serial.println("Unknown command name detected!");
+        Serial.println("Unknown command name detected: " + currentCommandName);
     }
 
     return nullptr;
@@ -132,7 +149,11 @@ bool Sequencer::isEmpty(){
 }
 
 void Sequencer::clear(){
-    while(!this->isEmpty()){
-        this->removeCurrentCommand();
-    }
+  //set the clear flag to true
+  //this will clear the command queue at the next safe point (removal of next command)
+  this->m_clearQueue = true;
+}
+
+void Sequencer::setCommunicatorPointer(Communicator* CC){
+    this->mp_CC = CC;
 }

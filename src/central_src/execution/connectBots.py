@@ -11,7 +11,7 @@ except socket.gaierror:
     print("Could not find LOCALIP, is the Hotspot/Network up?")
     quit()
 
-CONNECTION_MESSAGE = "I'm a bot! MAC:"
+CONNECTION_MESSAGE = "Im a bot! MAC:"
 CONNECTION_REPLY = "Connection Established on:"
 REPLY_FREQUENCY = 20 #Hz
 CONNECTION_TIMEOUT = 5 #seconds
@@ -57,7 +57,6 @@ def connectBots(connectorQueue, killQueue):
         #run until entire system is down
         try:
             message, addr = sock.recvfrom(50)
-
             if(CONNECTION_MESSAGE in str(message)):
                 #trim message to get mac
                 macAddress = str(message).split("$$$")[0].split("MAC:")[1]

@@ -94,12 +94,14 @@ def monitor(window, queueIn, queueOut, killQueue):
     
 def handleEvents(event, values, window, queueIn):
     #handle the gui events
+
     if("AbortCommand" in event):
         #abort the command currently running
-        queueIn.put(GUIInMessage("bot1", "commandIssue", 255))  
+        queueIn.put(GUIInMessage(event.split("AbortCommand")[0], "commandIssue", 255, Direct=False))  
     elif("Command" in event):       
         #publish command to bot
         if(values[event + "Menu"] != ''):
+
             queueIn.put(GUIInMessage(event.split("Command")[0], "commandIssue", commandKeys[values[event + "Menu"]], Direct=False))   
 
     if("Route" in event):
@@ -111,8 +113,7 @@ def handleEvents(event, values, window, queueIn):
                 #ensure their are commands - fairly easy to make an impossible route
 
                 #send commands to controlled to be processed
-                queueIn.put(GUIInMessage("bot1", "commandSequence", commands, Direct=False))
-
+                queueIn.put(GUIInMessage(event.split("Route")[0], "commandSequence", commands, Direct=False))
 
 def update(window, queueOut):
     # to effectively clear queue - do two stage message scanning
@@ -156,6 +157,26 @@ def update(window, queueOut):
 
             #update connection radio
             window[target + "connectionStatus"].update(circle_color = color)
+
+        if("commandStatus" in topic):
+            #get the target robot
+            target = str(topic).split("$")[0]
+
+            match inputDictionary[topic]:
+                case 0:
+                    window[target+"CommandProgress"].update(current_count=0, bar_color=(None, None))
+                case 1:
+                    window[target+"CommandProgress"].update(current_count=10, bar_color=(None, None))
+                case 253:
+                    window[target+"CommandProgress"].update(current_count=20, bar_color=("Yellow", None))
+                case 2:
+                    window[target+"CommandProgress"].update(current_count=50, bar_color=(None, None))
+                case 3:
+                    window[target+"CommandProgress"].update(current_count=80, bar_color=(None, None))
+                case 254:
+                    window[target+"CommandProgress"].update(current_count=100, bar_color=("Green", None))
+                case 255:
+                    window[target+"CommandProgress"].update(current_count=100, bar_color=("Red", None))
 
 
 def getTheme():

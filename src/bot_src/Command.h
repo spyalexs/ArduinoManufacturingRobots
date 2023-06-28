@@ -28,6 +28,7 @@ class Command{
     bool isCompleted();
 
     String getName();
+    int getStatus();
 
   protected:
     RobotContainer* mp_MC;

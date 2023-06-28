@@ -68,6 +68,12 @@ class BotOverSeer:
     def issueCommandSequences(self, sequence):
         #if no command sequence already being ran, add a sequence to be ran
 
+        #special abort case
+        if(sequence[0] == 255):
+            #the current sequence needs to be aborted 
+            self.sendMessageToBot(self.m_port + "$commandIssue$255")
+            return
+
         if len(self.m_commands) == 0:
             self.m_commands = sequence
 

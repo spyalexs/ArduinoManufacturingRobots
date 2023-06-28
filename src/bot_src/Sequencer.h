@@ -4,6 +4,8 @@
 #include <Arduino.h>
 #include <queue>
 
+#include "Communicator.h"
+
 #include "Command.h"
 #include "FollowLineOnMarker.h"
 #include "FollowLineUntilAction.h"
@@ -24,6 +26,8 @@
 class Sequencer{
     public:
         Sequencer();
+
+        void setCommunicatorPointer(Communicator* CC);
 
         void loadInCommand(FollowLineOnMarker command);
         void loadInCommand(FollowLineUntilAction command);
@@ -51,6 +55,10 @@ class Sequencer{
         std::queue<TurnRight> m_turnRightQueue;
 
         std::queue<String> m_sequence;
+
+        bool m_clearQueue = false;
+
+        Communicator* mp_CC;
 };
 
 

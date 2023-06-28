@@ -71,6 +71,7 @@ bool Communicator::connectToNetwork(){
 bool Communicator::connectToCentral(){
     //make sure the communicator initailized properly
     if(!this->m_ready){
+        Serial.println("Cannot connect to central... network connection not ready!");
         //TODO: make a fallback
         return false;
     }
@@ -101,7 +102,7 @@ bool Communicator::connectToCentral(){
             }
 
         //write message to get central's attentions
-        String message = "I'm a bot! MAC:" + this->m_macString + "$$$";
+        String message = "Im a bot! MAC:" + this->m_macString + "$$$";
         message.getBytes(this->m_packetBuffer, this->m_bufferSize);
         this->m_Udp.beginPacket(this->m_serverIPAddress, this->m_localUDPPort);
         this->m_Udp.write(this->m_packetBuffer, this->m_bufferSize);

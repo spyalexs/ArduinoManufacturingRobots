@@ -29,19 +29,8 @@ Command* runningCommand;
  
 void setup(){
   Serial.begin(9600);
-  pinMode(LED_BUILTIN, OUTPUT);
-  digitalWrite(LED_BUILTIN, HIGH);
-  delay(1000);
-  digitalWrite(LED_BUILTIN, LOW);
-  delay(1000);  
-  digitalWrite(LED_BUILTIN, HIGH);
-  delay(1000);
-  digitalWrite(LED_BUILTIN, LOW);
-  delay(1000);  
-  digitalWrite(LED_BUILTIN, HIGH);
-  delay(1000);
-  digitalWrite(LED_BUILTIN, LOW);
-  delay(1000);
+
+  SC.setCommunicatorPointer(&CC);
 
   //start up motor carrier
   if(!controller.begin()){
@@ -65,8 +54,6 @@ void loop(){
 
     //if the running command is finished
     if(runningCommand->isCompleted()){
-
-      Serial.println("Finised Command");
       //set the running command to nothing - next cycle it will pick up the next command
       runningCommand = nullptr;
       SC.removeCurrentCommand();
@@ -74,16 +61,11 @@ void loop(){
       //run the running command
       runningCommand->superCycle();
     }
-
-
   } else {
     //if there is a command that needs run
     if(!SC.isEmpty()){
-
-      Serial.println("Adding Command!");
       runningCommand = SC.getCurrentCommand();
 
-      Serial.println("Starting to run a command");
       //begin the running command
       runningCommand->run();
     }
@@ -225,7 +207,11 @@ void listen(){
       switch (value){
         case 255:
           //abort running command and cancel all other commands in queue
-          runningCommand->abort();
+          if(runningCommand != nullptr){
+              runningCommand->abort();
+          } else {
+            Serial.println("Abort message recieved, however, there is no command to abort!");
+          }
         case 254:
           //clear all commands from queue
           SC.clear();
@@ -233,7 +219,9 @@ void listen(){
 
         case 253: 
           //confirm the currently running command
-          runningCommand->confirmCommand();
+          if(runningCommand != nullptr){
+              runningCommand->confirmCommand();
+          }
           break;
 
         default:
