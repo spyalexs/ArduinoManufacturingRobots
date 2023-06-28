@@ -2,8 +2,6 @@
 
 TestCommand::TestCommand(RobotContainer* MC, Communicator* CC):Command(MC, CC, "TestCommand"){
   //do initialization here
-
-  Serial.println("Here");
 }
 
 void TestCommand::startup(){
@@ -11,22 +9,20 @@ void TestCommand::startup(){
   this->m_lastToggle = mp_MC->getTime();
 
   Serial.println("Starting Test");
+  this->m_togglesLeft = 11;
 }
 
 void TestCommand::cycle(){
   //do cycle stuff here
-  
-  if(mp_MC->getTime() > m_lastToggle + 1.0){
-    if(m_togglesLeft % 2 > 0){
+  if(mp_MC->getTime() > this->m_lastToggle + 1.0){
+    if(this->m_togglesLeft % 2 > 0){
         mp_MC->setLEDStatus(1);
     } else {
         mp_MC->setLEDStatus(0);
     }
 
-    m_togglesLeft = m_togglesLeft - 1;
-    m_lastToggle = mp_MC->getTime();
-
-    Serial.println("Cycling Test");
+    this->m_togglesLeft = this->m_togglesLeft - 1;
+    this->m_lastToggle = mp_MC->getTime();
   }
 }
 
@@ -37,7 +33,7 @@ void TestCommand::cleanup(){
 
 bool TestCommand::ifEnd(){
   //return true to stop cycling, false to continue
-  if(m_lastToggle > 0){
+  if(this->m_togglesLeft > 0){
     return false;
   }
 

@@ -136,3 +136,7 @@ void Command::superCycle(){
 bool Command::isCompleted(){
   return this->m_completed;
 }
+
+String Command::getName(){
+  return this->m_name;
+}

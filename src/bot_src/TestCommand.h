@@ -13,7 +13,7 @@ class TestCommand : public Command{
     bool ifEnd();
 
     double m_lastToggle = 0;
-    bool m_togglesLeft = 11;
+    int m_togglesLeft = 11;
 };
 
 

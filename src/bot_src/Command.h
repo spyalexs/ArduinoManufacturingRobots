@@ -27,6 +27,8 @@ class Command{
 
     bool isCompleted();
 
+    String getName();
+
   protected:
     RobotContainer* mp_MC;
     Communicator* mp_CC;

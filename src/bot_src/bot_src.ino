@@ -5,6 +5,7 @@
 
 #include "RobotContainer.h"
 #include "Communicator.h"
+#include "Sequencer.h"
 
 //commands
 #include "TurnRight.h"
@@ -19,15 +20,28 @@ bool PUBLISHDATA = true;
 //the robot container that is a wrapper around periphral functions
 RobotContainer MC = RobotContainer(&M1, &M2, &encoder1, &encoder2, A3, A6, A2);
 Communicator CC = Communicator();
+Sequencer SC = Sequencer();
 
 int lastUpdate = 0; //last time the update was sent to central
 int updateFrequency = 1; //Hz
 
 Command* runningCommand;
-std::queue<int> commandQueue;
  
 void setup(){
   Serial.begin(9600);
+  pinMode(LED_BUILTIN, OUTPUT);
+  digitalWrite(LED_BUILTIN, HIGH);
+  delay(1000);
+  digitalWrite(LED_BUILTIN, LOW);
+  delay(1000);  
+  digitalWrite(LED_BUILTIN, HIGH);
+  delay(1000);
+  digitalWrite(LED_BUILTIN, LOW);
+  delay(1000);  
+  digitalWrite(LED_BUILTIN, HIGH);
+  delay(1000);
+  digitalWrite(LED_BUILTIN, LOW);
+  delay(1000);
 
   //start up motor carrier
   if(!controller.begin()){
@@ -51,18 +65,25 @@ void loop(){
 
     //if the running command is finished
     if(runningCommand->isCompleted()){
+
+      Serial.println("Finised Command");
       //set the running command to nothing - next cycle it will pick up the next command
       runningCommand = nullptr;
-      commandQueue.pop();
+      SC.removeCurrentCommand();
+    }else{
+      //run the running command
+      runningCommand->superCycle();
     }
 
-    //run the running command
-    runningCommand->superCycle();
+
   } else {
     //if there is a command that needs run
-    if(!commandQueue.empty()){
-      runningCommand = &commandQueue.front();
+    if(!SC.isEmpty()){
 
+      Serial.println("Adding Command!");
+      runningCommand = SC.getCurrentCommand();
+
+      Serial.println("Starting to run a command");
       //begin the running command
       runningCommand->run();
     }
@@ -88,79 +109,79 @@ void assignCommand(int commandNumber){
   switch (commandNumber){
     case 1:
       if(true){
-        commandQueue.push(TestCommand(&MC, &CC));
+        SC.loadInCommand(TestCommand(&MC, &CC));
       }
       break;
 
     case 2:
       if(true){
-        commandQueue.push(FollowLineUntilMarker(&MC, &CC));
+        SC.loadInCommand(FollowLineUntilMarker(&MC, &CC));
       }
       break;
 
     case 3:
       if(true){
-        commandQueue.push(FollowLineOnMarker(&MC, &CC));
+        SC.loadInCommand(FollowLineOnMarker(&MC, &CC));
       }
       break;
 
     case 4:
       if(true){
-        commandQueue.push(TravelStraight(&MC, &CC, 210));
+        SC.loadInCommand(TravelStraight(&MC, &CC, 210));
       }
       break;
 
     case 5:
       if(true){
-        commandQueue.push(TurnRight(&MC, &CC));
+        SC.loadInCommand(TurnRight(&MC, &CC));
       }
       break;
 
     case 6:
       if(true){
-        commandQueue.push(TurnLeft(&MC, &CC));
+        SC.loadInCommand(TurnLeft(&MC, &CC));
       }
       break;
 
     case 101:
       //full right turn through intersection
       if(true){
-        commandQueue.push(FollowLineOnMarker(&MC, &CC));
-        commandQueue.push(TravelStraight(&MC, &CC, 210));
-        commandQueue.push(TurnRight(&MC, &CC));
+        SC.loadInCommand(FollowLineOnMarker(&MC, &CC));
+        SC.loadInCommand(TravelStraight(&MC, &CC, 210));
+        SC.loadInCommand(TurnRight(&MC, &CC));
       }
       break;
 
     case 102:
       //full straight through intersection
       if(true){
-        commandQueue.push(FollowLineOnMarker(&MC, &CC));
-        commandQueue.push(TravelStraight(&MC, &CC, 200));
-        commandQueue.push(FollowLineUntilMarker(&MC, &CC));
-        commandQueue.push(TravelStraight(&MC, &CC, 100));
+        SC.loadInCommand(FollowLineOnMarker(&MC, &CC));
+        SC.loadInCommand(TravelStraight(&MC, &CC, 200));
+        SC.loadInCommand(FollowLineUntilMarker(&MC, &CC));
+        SC.loadInCommand(TravelStraight(&MC, &CC, 100));
       }
       break;
 
     case 103:
       //full left through intersection
       if(true){
-        commandQueue.push(FollowLineOnMarker(&MC, &CC));
-        commandQueue.push(TravelStraight(&MC, &CC, 200));
-        commandQueue.push(FollowLineUntilMarker(&MC, &CC));
-        commandQueue.push(TravelStraight(&MC, &CC, 310));
-        commandQueue.push(TurnLeft(&MC, &CC));
-        commandQueue.push(TravelStraight(&MC, &CC, 40));
+        SC.loadInCommand(FollowLineOnMarker(&MC, &CC));
+        SC.loadInCommand(TravelStraight(&MC, &CC, 200));
+        SC.loadInCommand(FollowLineUntilMarker(&MC, &CC));
+        SC.loadInCommand(TravelStraight(&MC, &CC, 310));
+        SC.loadInCommand(TurnLeft(&MC, &CC));
+        SC.loadInCommand(TravelStraight(&MC, &CC, 40));
       }
       break;
 
     case 104:
       //full u turn
       if(true){
-        commandQueue.push(FollowLineOnMarker(&MC, &CC));
-        commandQueue.push(TravelStraight(&MC, &CC, 390));
-        commandQueue.push(TurnLeft(&MC, &CC));
-        commandQueue.push(TravelStraight(&MC, &CC, 265));
-        commandQueue.push(TurnLeft(&MC, &CC));
+        SC.loadInCommand(FollowLineOnMarker(&MC, &CC));
+        SC.loadInCommand(TravelStraight(&MC, &CC, 390));
+        SC.loadInCommand(TurnLeft(&MC, &CC));
+        SC.loadInCommand(TravelStraight(&MC, &CC, 265));
+        SC.loadInCommand(TurnLeft(&MC, &CC));
       }
       break;
 
@@ -207,9 +228,7 @@ void listen(){
           runningCommand->abort();
         case 254:
           //clear all commands from queue
-          while(!commandQueue.empty()){
-            commandQueue.pop();
-          }
+          SC.clear();
           break;
 
         case 253: 
@@ -218,7 +237,7 @@ void listen(){
           break;
 
         default:
-          addCommand(value);
+          assignCommand(value);
         break;
       }
     }
