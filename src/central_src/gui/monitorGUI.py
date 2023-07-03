@@ -4,7 +4,7 @@ import queue
 from getConstants import getCommandKeys
 from gui.GUIInMessage import GUIInMessage
 from gui.GUIOutMessage import GUIOutMessage
-from createRoute import route
+from createRoute import route, getLocations
 
 #keys for the commands availible to be launched - the name of the command corrosponds to the name that will be launched on the robot
 commandKeys = getCommandKeys()
@@ -61,12 +61,15 @@ def getRobotFrameLayout(name):
     for key in commandKeys.keys():
         commands.append(key)
 
+    locations = getLocations() 
+    
     #returns the layout for a particular robot frame
     robotFrameLayout = [
         [sg.Text("Command"), sg.Combo(commands, enable_events=False, key=(str(name) + "CommandMenu")), sg.Button("Send", key=(str(name) + "Command"), enable_events=True)],
         [sg.Text("     Status"), sg.ProgressBar(100, size=(13,17), key=(str(name) + "CommandProgress")), sg.Button("Abort", key=(str(name)) + "AbortCommand", enable_events=True)],
         [sg.Text("From:"), sg.Input("", key=(str(name) + "RouteFrom"), size=(10,7)), sg.Text("To:"), sg.Input("", key=(str(name) + "RouteTo"), size=(10,7)), sg.Button("Route", key=(str(name) + "Route"), enable_events=True)],
-        [sg.Text("Battery Voltage: "), sg.Text("0.00", key=str(name) + "BatteryVoltage"), sg.Text("Connection Status: "), sg.Radio("", "1", key=str(name) + "connectionStatus", circle_color="white")]]
+        [sg.Text("Location"), sg.Combo(locations, enable_events=False, size=(9,7), key=(str(name) + "LocationMenu")), sg.Button("Set", key=(str(name) + "SetLocation"), enable_events=True), sg.Text(" Localizing:"), sg.Radio("","2", key=str(name)+"IsLocalizing", circle_color="green")],
+        [sg.Text("Battery Voltage: "), sg.Text("0.00", key=str(name) + "BatteryVoltage"), sg.Text("Connection Status:"), sg.Radio("", "1", key=str(name) + "connectionStatus", circle_color="white")]]
     
     return robotFrameLayout
 
@@ -106,14 +109,19 @@ def handleEvents(event, values, window, queueIn):
 
     if("Route" in event):
         #run a route between two points
-        if (not values["RouteFrom"] == "") and (not values["RouteTo"] == ""):
-            commands = route(values["RouteFrom"], values["RouteTo"])
+        if (not values[event.split("Route")[0] + "RouteFrom"] == "") and (not event.split("Route")[0] + values["RouteTo"] == ""):
+            commands = route(values[event.split("Route")[0] + "RouteFrom"], values[event.split("Route")[0] + "RouteTo"])
 
             if not commands == None:
                 #ensure their are commands - fairly easy to make an impossible route
 
                 #send commands to controlled to be processed
                 queueIn.put(GUIInMessage(event.split("Route")[0], "commandSequence", commands, Direct=False))
+    
+    if("SetLocation" in event):
+        #Set the location of a robot
+        if(not values[event.split("SetLocation")[0] + "LocationMenu"] == ""):
+            queueIn.put(GUIInMessage(event.split("SetLocation")[0], "locationSet", values[event.split("SetLocation")[0] + "LocationMenu"], Direct=False))
 
 def update(window, queueOut):
     # to effectively clear queue - do two stage message scanning
@@ -177,6 +185,20 @@ def update(window, queueOut):
                     window[target+"CommandProgress"].update(current_count=100, bar_color=("Green", None))
                 case 255:
                     window[target+"CommandProgress"].update(current_count=100, bar_color=("Red", None))
+        
+        if("localizationStatus" in topic):
+            #set the status of the localization radio on the displa
+            target = str(topic).split("$")[0]
+
+            match inputDictionary[topic]:
+                case 0:
+                    window[target + "IsLocalizing"].update(circle_color="red")
+                case 1:
+                    window[target + "IsLocalizing"].update(circle_color="green")
+
+
+
+
 
 
 def getTheme():

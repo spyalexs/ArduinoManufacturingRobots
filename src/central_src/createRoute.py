@@ -34,6 +34,17 @@ def loadPPData():
 
     return root
 
+def getLocations():
+    #return all valid locations on the map
+    data = loadPPData()
+
+    nodeNames=[]
+    #go through all the nodes and save their name
+    for node in data.findall("./ppnode"):
+        nodeNames.append(node.get("name"))
+
+    return nodeNames
+
 def route(startingNodeName, endingNodeName):
     #route the robot based on a starting node and ending node
     data = loadPPData()
@@ -177,7 +188,7 @@ def getStepsFromRoute(route):
             endingKey = endingNode.split("-")
 
         if(len(endingKey) == 1):
-            if "actionpoint" in endingKey[0]:
+            if "AP" in endingKey[0]:
                 #add in action point functionality when ready
                 #commandNumbers.append(commandKeys["TravelToAction"])
                 print("Skipping action point as it is not ready")

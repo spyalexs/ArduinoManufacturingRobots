@@ -235,7 +235,7 @@ def drawConnection(map, root, originSubNodeName, endSubNodeName, ppData):
 
                 #add action point as a node
                 ppActionNode = ET.SubElement(ppData, "ppnode")
-                ppActionNode.set("name", "actionpoint" + actionPointIDs[counter])
+                ppActionNode.set("name", "AP" + actionPointIDs[counter])
 
                 #add link from action point to end node
                 pplink = ET.SubElement(ppActionNode, "pplink")
@@ -253,7 +253,7 @@ def drawConnection(map, root, originSubNodeName, endSubNodeName, ppData):
                     pplink3.set("cost", str((counter2 - counter) * spacing + 1))
                     pplink3.set("locationX", str(subnodeOriginX))
                     pplink3.set("locationY", str(round(subnodeOriginY + (NODESIZE - 1) / 2 + (counter2 + .25) * spacing)))
-                    pplink3.set("neighbor", "actionpoint" + actionPointIDs[counter2])
+                    pplink3.set("neighbor", "AP" + actionPointIDs[counter2])
                     pplink3.set("intersection", "None")
 
                     counter2 +=1
@@ -263,7 +263,7 @@ def drawConnection(map, root, originSubNodeName, endSubNodeName, ppData):
                 pplink2.set("cost", str((counter + .5) * spacing + (NODESIZE / 2) + 1))
                 pplink2.set("locationX", str(subnodeOriginX))
                 pplink2.set("locationY", str(round(subnodeOriginY + (NODESIZE - 1) / 2 + (counter + .25) * spacing)))
-                pplink2.set("neighbor",  "actionpoint" + actionPointIDs[counter])
+                pplink2.set("neighbor",  "AP" + actionPointIDs[counter])
                 pplink2.set("intersection", "None")
  
                 counter += 1
@@ -286,7 +286,7 @@ def drawConnection(map, root, originSubNodeName, endSubNodeName, ppData):
 
                 #add action point as a node
                 ppActionNode = ET.SubElement(ppData, "ppnode")
-                ppActionNode.set("name", "actionpoint" + actionPointIDs[counter])
+                ppActionNode.set("name", "AP" + actionPointIDs[counter])
 
                 #add link from action point to end node
                 pplink = ET.SubElement(ppActionNode, "pplink")
@@ -304,7 +304,7 @@ def drawConnection(map, root, originSubNodeName, endSubNodeName, ppData):
                     pplink3.set("cost", str((counter2 - counter) * spacing + 1))
                     pplink3.set("locationX", str(subnodeOriginX))
                     pplink3.set("locationY", str(round(subnodeEndY + (NODESIZE - 1) / 2 + (counter2 + .25) * spacing)))
-                    pplink3.set("neighbor", "actionpoint" + actionPointIDs[counter2])
+                    pplink3.set("neighbor", "AP" + actionPointIDs[counter2])
                     pplink3.set("intersection", "None")
 
                     counter2 +=1
@@ -314,7 +314,7 @@ def drawConnection(map, root, originSubNodeName, endSubNodeName, ppData):
                 pplink2.set("cost", str((counter + .5) * spacing + (NODESIZE / 2) + 1))
                 pplink2.set("locationX", str(subnodeOriginX))
                 pplink2.set("locationY", str(round(subnodeEndY + (NODESIZE - 1) / 2 + (counter + .25) * spacing)))
-                pplink2.set("neighbor",  "actionpoint" + actionPointIDs[counter])
+                pplink2.set("neighbor",  "AP" + actionPointIDs[counter])
                 pplink2.set("intersection", "None")
 
 
@@ -392,7 +392,7 @@ def drawConnection(map, root, originSubNodeName, endSubNodeName, ppData):
                 
                 #add action point as a node
                 ppActionNode = ET.SubElement(ppData, "ppnode")
-                ppActionNode.set("name", "actionpoint" + actionPointIDs[counter])
+                ppActionNode.set("name", "AP" + actionPointIDs[counter])
 
                 #add link from action point to end node
                 pplink = ET.SubElement(ppActionNode, "pplink")
@@ -409,7 +409,7 @@ def drawConnection(map, root, originSubNodeName, endSubNodeName, ppData):
                     pplink3.set("cost", str((counter2 - counter) * spacing + 1))
                     pplink3.set("locationY", str(subnodeOriginY))
                     pplink3.set("locationX", str(round(subnodeOriginX + (NODESIZE - 1) / 2 + (counter2 + .25) * spacing)))
-                    pplink3.set("neighbor", "actionpoint" + actionPointIDs[counter2])
+                    pplink3.set("neighbor", "AP" + actionPointIDs[counter2])
                     pplink3.set("intersection", "None")
 
                     counter2 +=1
@@ -419,7 +419,7 @@ def drawConnection(map, root, originSubNodeName, endSubNodeName, ppData):
                 pplink2.set("cost", str((counter + .5) * spacing + (NODESIZE / 2) + 1))
                 pplink2.set("locationY", str(subnodeOriginY))
                 pplink2.set("locationX", str(round(subnodeOriginX + (NODESIZE - 1) / 2 + (counter + .25) * spacing)))
-                pplink2.set("neighbor",  "actionpoint" + actionPointIDs[counter])
+                pplink2.set("neighbor",  "AP" + actionPointIDs[counter])
                 pplink2.set("intersection", "None")
 
 
@@ -443,7 +443,7 @@ def drawConnection(map, root, originSubNodeName, endSubNodeName, ppData):
 
                 #add action point as a node
                 ppActionNode = ET.SubElement(ppData, "ppnode")
-                ppActionNode.set("name", "actionpoint" + actionPointIDs[counter])
+                ppActionNode.set("name", "AP" + actionPointIDs[counter])
 
                 #add link from action point to end node
                 pplink = ET.SubElement(ppActionNode, "pplink")
@@ -460,7 +460,7 @@ def drawConnection(map, root, originSubNodeName, endSubNodeName, ppData):
                     pplink3.set("cost", str((counter2 - counter) * spacing + 1))
                     pplink3.set("locationY", str(subnodeOriginY))
                     pplink3.set("locationX", str(round(subnodeEndX + (NODESIZE - 1) / 2 + (counter2 + .25) * spacing)))
-                    pplink3.set("neighbor", "actionpoint" + actionPointIDs[counter2])
+                    pplink3.set("neighbor", "AP" + actionPointIDs[counter2])
                     pplink3.set("intersection", "None")
 
                     counter2 +=1
@@ -470,7 +470,7 @@ def drawConnection(map, root, originSubNodeName, endSubNodeName, ppData):
                 pplink2.set("cost", str((counter + .5) * spacing + (NODESIZE / 2) + 1))
                 pplink2.set("locationY", str(subnodeOriginY))
                 pplink2.set("locationX", str(round(subnodeEndX + (NODESIZE - 1) / 2 + (counter + .25) * spacing)))
-                pplink2.set("neighbor",  "actionpoint" + actionPointIDs[counter])    
+                pplink2.set("neighbor",  "AP" + actionPointIDs[counter])    
                 pplink2.set("intersection", "None")
 
                 counter += 1

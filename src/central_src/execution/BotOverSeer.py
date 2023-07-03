@@ -1,12 +1,17 @@
 import time
+
 from gui.GUIOutMessage import GUIOutMessage
+from getConstants import getCommandLocalizationEffects
 
 class BotOverSeer:
     # a class to monitor an individual bot's function on the controller end
     
     # for now, the bot overseer will be overriden by direct to bot messages!
     m_directToBotOverride = True
+
+    m_currentLocation = "Node1-A" # the current location of the robot, starts at a default
     m_localizing = False # if the robot is currently being localized by the controller
+
 
     m_patience = .5 # how long to wait before attempting to reissue a command
     m_lastIssue = None
@@ -15,7 +20,9 @@ class BotOverSeer:
     m_messageNumber = 1
 
     m_status = 0 # keeps track of the bot's status
-    m_commands = []
+
+    m_commands = [] # list of raw commands to send to bot - ment for manually sending commands
+    m_route = [] # list of steps sent to the bot - meant for going through a route
     
     m_connectionTimeout = 5 # after five seconds of not hearing from bot, assume connection issues
     m_connected = False
@@ -30,6 +37,7 @@ class BotOverSeer:
         self.m_lastIssue = 0
 
         self.m_lastConnection = time.time()
+        self.m_localizationEffects = getCommandLocalizationEffects()
 
     def updateStatus(self, status):
         self.m_status = status
@@ -65,21 +73,52 @@ class BotOverSeer:
             return False # block the message - only messages from the overseer may reach the bot
 
 
-    def issueCommandSequences(self, sequence):
+    def issueCommand(self, command):
         #if no command sequence already being ran, add a sequence to be ran
 
         #special abort case
-        if(sequence[0] == 255):
+        if(command == 255):
             #the current sequence needs to be aborted 
             self.sendMessageToBot(self.m_port + "$commandIssue$255")
+            
+            #note that this breaks the localization tracking
+            self.m_localizing = False
+            self.sendLocalizationStatusToGui()
+
             return
 
-        if len(self.m_commands) == 0:
-            self.m_commands = sequence
+        if len(self.m_commands and self.m_route) == 0:
+            self.m_commands = [command]
 
-            print("New command sequence added: " + str(sequence))
+            #figure out and implement the effect on the localization system
+            #NOTE: commands that do not break localization should be processed as routes as not to break the localization
+            if(self.m_localizationEffects[command] == -1 or self.m_localizationEffects[command] == 1):
+                #if localization is broken
+                self.m_localizing = False
+                self.sendLocalizationStatusToGui()
+
+            print("New command added: " + str(command))
         else:
-            print("Failed to add new command sequence to bot: " + str(self.m_port) + ". The sequence is already full.")
+            print("Failed to add new command to bot: " + str(self.m_port) + ". The command/route queue is already full.")
+
+
+    def issueRoute(self, route):
+        if(not self.m_localizing):
+            print("Cannot execute route, robot: " + self.m_port + " is not localizing. Set location to begin localizing")
+
+            #TODO: make GUI flash when this happens
+            return
+        
+        #if no command sequence already being ran, add a sequence to be ran
+
+        if len(self.m_commands) == 0:
+            self.m_commands = route
+
+            print("New route added: " + str(route))
+        else:
+            print("Failed to add new command to bot: " + str(self.m_port) + ". The command/route queue is already full.")
+
+
 
     def cycle(self):
         #check connection status
@@ -142,9 +181,24 @@ class BotOverSeer:
         message = GUIOutMessage(self.m_port, "connectionStatus", int(self.m_connected))
         self.m_queueGui.put(message)
 
+    def sendLocalizationStatusToGui(self):
+        #put a localization status message in the the GUI queue
+        message = GUIOutMessage(self.m_port, "localizationStatus", int(self.m_localizing))
+        self.m_queueGui.put(message)
+
     def sendMessageToBot(self, message):
         #send a message to the bot
         self.m_queue.put(self.m_ip + ":" + message)
+
+    def setLocation(self, location):
+        #the current location of the robot
+        self.m_currentLocation = location
+
+        #mark the robot as now localizing
+        self.m_localizing = True
+        
+        #tell the gui that the robot is now localizing
+        self.sendLocalizationStatusToGui()
 
     def connectionHeard(self):
         if(not self.m_connected):

@@ -16,6 +16,28 @@ def getCommandKeys():
 
     return keys
 
+def getCommandLocalizationEffects():
+    #returns the dictionary that maps the command name to wether or not the command effects the robot's localization
+
+    # -1 - breaks localization
+    # 0 - no effect on localization
+    # 1 - effects localization but does not break
+
+    keys = {1 : 0, 
+            2 : 1, 
+            3 : -1, 
+            4 : -1, 
+            5 : -1, 
+            6 : -1, 
+            7 : -1,
+            101 : 1, 
+            102 : 1, 
+            103: 1,
+            104: 1,
+            }
+
+    return keys
+
 def getConnectionPorts():
     #ports for communication to be assigneed
         #this limit is 20(could be higher) -- need a router for more than 8(hardware)

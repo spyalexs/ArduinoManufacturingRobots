@@ -17,8 +17,8 @@
  </ppnode>
  <ppnode name="Node1-E">
   <pplink cost="152.0" locationX="38.0" locationY="150" intersection="None" neighbor="Node2-H" />
-  <pplink cost="47.5" locationX="38.0" locationY="105" neighbor="actionpoint2" intersection="None" />
-  <pplink cost="107.5" locationX="38.0" locationY="165" neighbor="actionpoint3" intersection="None" />
+  <pplink cost="47.5" locationX="38.0" locationY="105" neighbor="AP2" intersection="None" />
+  <pplink cost="107.5" locationX="38.0" locationY="165" neighbor="AP3" intersection="None" />
  </ppnode>
  <ppnode name="Node1-F">
   <pplink cost="30" intersection="Node1" locationX="50" locationY="250" neighbor="Node1-A" />
@@ -44,7 +44,7 @@
  </ppnode>
  <ppnode name="Node2-C">
   <pplink cost="152.0" locationX="150.0" locationY="38.0" neighbor="Node4-F" intersection="None" />
-  <pplink cost="77.5" locationY="38.0" locationX="120" neighbor="actionpoint1" intersection="None" />
+  <pplink cost="77.5" locationY="38.0" locationX="120" neighbor="AP1" intersection="None" />
  </ppnode>
  <ppnode name="Node2-D">
   <pplink cost="30" intersection="Node2" locationX="50" locationY="50" neighbor="Node2-A" />
@@ -100,7 +100,7 @@
  </ppnode>
  <ppnode name="Node4-A">
   <pplink cost="152.0" locationX="262.0" locationY="150" intersection="None" neighbor="Node3-D" />
-  <pplink cost="77.5" locationX="262.0" locationY="120" neighbor="actionpoint4" intersection="None" />
+  <pplink cost="77.5" locationX="262.0" locationY="120" neighbor="AP4" intersection="None" />
  </ppnode>
  <ppnode name="Node4-B">
   <pplink cost="30" intersection="Node4" locationX="250" locationY="50" neighbor="Node4-A" />
@@ -124,7 +124,7 @@
  </ppnode>
  <ppnode name="Node4-G">
   <pplink cost="152.0" locationX="150.0" locationY="62.0" neighbor="Node2-B" intersection="None" />
-  <pplink cost="77.5" locationY="62.0" locationX="120" neighbor="actionpoint5" intersection="None" />
+  <pplink cost="77.5" locationY="62.0" locationX="120" neighbor="AP5" intersection="None" />
  </ppnode>
  <ppnode name="Node4-H">
   <pplink cost="30" intersection="Node4" locationX="250" locationY="50" neighbor="Node4-A" />
@@ -132,20 +132,20 @@
   <pplink cost="30" intersection="Node4" locationX="250" locationY="50" neighbor="Node4-E" />
   <pplink cost="30" intersection="Node4" locationX="250" locationY="50" neighbor="Node4-G" />
  </ppnode>
- <ppnode name="actionpoint2">
+ <ppnode name="AP2">
   <pplink cost="107.5" locationX="38.0" locationY="135" neighbor="Node2-H" intersection="None" />
-  <pplink cost="61.0" locationX="38.0" locationY="165" neighbor="actionpoint3" intersection="None" />
+  <pplink cost="61.0" locationX="38.0" locationY="165" neighbor="AP3" intersection="None" />
  </ppnode>
- <ppnode name="actionpoint3">
+ <ppnode name="AP3">
   <pplink cost="47.5" locationX="38.0" locationY="195" neighbor="Node2-H" intersection="None" />
  </ppnode>
- <ppnode name="actionpoint1">
+ <ppnode name="AP1">
   <pplink cost="77.5" locationY="38.0" locationX="180" neighbor="Node4-F" intersection="None" />
  </ppnode>
- <ppnode name="actionpoint4">
+ <ppnode name="AP4">
   <pplink cost="77.5" locationX="262.0" locationY="180" neighbor="Node3-D" intersection="None" />
  </ppnode>
- <ppnode name="actionpoint5">
+ <ppnode name="AP5">
   <pplink cost="77.5" locationY="62.0" locationX="180" neighbor="Node2-B" intersection="None" />
  </ppnode>
 </map>

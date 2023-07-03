@@ -115,16 +115,22 @@ def handleGUIIn():
                 # find the bot it belongs to and give the commands
                 for overseer in overseerers:
                     if overseer.m_port == message.m_target:
-                        overseer.issueCommandSequences(message.m_value)
+                        overseer.issueRoute(message.m_value)
 
             if message.m_characteristic == "commandIssue":
                 # find the bot it belongs to and give the command
 
-                print(message.m_target)
+                for overseer in overseerers:
+                    if overseer.m_port == message.m_target:
+                        overseer.issueCommand(message.m_value)
+
+            if message.m_characteristic == "locationSet":
+                #set the location for of the robot in the locatalization system
 
                 for overseer in overseerers:
                     if overseer.m_port == message.m_target:
-                        overseer.issueCommandSequences([message.m_value])
+                        overseer.setLocation(message.m_value) 
+                
                  
 def sendMessageToBot(BotName, Characteristic, Value):
     #botname = string
