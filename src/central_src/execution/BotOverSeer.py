@@ -12,7 +12,6 @@ class BotOverSeer:
     m_currentLocation = "Node1-A" # the current location of the robot, starts at a default
     m_localizing = False # if the robot is currently being localized by the controller
 
-
     m_patience = .5 # how long to wait before attempting to reissue a command
     m_lastIssue = None
     m_written = False
@@ -186,19 +185,41 @@ class BotOverSeer:
         message = GUIOutMessage(self.m_port, "localizationStatus", int(self.m_localizing))
         self.m_queueGui.put(message)
 
+    def sendLocationToGui(self):
+        #send the gui a message with the robot's location
+        message = GUIOutMessage(self.m_port, "locationCurrent", self.m_currentLocation)
+        self.m_queueGui.put(message)
+
     def sendMessageToBot(self, message):
         #send a message to the bot
         self.m_queue.put(self.m_ip + ":" + message)
 
-    def setLocation(self, location):
-        #the current location of the robot
-        self.m_currentLocation = location
-
-        #mark the robot as now localizing
-        self.m_localizing = True
+    def sendInitialStateToGUI(self):
+        #send the initial state of the robot to the gui... this is needed because the gui is brought up significantly after the overseers
         
-        #tell the gui that the robot is now localizing
+        #connection
+        self.sendConnectionStatusToGui()
+
+        #localization
         self.sendLocalizationStatusToGui()
+
+        #location
+        self.sendLocationToGui()
+
+    def setLocation(self, location):
+        if(self.m_currentLocation == location):
+            #the current location of the robot
+            self.m_currentLocation = location
+
+            #send the gui the robot's location
+            self.sendLocationToGui()
+
+        if(self.m_localizing == False):
+            #mark the robot as now localizing
+            self.m_localizing = True
+            
+            #tell the gui that the robot is now localizing
+            self.sendLocalizationStatusToGui()
 
     def connectionHeard(self):
         if(not self.m_connected):

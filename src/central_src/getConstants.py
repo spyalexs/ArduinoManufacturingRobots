@@ -61,3 +61,13 @@ def getPacketLength():
     MAX_PACKET_LENGTH = 50
 
     return MAX_PACKET_LENGTH
+
+def getTheme():
+    #returns the theme for the GUI
+
+    #potentially implement custom theme
+    #GUI_THEME "DarkRed1" #OSU theme but hurts eyes
+    GUI_THEME = "BrownBlue"
+
+    return GUI_THEME #better to look at
+

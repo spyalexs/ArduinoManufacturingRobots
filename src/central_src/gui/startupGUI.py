@@ -2,7 +2,7 @@ import PySimpleGUI as sg
 import threading
 import sys
 
-from gui.monitorGUI import getTheme
+from getConstants import getTheme
 
 
 def createStartupGui(queueIn, queueOut, killQueue):

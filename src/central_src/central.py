@@ -130,6 +130,14 @@ def handleGUIIn():
                 for overseer in overseerers:
                     if overseer.m_port == message.m_target:
                         overseer.setLocation(message.m_value) 
+
+            if message.m_characteristic == "ready":
+                if(message.m_value == True):
+                    #if the GUI has sent to central that it is ready
+
+                    #have each overseerer send an initial status
+                    for overseer in overseerers:
+                        overseer.sendInitialStateToGUI()
                 
                  
 def sendMessageToBot(BotName, Characteristic, Value):

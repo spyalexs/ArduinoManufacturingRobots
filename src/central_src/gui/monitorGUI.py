@@ -1,13 +1,18 @@
 import PySimpleGUI as sg
 import threading
+from PIL import Image, ImageTk
 
-from getConstants import getCommandKeys
+from getConstants import getCommandKeys, getTheme
 from gui.GUIInMessage import GUIInMessage
-from gui.GUIOutMessage import GUIOutMessage
 from createRoute import route, getLocations
+from gui.map_display.displayMap import getBaseMap
 
 #keys for the commands availible to be launched - the name of the command corrosponds to the name that will be launched on the robot
 commandKeys = getCommandKeys()
+#the map with no bots draw on
+baseMap = getBaseMap()
+#the current bot locations as far as the gui knows
+botLocationsGUI = dict()
 
 def make(queueIn, queueOut, robots, killQueue):
     #create the GUI window for the first time
@@ -46,12 +51,21 @@ def make(queueIn, queueOut, robots, killQueue):
 
         robotsFrameLayout.append(robotRowLayout)
 
+    #get the layout for the map sceen
+    mapLayout = [[sg.Image(key="MapImage")]]
+
     #all the elements on the gui are defined here - similar to XML formating...
-    layout = [[sg.Frame("",robotsFrameLayout)]]
+    layout = [[sg.Frame("",robotsFrameLayout), sg.Frame("Map", mapLayout)]]
 
     #links the layout to the window
     window = sg.Window(title="Test", layout=layout, finalize=True)
-    
+
+    mapImage = Image.fromarray(baseMap)
+    window["MapImage"].update(data=ImageTk.PhotoImage(mapImage))
+
+    #tell central that the gui is ready to begin
+    queueIn.put(GUIInMessage("All", "ready", True, Direct=False))
+
     #keeps an eye on the gui for event and such as it runs
     monitor(window, queueIn, queueOut, killQueue)
 
@@ -198,6 +212,14 @@ def update(window, queueOut):
                 case 1:
                     window[target + "IsLocalizing"].update(circle_color="green")
 
+        if("locationCurrent" in topic):
+            #set the location of the bot
+            target = str(topic).split("$")[0]
+            botLocationsGUI[target] = inputDictionary[topic]
+
+            print(botLocationsGUI)
+
+
 def runRouting(startingNodeName, endingNodeName, targetBot, queue):
     #route and add route to target - run this in a seperate thread to prevent blocking in gui thread
     commands = route(startingNodeName, endingNodeName)
@@ -207,11 +229,4 @@ def runRouting(startingNodeName, endingNodeName, targetBot, queue):
 
         #send commands to controlled to be processed
         queue.put(GUIInMessage(targetBot, "commandSequence", commands, Direct=False))
-
-
-def getTheme():
-    #potentially implement custom theme
-
-    #return "DarkRed1" #OSU theme but hurts eyes
-    return "BrownBlue" #better to look at
 

@@ -5,14 +5,28 @@ import numpy as np
 import sys
 import os
 import math
+from getConstants import getTheme
 
 #add theme to path
 sys.path.insert(1, os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", ".."))
-from gui.monitorGUI import getTheme
 
 NODESIZE = 33 #mutliple of 8 + 1 and must be at leatst 25
+MAPFILENAME = "map.xml"
 
-def displayMap(root):
+#create a map of possible bot locations
+botDrawingLocations = dict()
+
+def parseFile(file):
+    mapTree = ET.parse(file)
+    return mapTree.getroot()
+
+def openXMLFile():
+    #opens the xml file containing the map
+    filePath = os.path.join(os.path.dirname(os.path.realpath(__file__)), MAPFILENAME)
+
+    return open(filePath, 'r')
+
+def displayBaseMap(root):
     #get the theme from the other display to ensure they match
     sg.theme(getTheme())
 
@@ -20,8 +34,21 @@ def displayMap(root):
     layout = [[sg.Image(size=(600,600), key="mapImage")]]
 
     window = sg.Window(title="Map", layout=layout, finalize=True)
-    window["mapImage"].update(data=drawMap(root))
+    window["mapImage"].update(data=ImageTk.PhotoImage(drawMap(root)))
     window.read()
+
+def getBaseMap():
+    #open map xml file
+    file = openXMLFile()
+
+    #get the root node for the map
+    root = parseFile(file)
+
+    if root:
+        #get the image
+        baseImage = drawMap(root)
+
+        return baseImage
 
 def loadImage():
     #load a test imahe
@@ -77,6 +104,8 @@ def prepPathPlanningXML(root):
     return ppData
 
 def drawMap(root):
+    #this should be only run once per boot of gui
+
     map = np.zeros(shape=(300,300,4))
     # map[row][column]
 
@@ -89,21 +118,33 @@ def drawMap(root):
         nodeX, nodeY = getNodeLocation(name, root)
         drawNode(nodeX, nodeY, map)
 
+        #add node to bot drawing locations
+        botDrawingLocations[name] = (nodeX, nodeY)
+
         #draw in connections 
         for subnode in node.findall("./subnode"):
             subnodeName = subnode.get('name')
+
+            #add subnode to bot drawing locations
+            subnodeX, subnodeY = getSubNodeLocation(subnodeName, root, getConnectionLineWidth())
+            botDrawingLocations[subnodeName] = (subnodeX, subnodeY)
+
             for connection in subnode.findall('./connection'):
                 endName = connection.get("destination")
 
                 drawConnection(map, root, subnodeName, endName, ppData)
+
+                #add midpoint on connection to drawing locations
+                botDrawingLocations[subnodeName + "to" + endName] = calculateConnectionDrawingPoint(subnodeName, endName, root)
+
+    print(botDrawingLocations)
 
     #write xml generated to file
     ppTree = ET.ElementTree(ppData)
     ET.indent(ppTree, " ")
     ppTree.write("ppData.xml")
 
-    mapImage = Image.fromarray(np.uint8(map))
-    return ImageTk.PhotoImage(mapImage)
+    return np.uint8(map)
 
 def drawNode(locationX, locationY,  map):
     # nodes are represented by an 41 by 41 box, centered around location
@@ -138,9 +179,13 @@ def drawNode(locationX, locationY,  map):
 
         counterX += 1
 
+def getConnectionLineWidth():
+    #return the width of connection lines
+    return (NODESIZE - 1) / 4
+
 def drawConnection(map, root, originSubNodeName, endSubNodeName, ppData):
     #connection line width 
-    lineWidth = (NODESIZE - 1) / 4
+    lineWidth = getConnectionLineWidth()
 
     #color to draw connections
     connectionColor = [0,0,0, 255]
@@ -548,3 +593,39 @@ def checkForActionPoints(root, name):
     #return zero if this fails for any case         
     return []
 
+def calculateConnectionDrawingPoint(startSubnodeName, endSubnodeName, root):
+    #get starting node location
+    startX, startY = getSubNodeLocation(startSubnodeName, root, getConnectionLineWidth())
+
+    #get ending node location
+    endX, endY = getSubNodeLocation(endSubnodeName, root, getConnectionLineWidth())
+
+    #get the average of the two - in theory the coordinates in one direction should be the same
+    return (endX + startX) / 2, (startY + endY) / 2
+
+def drawBots(imageMap, botLocations):
+    #draws the bot locations onto an already premade map
+
+    #ensure the positions dictionary has been loaded
+    if(len(botDrawingLocations.keys) == 0):
+        print("Cannot draw bots! Bot drawing locations must be loaded first!")
+
+    #iterate through the bots
+    for location in botLocations:
+        if location in botDrawingLocations.keys:
+            botX = 
+        else:
+            #if there is not match for the location in the locations
+            print("Cannot draw bot! Invalid location: " + location)
+            return
+
+if __name__ == "__main__":
+    #run this file to reload map.xml
+
+    print("Loading In Map!")
+
+    file = openXMLFile()
+    g_mapRoot = parseFile(file)
+
+    if (g_mapRoot):
+        displayBaseMap(g_mapRoot)
