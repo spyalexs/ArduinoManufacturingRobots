@@ -16,6 +16,9 @@ MAPFILENAME = "map.xml"
 #create a map of possible bot locations
 botDrawingLocations = dict()
 
+#path to bot images
+botImagesPath = os.path.join(os.path.dirname(os.path.realpath(__file__)), "botimages")
+
 def parseFile(file):
     mapTree = ET.parse(file)
     return mapTree.getroot()
@@ -119,7 +122,7 @@ def drawMap(root):
         drawNode(nodeX, nodeY, map)
 
         #add node to bot drawing locations
-        botDrawingLocations[name] = (nodeX, nodeY)
+        botDrawingLocations[name] = (nodeX, nodeY, "YPlus")
 
         #draw in connections 
         for subnode in node.findall("./subnode"):
@@ -127,7 +130,7 @@ def drawMap(root):
 
             #add subnode to bot drawing locations
             subnodeX, subnodeY = getSubNodeLocation(subnodeName, root, getConnectionLineWidth())
-            botDrawingLocations[subnodeName] = (subnodeX, subnodeY)
+            botDrawingLocations[subnodeName] = (subnodeX, subnodeY, "YPlus")
 
             for connection in subnode.findall('./connection'):
                 endName = connection.get("destination")
@@ -601,23 +604,47 @@ def calculateConnectionDrawingPoint(startSubnodeName, endSubnodeName, root):
     endX, endY = getSubNodeLocation(endSubnodeName, root, getConnectionLineWidth())
 
     #get the average of the two - in theory the coordinates in one direction should be the same
-    return (endX + startX) / 2, (startY + endY) / 2
+    return (endX + startX) / 2, (startY + endY) / 2, "YPlus"
 
 def drawBots(imageMap, botLocations):
     #draws the bot locations onto an already premade map
 
     #ensure the positions dictionary has been loaded
-    if(len(botDrawingLocations.keys) == 0):
+    if(len(botDrawingLocations.keys()) == 0):
         print("Cannot draw bots! Bot drawing locations must be loaded first!")
 
     #iterate through the bots
-    for location in botLocations:
-        if location in botDrawingLocations.keys:
-            botX = 
+    for locationKey in botLocations:
+        if botLocations[locationKey] in botDrawingLocations.keys():
+            pixelLocation = botDrawingLocations[botLocations[locationKey]]
+
+            #load in bot image
+            #TODO: get name resolution working
+            botImageArray = np.array(np.load(os.path.join(botImagesPath, "bitmap", locationKey + pixelLocation[2] + ".npy")))
+
+            #size of bot image (y,x,p)
+            botSize = botImageArray.shape
+            
+            #copy bot image onto map image
+            yMin = int(pixelLocation[1] - math.ceil(botSize[0] / 2))
+            xMin = int(pixelLocation[0] - math.ceil(botSize[1] / 2))
+
+            yCounter = 0
+            while(yCounter < botSize[0]):
+
+                xCounter = 0
+                while(xCounter < botSize[1]):
+                    imageMap[yCounter + yMin][xCounter + xMin] = botImageArray[yCounter][xCounter]
+                    xCounter += 1
+
+                yCounter += 1
+
         else:
             #if there is not match for the location in the locations
-            print("Cannot draw bot! Invalid location: " + location)
+            print("Cannot draw bot! Invalid location: " + botLocations[locationKey])
             return
+        
+        return imageMap
 
 if __name__ == "__main__":
     #run this file to reload map.xml

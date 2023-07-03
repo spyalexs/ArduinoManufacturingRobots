@@ -2,21 +2,40 @@ import numpy as np
 from PIL import Image
 import os
 from math import floor
+from random import random
 
 def generateBot(name, color):
     #name should be the name of the bot
     #color shuuld be rgba
 
     #draw two rectangles that represent a bot
-    #12 by 12
-    array = drawBot(12, 12, color)
+    #should be a square
+    array = np.uint8(drawBot(15, 15, color))
+
+    #create four arrays for four different orientations
+    yPlus = array
+    yMinus = np.flip(array, 0)
+    xMinus = np.flip(np.rot90(array), 1)
+    xPlus = np.rot90(array)
     
     #get target directory
     path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "botimages")
 
-    #save image in viewable format
-    image = Image.fromarray(np.uint8(array))   
-    image.save(os.path.join(path, name + ".png"))
+    #save images as bitmaps
+    np.save(os.path.join(path, "bitmap", name + "YPlus.npy"), yPlus)
+    np.save(os.path.join(path, "bitmap", name + "YMinus.npy"), yPlus)
+    np.save(os.path.join(path, "bitmap", name + "XPlus.npy"), yPlus)
+    np.save(os.path.join(path, "bitmap", name + "XMinus.npy"), yPlus)
+
+    #save images in viewable format
+    image = Image.fromarray(yPlus)   
+    image.save(os.path.join(path, "image", name + "YPlus.png"))    
+    image = Image.fromarray(yMinus)   
+    image.save(os.path.join(path, "image", name + "YMinus.png"))    
+    image = Image.fromarray(xPlus)   
+    image.save(os.path.join(path, "image", name + "XPlus.png"))    
+    image = Image.fromarray(xMinus)   
+    image.save(os.path.join(path, "image", name + "XMinus.png"))
 
 def drawBot(xSize, ySize, color):
     if(xSize < 5 or ySize < 5):
@@ -73,9 +92,8 @@ def drawBot(xSize, ySize, color):
     if((ysize - arrowHeight) % 2 == 1):
         arrowHeight -= 1
 
-    shaftHieght = arrowHeight - pointHeight
     shaftWidth = round(pointWidth / 2)
-    if(shaftWidth % 2 == 1):
+    if((xsize - shaftWidth) % 2 == 1):
         shaftWidth -= 1
 
     #draw point
@@ -97,7 +115,7 @@ def drawBot(xSize, ySize, color):
     while(yCounter < round(len(array) - pointHeight - ((ysize - arrowHeight) / 2))):
  
         xCounter = round((xsize - shaftWidth) / 2)
-        while(xCounter < round(xSize - (xsize - shaftWidth) / 2)):
+        while(xCounter < round(xsize - (xsize - shaftWidth) / 2)):
             array[yCounter][xCounter] = [255, 255, 255, 255]
             xCounter +=1
 
@@ -105,10 +123,35 @@ def drawBot(xSize, ySize, color):
 
     return array
 
-if __name__ == "__main__":
-    generateBot("bot3", [0, 255, 0, 255])
+def getRandomColor():
+    #return a random rgba color
+    return [round(random() * 255), round(random() * 255), round(random() * 255), 255]
 
-    
+if __name__ == "__main__":
+    #run this file to generate bot art
+
+    generateBot("5010", [0, 255, 0, 255])
+    generateBot("5011", [255, 154, 138, 255])
+    generateBot("5012", [255, 165, 0, 255])
+    generateBot("5013", [255, 0, 255, 255])
+    generateBot("5014", [192, 192, 192, 255])
+    generateBot("5015", [210, 180, 140, 255])
+
+    #after these set colors do some random ones - really only should be six in use
+    generateBot("5016", getRandomColor())    
+    generateBot("5017", getRandomColor())    
+    generateBot("5018", getRandomColor())    
+    generateBot("5019", getRandomColor())    
+    generateBot("5020", getRandomColor())    
+    generateBot("5021", getRandomColor())    
+    generateBot("5022", getRandomColor())    
+    generateBot("5023", getRandomColor())    
+    generateBot("5024", getRandomColor())    
+    generateBot("5025", getRandomColor())    
+    generateBot("5026", getRandomColor())    
+    generateBot("5027", getRandomColor())    
+    generateBot("5028", getRandomColor())    
+    generateBot("5029", getRandomColor())    
 
 
 

@@ -5,7 +5,7 @@ from PIL import Image, ImageTk
 from getConstants import getCommandKeys, getTheme
 from gui.GUIInMessage import GUIInMessage
 from createRoute import route, getLocations
-from gui.map_display.displayMap import getBaseMap
+from gui.map_display.displayMap import getBaseMap, drawBots
 
 #keys for the commands availible to be launched - the name of the command corrosponds to the name that will be launched on the robot
 commandKeys = getCommandKeys()
@@ -218,6 +218,8 @@ def update(window, queueOut):
             botLocationsGUI[target] = inputDictionary[topic]
 
             print(botLocationsGUI)
+
+            window["MapImage"].update(data=ImageTk.PhotoImage(Image.fromarray(drawBots(baseMap, botLocationsGUI))))
 
 
 def runRouting(startingNodeName, endingNodeName, targetBot, queue):
