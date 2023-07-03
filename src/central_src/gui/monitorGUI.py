@@ -1,5 +1,5 @@
 import PySimpleGUI as sg
-import queue
+import threading
 
 from getConstants import getCommandKeys
 from gui.GUIInMessage import GUIInMessage
@@ -68,7 +68,7 @@ def getRobotFrameLayout(name):
         [sg.Text("Command"), sg.Combo(commands, enable_events=False, key=(str(name) + "CommandMenu")), sg.Button("Send", key=(str(name) + "Command"), enable_events=True)],
         [sg.Text("     Status"), sg.ProgressBar(100, size=(13,17), key=(str(name) + "CommandProgress")), sg.Button("Abort", key=(str(name)) + "AbortCommand", enable_events=True)],
         [sg.Text("From:"), sg.Input("", key=(str(name) + "RouteFrom"), size=(10,7)), sg.Text("To:"), sg.Input("", key=(str(name) + "RouteTo"), size=(10,7)), sg.Button("Route", key=(str(name) + "Route"), enable_events=True)],
-        [sg.Text("Location"), sg.Combo(locations, enable_events=False, size=(9,7), key=(str(name) + "LocationMenu")), sg.Button("Set", key=(str(name) + "SetLocation"), enable_events=True), sg.Text(" Localizing:"), sg.Radio("","2", key=str(name)+"IsLocalizing", circle_color="green")],
+        [sg.Text("Location"), sg.Combo(locations, enable_events=False, size=(9,7), key=(str(name) + "LocationMenu")), sg.Button("Set", key=(str(name) + "SetLocation"), enable_events=True), sg.Text(" Localizing:"), sg.Radio("","2", key=str(name)+"IsLocalizing", circle_color="red")],
         [sg.Text("Battery Voltage: "), sg.Text("0.00", key=str(name) + "BatteryVoltage"), sg.Text("Connection Status:"), sg.Radio("", "1", key=str(name) + "connectionStatus", circle_color="white")]]
     
     return robotFrameLayout
@@ -109,14 +109,16 @@ def handleEvents(event, values, window, queueIn):
 
     if("Route" in event):
         #run a route between two points
-        if (not values[event.split("Route")[0] + "RouteFrom"] == "") and (not event.split("Route")[0] + values["RouteTo"] == ""):
-            commands = route(values[event.split("Route")[0] + "RouteFrom"], values[event.split("Route")[0] + "RouteTo"])
+        if (not values[event.split("Route")[0] + "RouteFrom"] == "") and (not values[event.split("Route")[0] + "RouteTo"] == ""):
 
-            if not commands == None:
-                #ensure their are commands - fairly easy to make an impossible route
-
-                #send commands to controlled to be processed
-                queueIn.put(GUIInMessage(event.split("Route")[0], "commandSequence", commands, Direct=False))
+            #create a thread to find the route between the two nodes
+            #currently not worried about ending thread as this should not ever enter and infinite loop and ideally would end within a couple seconds
+            routingThread = threading.Thread(
+                target=runRouting, 
+                args=(values[event.split("Route")[0] + "RouteFrom"], values[event.split("Route")[0] + "RouteTo"], event.split("Route")[0], queueIn))
+            routingThread.isDaemon=True
+            routingThread.run()
+        
     
     if("SetLocation" in event):
         #Set the location of a robot
@@ -196,9 +198,15 @@ def update(window, queueOut):
                 case 1:
                     window[target + "IsLocalizing"].update(circle_color="green")
 
+def runRouting(startingNodeName, endingNodeName, targetBot, queue):
+    #route and add route to target - run this in a seperate thread to prevent blocking in gui thread
+    commands = route(startingNodeName, endingNodeName)
 
+    if not commands == None:
+        #ensure their are commands - fairly easy to make an impossible route
 
-
+        #send commands to controlled to be processed
+        queue.put(GUIInMessage(targetBot, "commandSequence", commands, Direct=False))
 
 
 def getTheme():
