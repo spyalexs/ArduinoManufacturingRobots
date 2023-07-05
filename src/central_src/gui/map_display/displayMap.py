@@ -122,7 +122,7 @@ def drawMap(root):
         drawNode(nodeX, nodeY, map)
 
         #add node to bot drawing locations
-        botDrawingLocations[name] = (nodeX, nodeY, "YPlus")
+        botDrawingLocations[name] = (nodeX, nodeY, "Node")
 
         #draw in connections 
         for subnode in node.findall("./subnode"):
@@ -130,7 +130,7 @@ def drawMap(root):
 
             #add subnode to bot drawing locations
             subnodeX, subnodeY = getSubNodeLocation(subnodeName, root, getConnectionLineWidth())
-            botDrawingLocations[subnodeName] = (subnodeX, subnodeY, "YPlus")
+            botDrawingLocations[subnodeName] = (subnodeX, subnodeY, getSubnodeDrawingDirection(subnodeName))
 
             for connection in subnode.findall('./connection'):
                 endName = connection.get("destination")
@@ -139,6 +139,12 @@ def drawMap(root):
 
                 #add midpoint on connection to drawing locations
                 botDrawingLocations[subnodeName + "to" + endName] = calculateConnectionDrawingPoint(subnodeName, endName, root)
+
+
+                counter = 0
+                for actionPoint in connection.findall("./action_point"):
+                    counter += 1
+                    botDrawingLocations["AP" + actionPoint.get("id")] = calculateActionPointDrawingPoint(subnodeName, endName, root, counter, len(connection.findall("./action_point")))
 
     print(botDrawingLocations)
 
@@ -255,13 +261,7 @@ def drawConnection(map, root, originSubNodeName, endSubNodeName, ppData):
 
         #draw action points evenly spaced
         #take off half a node size on each end add a quater of a node size to each end of action point as a buffer
-        spacing = 0
-        if(connectionLength - (NODESIZE - 1) > 1.5 * (NODESIZE - 1) * actionPointCount):
-            spacing = (connectionLength - (NODESIZE - 1)) / actionPointCount
-        else:
-            print("Failed to draw action points. Not enought room!")
-
-        emptySpace = round(max((spacing - NODESIZE) / 2 , 0))
+        spacing, emptySpace = calculateActionPointSpacing(connectionLength, actionPointCount)
 
         #determine which side to draw action points
         if(subnodeOriginY < subnodeEndY):
@@ -413,13 +413,7 @@ def drawConnection(map, root, originSubNodeName, endSubNodeName, ppData):
 
         #draw action points evenly spaced
         #take off half a node size on each end add a quater of a node size to each end of action point as a buffer
-        spacing = 0
-        if(connectionLength - (NODESIZE - 1) > 1.5 * (NODESIZE - 1) * actionPointCount):
-            spacing = (connectionLength - (NODESIZE - 1)) / actionPointCount
-        else:
-            print("Failed to draw action points. Not enought room!")
-
-        emptySpace = round(max((spacing - NODESIZE) / 2 , 0))
+        spacing, emptySpace = calculateActionPointSpacing(connectionLength, actionPointCount)
 
         #determine which side to draw action points
         if(subnodeOriginX < subnodeEndX):
@@ -525,6 +519,21 @@ def drawConnection(map, root, originSubNodeName, endSubNodeName, ppData):
     else:
         print("Failed to draw connection. Connection not valid as sub nodes do not share one coordinate!")
 
+def calculateActionPointSpacing(connectionLength, actionPointCount):
+
+    #calculate the spacing between the nodes and actionpoints and the action points themselves
+    if(connectionLength - (NODESIZE - 1) > 1.5 * (NODESIZE - 1) * actionPointCount): 
+        #spacing between aps
+        spacing = (connectionLength - (NODESIZE - 1)) / actionPointCount
+
+    else:
+        print("Failed to draw action points. Not enought room!")
+
+    #spacing between nodes and ap
+    emptySpace = round(max((spacing - NODESIZE) / 2 , 0))
+
+    return spacing, emptySpace
+
 def getNodeLocation(name, root):
     #get the location of a named node on the map
     locationX = -1
@@ -603,8 +612,72 @@ def calculateConnectionDrawingPoint(startSubnodeName, endSubnodeName, root):
     #get ending node location
     endX, endY = getSubNodeLocation(endSubnodeName, root, getConnectionLineWidth())
 
+    direction = ""
+    if(startX == endX):
+        #if a vertical connection
+        if(startY > endY):
+            direction = "YMinus"
+        else:
+            direction = "YPlus"
+    else:
+        #if a horizontal connection
+        if(startX > endX):
+            direction = "XMinus"
+        else:
+            direction = "XPlus"
+
     #get the average of the two - in theory the coordinates in one direction should be the same
-    return (endX + startX) / 2, (startY + endY) / 2, "YPlus"
+    return (endX + startX) / 2, (startY + endY) / 2, direction 
+
+def calculateActionPointDrawingPoint(startSubnodeName, endSubnodeName, root, actionPointNumber, actionPointCount):
+    #get starting node location
+    startX, startY = getSubNodeLocation(startSubnodeName, root, getConnectionLineWidth())
+
+    #get ending node location
+    endX, endY = getSubNodeLocation(endSubnodeName, root, getConnectionLineWidth())
+
+    #defaults x = 0, y = 0
+    x = 0
+    y = 0
+    
+
+    if(startX == endX):
+        #if a vertical connection
+        x = startX
+
+        if(actionPointCount == 1):
+            #in the middle of the connection
+            y = (startY + endY) / 2
+
+        else:
+            #space with the action points
+            if(startY > endY):
+                #using algorithm used to draw action points
+                spacing, emptySpace = calculateActionPointSpacing(startY - endY, actionPointCount)
+                y = startY - spacing * (actionPointNumber + .5) + (NODESIZE - 1) + emptySpace
+            else:
+                spacing, emptySpace = calculateActionPointSpacing(endY - startY, actionPointCount)
+                y = startY + spacing * (actionPointNumber + .5) - (NODESIZE - 1) * 2 + emptySpace
+    else:
+        #if a horizontal connection
+        y = startY
+
+        if(actionPointCount == 1):
+            #in the middle of the connection
+            x = (startX + endX) / 2
+
+        else:
+            #space with the action points
+            if(startX > endX):
+                #using algorithm used to draw action points
+                spacing, emptySpace = calculateActionPointSpacing(startX - endX, actionPointCount)
+                x = startX - spacing * (actionPointNumber + .5) + (NODESIZE - 1) / 2
+            else:
+                spacing, emptySpace = calculateActionPointSpacing(endX - startX, actionPointCount)
+                x = startX + spacing * (actionPointNumber + .5) - (NODESIZE - 1) / 2
+
+    #get the average of the two - in theory the coordinates in one direction should be the same
+    return x, y, "station"
 
 def getSubnodeDrawingDirection(subnodeName):
     #return the direction a bot should be drawn for any given subnode
@@ -617,22 +690,22 @@ def getSubnodeDrawingDirection(subnodeName):
     
     #determine direction based on subnode part of name
     direction = ""
-    match nameArray[2]:
+    match nameArray[1]:
         case "A":
             return "YPlus"       
-        case "A":
-            return "XPlus"       
-        case "A":
+        case "B":
             return "XMinus"       
+        case "C":
+            return "XPlus"       
         case "D":
             return "YPlus"       
         case "E":
             return "YMinus"       
         case "F":
-            return "XMinus"       
-        case "A":
-            return "XPlus"
-        case "A":
+            return "XPlus"       
+        case "G":
+            return "XMinus"
+        case "H":
             return "YMinus"
         case _:
             print("Cannot determine bot direction! Subnode name invalid: " + subnodeName)
@@ -669,7 +742,9 @@ def drawBots(imageMap, botLocations):
 
                 xCounter = 0
                 while(xCounter < botSize[1]):
-                    imageMap[yCounter + yMin][xCounter + xMin] = botImageArray[yCounter][xCounter]
+                    #ensure it does not draw transluent pixels
+                    if(not np.array_equal(botImageArray[yCounter][xCounter], np.array([0,0,0,0]))):
+                        imageMap[yCounter + yMin][xCounter + xMin] = botImageArray[yCounter][xCounter]
                     xCounter += 1
 
                 yCounter += 1

@@ -209,7 +209,7 @@ class BotOverSeer:
         self.sendLocationToGui()
 
     def setLocation(self, location):
-        if(self.m_currentLocation == location):
+        if(not self.m_currentLocation == location):
             #the current location of the robot
             self.m_currentLocation = location
 

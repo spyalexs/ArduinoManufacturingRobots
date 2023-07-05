@@ -219,7 +219,7 @@ def update(window, queueOut):
 
             print(botLocationsGUI)
 
-            window["MapImage"].update(data=ImageTk.PhotoImage(Image.fromarray(drawBots(baseMap, botLocationsGUI))))
+            window["MapImage"].update(data=ImageTk.PhotoImage(Image.fromarray(drawBots(baseMap.copy(), botLocationsGUI))))
 
 
 def runRouting(startingNodeName, endingNodeName, targetBot, queue):

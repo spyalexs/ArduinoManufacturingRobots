@@ -23,9 +23,9 @@ def generateBot(name, color):
 
     #save images as bitmaps
     np.save(os.path.join(path, "bitmap", name + "YPlus.npy"), yPlus)
-    np.save(os.path.join(path, "bitmap", name + "YMinus.npy"), yPlus)
-    np.save(os.path.join(path, "bitmap", name + "XPlus.npy"), yPlus)
-    np.save(os.path.join(path, "bitmap", name + "XMinus.npy"), yPlus)
+    np.save(os.path.join(path, "bitmap", name + "YMinus.npy"), yMinus)
+    np.save(os.path.join(path, "bitmap", name + "XPlus.npy"), xPlus)
+    np.save(os.path.join(path, "bitmap", name + "XMinus.npy"), xMinus)
 
     #save images in viewable format
     image = Image.fromarray(yPlus)   
@@ -37,7 +37,27 @@ def generateBot(name, color):
     image = Image.fromarray(xMinus)   
     image.save(os.path.join(path, "image", name + "XMinus.png"))
 
-def drawBot(xSize, ySize, color):
+
+    #draw station bot
+    array = np.uint8(drawBot(15, 15, color, action="Station"))
+
+    #save station bot
+    np.save(os.path.join(path, "bitmap", name + "Station.npy"), array)
+
+    image = Image.fromarray(array)
+    image.save(os.path.join(path, "image", name + "Station.png"))
+
+       
+    #draw waiting bot
+    array = np.uint8(drawBot(15, 15, color, action="Node"))
+
+    #save station bot
+    np.save(os.path.join(path, "bitmap", name + "Node.npy"), array)
+
+    image = Image.fromarray(array)
+    image.save(os.path.join(path, "image", name + "Node.png"))
+
+def drawBot(xSize, ySize, color, action="Moving"):
     if(xSize < 5 or ySize < 5):
         print("Cannot draw bot, it must be at least 5 by in each dimension. Current size is X: " + xSize + " Y: " + ySize)
         return None
@@ -76,50 +96,97 @@ def drawBot(xSize, ySize, color):
         #dont attempt to render directionality arrow on less than 12 by 12
         return array
     
-    #get dimension for point of arrow
-    pointWidth = round(xSize * 0.6666)
-    #ensure arrow is always even
-    if((xsize - pointWidth) % 2 == 1):
-        pointWidth -= 1
+    if(action == "Moving"):
+        #get dimension for point of arrow
+        pointWidth = round(xSize * 0.6666)
+        #ensure arrow is always even
+        if((xsize - pointWidth) % 2 == 1):
+            pointWidth -= 1
 
-    pointHeight = floor(pointWidth / 2)
-    if(pointHeight % 2 == 1):
-        #if a one pixel point add another to height
-        pointHeight += 1
+        pointHeight = floor(pointWidth / 2)
+        if(pointHeight % 2 == 1):
+            #if a one pixel point add another to height
+            pointHeight += 1
 
-    #get shaft of array height
-    arrowHeight = round(ySize * 0.6666)
-    if((ysize - arrowHeight) % 2 == 1):
-        arrowHeight -= 1
+        #get shaft of array height
+        arrowHeight = round(ySize * 0.6666)
+        if((ysize - arrowHeight) % 2 == 1):
+            arrowHeight -= 1
 
-    shaftWidth = round(pointWidth / 2)
-    if((xsize - shaftWidth) % 2 == 1):
-        shaftWidth -= 1
+        shaftWidth = round(pointWidth / 2)
+        if((xsize - shaftWidth) % 2 == 1):
+            shaftWidth -= 1
 
-    #draw point
-    yCounter = round(len(array) - pointHeight - ((ysize - arrowHeight) / 2))
-    step = 0
+        #draw point
+        yCounter = round(len(array) - pointHeight - ((ysize - arrowHeight) / 2))
+        step = 0
 
-    while (step <= pointWidth / 2):
+        while (step <= pointWidth / 2):
 
-        xCounter = round(step + (xsize - pointWidth) / 2)
-        while(xCounter < round(xsize - step - (xsize - pointWidth) / 2)):
-            array[yCounter][xCounter] = [255, 255, 255, 255]
-            xCounter +=1
+            xCounter = round(step + (xsize - pointWidth) / 2)
+            while(xCounter < round(xsize - step - (xsize - pointWidth) / 2)):
+                array[yCounter][xCounter] = [255, 255, 255, 255]
+                xCounter +=1
 
-        yCounter += 1
-        step += 1
+            yCounter += 1
+            step += 1
 
-    yCounter = round((ysize - arrowHeight) / 2)
+        yCounter = round((ysize - arrowHeight) / 2)
 
-    while(yCounter < round(len(array) - pointHeight - ((ysize - arrowHeight) / 2))):
- 
-        xCounter = round((xsize - shaftWidth) / 2)
-        while(xCounter < round(xsize - (xsize - shaftWidth) / 2)):
-            array[yCounter][xCounter] = [255, 255, 255, 255]
-            xCounter +=1
+        while(yCounter < round(len(array) - pointHeight - ((ysize - arrowHeight) / 2))):
+    
+            xCounter = round((xsize - shaftWidth) / 2)
+            while(xCounter < round(xsize - (xsize - shaftWidth) / 2)):
+                array[yCounter][xCounter] = [255, 255, 255, 255]
+                xCounter +=1
 
-        yCounter += 1
+            yCounter += 1
+
+    elif(action == "Station"):
+        #wait - for now - is a blank bot
+        return array
+    elif(action == "Node"):
+        innerBoxWidth = round(xsize * .333333)
+        if((xsize - innerBoxWidth) % 2 == 1):
+            #keep space even
+            innerBoxHeight -= 1
+
+        innerBoxHeight = round(ysize * .333333)
+        if((ysize - innerBoxHeight) % 2 == 1):
+            #keep space even
+            innerBoxHeight -= 1
+
+        outerBoxHeight = round(ysize * .16666)
+        outerBoxWidth = round(xsize * .16666)
+
+        #draw outer box
+        yCounter = int((ysize - 2 * outerBoxHeight - innerBoxHeight) / 2)
+        yMax = yCounter + 2 * outerBoxHeight + innerBoxHeight
+
+        while(yCounter < yMax):
+
+            xCounter = int((xsize - 2 * outerBoxWidth - innerBoxWidth) / 2)
+            xMax = xCounter + 2 * outerBoxWidth + innerBoxWidth
+
+            while(xCounter < xMax):
+                array[yCounter][xCounter] = [255, 255, 255, 255]
+                xCounter += 1
+
+            yCounter += 1
+
+        #draw inner box
+        yCounter = int((ysize - innerBoxHeight) / 2)
+        yMax = yCounter + innerBoxHeight
+        while(yCounter < yMax):
+
+            xCounter = int((xsize - innerBoxWidth) / 2)
+            xMax = xCounter + innerBoxWidth
+
+            while(xCounter < xMax):
+                array[yCounter][xCounter] = color
+                xCounter += 1
+
+            yCounter += 1
 
     return array
 
