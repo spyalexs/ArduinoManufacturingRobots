@@ -17,7 +17,10 @@ REPLY_FREQUENCY = 20 #Hz
 CONNECTION_TIMEOUT = 5 #seconds
 
 #port for initial connections
-CONNECTION_PORT = 5005
+CONNECTION_PORT = 5006
+
+#bot listening port
+BOT_LISTENING_PORT = 5005
 
 def launchBotConnector(connectorQueue):
     #start a thread to manage bot connnection
@@ -67,7 +70,7 @@ def connectBots(connectorQueue, killQueue):
 
                     #reply back with connection port
                     message = bytes(CONNECTION_REPLY + str(knownMACs[macAddress]) +"$$$", 'utf-8')
-                    sock.sendto(message, (addr))
+                    sock.sendto(message, (addr[0], BOT_LISTENING_PORT))
 
                     #stop any duplicate connections
                     time.sleep(1.0)
@@ -91,7 +94,7 @@ def connectBots(connectorQueue, killQueue):
 
                     #send back connection string
                     message = bytes(CONNECTION_REPLY + str(nextPort) +"$$$", 'utf-8')
-                    sock.sendto(message, (addr))
+                    sock.sendto(message, (addr[0], BOT_LISTENING_PORT))
 
                     nextPort += 1
 

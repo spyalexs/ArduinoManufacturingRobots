@@ -125,6 +125,9 @@ class BotOverSeer:
             if(self.m_connected):
                 self.m_connected = False
 
+                #update information on the gui
+                self.updateStatus(0)
+
                 #tell the gui to update the connection only if it has changed
                 self.sendConnectionStatusToGui()
 
@@ -133,7 +136,6 @@ class BotOverSeer:
                                     
             self.m_written = False
             self.m_confirmed = False
-            self.updateStatus(0)
 
         #check the bots status
         if(self.m_status == 255):

@@ -606,6 +606,41 @@ def calculateConnectionDrawingPoint(startSubnodeName, endSubnodeName, root):
     #get the average of the two - in theory the coordinates in one direction should be the same
     return (endX + startX) / 2, (startY + endY) / 2, "YPlus"
 
+def getSubnodeDrawingDirection(subnodeName):
+    #return the direction a bot should be drawn for any given subnode
+
+    nameArray = subnodeName.split("-")
+
+    if(len(nameArray) != 2):
+        print("Cannot determine bot direction! Subnode name invalid: " + subnodeName)
+        return
+    
+    #determine direction based on subnode part of name
+    direction = ""
+    match nameArray[2]:
+        case "A":
+            return "YPlus"       
+        case "A":
+            return "XPlus"       
+        case "A":
+            return "XMinus"       
+        case "D":
+            return "YPlus"       
+        case "E":
+            return "YMinus"       
+        case "F":
+            return "XMinus"       
+        case "A":
+            return "XPlus"
+        case "A":
+            return "YMinus"
+        case _:
+            print("Cannot determine bot direction! Subnode name invalid: " + subnodeName)
+
+        
+    return direction
+
+
 def drawBots(imageMap, botLocations):
     #draws the bot locations onto an already premade map
 

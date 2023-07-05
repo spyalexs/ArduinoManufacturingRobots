@@ -36,6 +36,7 @@ class Communicator{
         IPAddress m_serverIPAddress;
 
         WiFiUDP m_Udp;
+        uint16_t m_connectionUDPPort = 5006;
         uint16_t m_localUDPPort = 5005;
         uint16_t m_assignedUDPPort = 0;
 

@@ -104,7 +104,7 @@ bool Communicator::connectToCentral(){
         //write message to get central's attentions
         String message = "Im a bot! MAC:" + this->m_macString + "$$$";
         message.getBytes(this->m_packetBuffer, this->m_bufferSize);
-        this->m_Udp.beginPacket(this->m_serverIPAddress, this->m_localUDPPort);
+        this->m_Udp.beginPacket(this->m_serverIPAddress, this->m_connectionUDPPort);
         this->m_Udp.write(this->m_packetBuffer, this->m_bufferSize);
         this->m_Udp.endPacket();
 

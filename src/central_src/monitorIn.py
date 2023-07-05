@@ -50,6 +50,7 @@ def monitor(queueIn, killQueue):
                 message, addr = sockets[key].recvfrom(BUFFER_LENGTH)
                 
                 if(not str(message) == ""):
+
                     #get usable part of message
                     messageString = (str(message).split("$$$")[0]).split("b'")[1]
 
