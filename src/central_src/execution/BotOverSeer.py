@@ -1,7 +1,9 @@
 import time
+import threading
 
 from gui.GUIOutMessage import GUIOutMessage
 from getConstants import getCommandLocalizationEffects
+from execution.RouteLeg import RouteLeg
 
 class BotOverSeer:
     # a class to monitor an individual bot's function on the controller end
@@ -10,6 +12,8 @@ class BotOverSeer:
     m_directToBotOverride = True
 
     m_currentLocation = "Node1-A" # the current location of the robot, starts at a default
+    m_progressLocation = None
+    m_targetLocation = None # the location the bot is currently heading to 
     m_localizing = False # if the robot is currently being localized by the controller
 
     m_patience = .5 # how long to wait before attempting to reissue a command
@@ -38,7 +42,7 @@ class BotOverSeer:
         self.m_lastConnection = time.time()
         self.m_localizationEffects = getCommandLocalizationEffects()
 
-    def updateStatus(self, status):
+    def updateStatus(self, status, UpdateGui:bool = True):
         self.m_status = status
 
         print("My status is: " + str(status))
@@ -49,8 +53,9 @@ class BotOverSeer:
         #also clear the patience timer so next command is immediate
         self.m_lastIssue = 0
 
-        #update the connection on the gui
-        self.sendConnectionStatusToGui()
+        if(UpdateGui):
+            #update the connection on the gui
+            self.sendConnectionStatusToGui()
 
     def externalSentMessage(self, characteristic, value):
         #TODO - implement this via publisher
@@ -82,12 +87,15 @@ class BotOverSeer:
             
             #note that this breaks the localization tracking
             self.m_localizing = False
+            
             self.sendLocalizationStatusToGui()
+
+            self.updateStatus(0, False)
 
             return
 
         if len(self.m_commands and self.m_route) == 0:
-            self.m_commands = [command]
+            self.m_commands = [RouteLeg(command, None, None)]
 
             #figure out and implement the effect on the localization system
             #NOTE: commands that do not break localization should be processed as routes as not to break the localization
@@ -141,36 +149,52 @@ class BotOverSeer:
         if(self.m_status == 255):
             #if a command was aborted
             self.m_commands = [] # clear all commands
-        elif(self.m_status == 254) or (self.m_status == 0):
 
+            #set status back to ready 
+            self.updateStatus(0, UpdateGui=False)
+
+        elif(self.m_status == 254):
+            #if the command is finished
+           
+            #ensure location is updated every time a command is finished
+            if(not self.m_targetLocation == None):
+                self.setLocation(self.m_targetLocation)
+                
+                #set status back to ready
+                self.updateStatus(0, UpdateGui=False)
+
+        elif (self.m_status == 0):
             if(len(self.m_commands) > 0):
-                #if a command needs written
+                #if a command needs written to bot
 
                 if(not self.m_written):
                     self.m_written = True # mark so the system knows if the systemhas already written a command
                     self.m_confirmed = False #command has not yet been confirmed
 
                     #write command to bot
-                    self.sendMessageToBot(self.m_port + "$commandIssue$" + str(self.m_commands[0]))
-        elif(self.m_status == 253):
+                    self.sendMessageToBot(self.m_port + "$commandIssue$" + str(self.m_commands[0].m_step))
+
+                    #note the target location for localization purposes
+                    self.m_targetLocation = self.m_commands[0].m_endingLocation
+                    self.m_progressLocation = self.m_commands[0].m_progressLocation
+            
+        elif(self.m_status == 253 and self.m_written == True):
             # if the status is 253, the robot is waiting for confirmation to run the command - essential for ensure commands do not get issued twice
             # sorta - kinda a handshake
 
-            #if the robot is waiting or doing nothing
-            self.m_written = False
-
             if(not self.m_confirmed):
                 self.m_confirmed = True
+                self.m_written = False
+
+                self.m_commands.pop(0)
+
 
                 #issue confirmation
                 self.sendMessageToBot(self.m_port + "$commandIssue$" + str(253))
-        else:
-            if(self.m_written):
-                #if the command had been attempted to been written and now has been
+        elif(self.m_status == 2):
+            #set the robot's location to the in progress point
+            self.setLocation(self.m_progressLocation, Clearing=False)
 
-                self.m_written = False
-                self.m_confirmed = False
-                self.m_commands.pop(0)
 
     def sendStatusToGui(self, status):
         #put a gui message in the GUI queue
@@ -202,13 +226,24 @@ class BotOverSeer:
         #connection
         self.sendConnectionStatusToGui()
 
-        #localization
-        self.sendLocalizationStatusToGui()
-
         #location
         self.sendLocationToGui()
 
-    def setLocation(self, location):
+        #localization
+        self.sendLocalizationStatusToGui()
+
+    def setLocation(self, location, Clearing:bool = True):
+        if(location == None):
+            #none will be passed from target/progress location from commands
+            return
+
+        if(Clearing):
+            #clear target location
+            self.m_targetLocation = None
+
+            #clear progress location
+            self.m_progressLocation = None 
+
         if(not self.m_currentLocation == location):
             #the current location of the robot
             self.m_currentLocation = location
@@ -232,11 +267,6 @@ class BotOverSeer:
 
         #log that a connection was heard from the bot
         self.m_lastConnection = time.time()
-            
-
-
-
-
             
 
         

@@ -151,6 +151,8 @@ def update(window, queueOut):
         message = queueOut.get()
         inputDictionary[message.m_target + "$" + message.m_characteristic] = message.m_value
 
+    mapUpdated = False # if the map has been updated and needs to be redrawn
+
     for topic in inputDictionary:
         if("bat" in topic):
             #get the target robot
@@ -209,17 +211,29 @@ def update(window, queueOut):
             match inputDictionary[topic]:
                 case 0:
                     window[target + "IsLocalizing"].update(circle_color="red")
+
+                    #ensure the GUI does not draw the bot location if the bot is not be localized
+                    botLocationsGUI[target] = ("Unlocalized")
                 case 1:
                     window[target + "IsLocalizing"].update(circle_color="green")
+            
+            #mark the map to be updated
+            mapUpdated = True
 
         if("locationCurrent" in topic):
             #set the location of the bot
             target = str(topic).split("$")[0]
             botLocationsGUI[target] = inputDictionary[topic]
+             
+            #update the origin for the route setter for the particular bot's frame
+            window[target + "RouteFrom"].update(value=inputDictionary[topic])
+                       
+            #mark the map to be updated
+            mapUpdated = True
 
-            print(botLocationsGUI)
-
-            window["MapImage"].update(data=ImageTk.PhotoImage(Image.fromarray(drawBots(baseMap.copy(), botLocationsGUI))))
+    if(mapUpdated):
+        #if the map needs redrawn
+        window["MapImage"].update(data=ImageTk.PhotoImage(Image.fromarray(drawBots(baseMap.copy(), botLocationsGUI))))
 
 
 def runRouting(startingNodeName, endingNodeName, targetBot, queue):
@@ -231,4 +245,6 @@ def runRouting(startingNodeName, endingNodeName, targetBot, queue):
 
         #send commands to controlled to be processed
         queue.put(GUIInMessage(targetBot, "commandSequence", commands, Direct=False))
+    else:
+        print("Failed to route between: " + startingNodeName + " and " + endingNodeName)
 

@@ -140,11 +140,15 @@ def drawMap(root):
                 #add midpoint on connection to drawing locations
                 botDrawingLocations[subnodeName + "to" + endName] = calculateConnectionDrawingPoint(subnodeName, endName, root)
 
-
+                actionPointNames = []
                 counter = 0
                 for actionPoint in connection.findall("./action_point"):
                     counter += 1
+                    actionPointNames.append("AP" + actionPoint.get("id"))
                     botDrawingLocations["AP" + actionPoint.get("id")] = calculateActionPointDrawingPoint(subnodeName, endName, root, counter, len(connection.findall("./action_point")))
+
+                #make a connection between every action point and the starting node
+                
 
     print(botDrawingLocations)
 
@@ -724,6 +728,7 @@ def drawBots(imageMap, botLocations):
     #iterate through the bots
     for locationKey in botLocations:
         if botLocations[locationKey] in botDrawingLocations.keys():
+        
             pixelLocation = botDrawingLocations[botLocations[locationKey]]
 
             #load in bot image
@@ -748,10 +753,9 @@ def drawBots(imageMap, botLocations):
                     xCounter += 1
 
                 yCounter += 1
-
-        else:
-            #if there is not match for the location in the locations
-            print("Cannot draw bot! Invalid location: " + botLocations[locationKey])
+        elif not (botLocations[locationKey] == "Unlocalized"):
+            #if there is not match for the location in the locations and the bot is not unlocalized
+            print("Cannot draw bot! Invalid location: " + str(locationKey) + ", ")
             return
         
         return imageMap

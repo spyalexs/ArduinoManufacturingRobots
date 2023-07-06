@@ -3,6 +3,7 @@ import os
 from random import random
 
 from getConstants import getCommandKeys
+from execution.RouteLeg import RouteLeg
 
 #class to hold open node data
 class PPNode:
@@ -190,7 +191,7 @@ def getStepsFromRoute(route):
         if(len(endingKey) == 1):
             if "AP" in endingKey[0]:
                 #add in action point functionality when ready
-                #commandNumbers.append(commandKeys["TravelToAction"])
+                #commandNumbers.append(RouteLeg(commandKeys["TravelToAction"], startingNode, endingNode))
                 print("Skipping action point as it is not ready")
 
         elif(len(endingKey) == 2):
@@ -202,16 +203,16 @@ def getStepsFromRoute(route):
                     case 'B':
                         match endingKey[1]:
                             case 'A':
-                                commandNumbers.append(commandKeys["IntersectionRight"])
+                                commandNumbers.append(RouteLeg(commandKeys["IntersectionRight"], startingNode, endingNode))
 
                             case 'C':
-                                commandNumbers.append(commandKeys["IntersectionU"])
+                                commandNumbers.append(RouteLeg(commandKeys["IntersectionU"], startingNode, endingNode))
 
                             case 'E':
-                                commandNumbers.append(commandKeys["IntersectionLeft"])
+                                commandNumbers.append(RouteLeg(commandKeys["IntersectionLeft"], startingNode, endingNode))
 
                             case 'G':
-                                commandNumbers.append(commandKeys["IntersectionStraight"])
+                                commandNumbers.append(RouteLeg(commandKeys["IntersectionStraight"], startingNode, endingNode))
                             
                             case _:
                                 print("Invalid internal connection!")
@@ -219,16 +220,16 @@ def getStepsFromRoute(route):
                     case 'D':
                         match endingKey[1]:
                             case 'A':  
-                                commandNumbers.append(commandKeys["IntersectionStraight"])
+                                commandNumbers.append(RouteLeg(commandKeys["IntersectionStraight"], startingNode, endingNode))
 
                             case 'C':                                
-                                commandNumbers.append(commandKeys["IntersectionRight"])
+                                commandNumbers.append(RouteLeg(commandKeys["IntersectionRight"], startingNode, endingNode))
 
                             case 'E':        
-                                commandNumbers.append(commandKeys["IntersectionU"])
+                                commandNumbers.append(RouteLeg(commandKeys["IntersectionU"], startingNode, endingNode))
 
                             case 'G':
-                                commandNumbers.append(commandKeys["IntersectionLeft"])
+                                commandNumbers.append(RouteLeg(commandKeys["IntersectionLeft"], startingNode, endingNode))
                             
                             case _:
                                 print("Invalid internal connection!")
@@ -236,16 +237,16 @@ def getStepsFromRoute(route):
                     case 'F':
                         match endingKey[1]:
                             case 'A':
-                                commandNumbers.append(commandKeys["IntersectionLeft"])
+                                commandNumbers.append(RouteLeg(commandKeys["IntersectionLeft"], startingNode, endingNode))
 
                             case 'C':
-                                commandNumbers.append(commandKeys["IntersectionStraight"])
+                                commandNumbers.append(RouteLeg(commandKeys["IntersectionStraight"], startingNode, endingNode))
 
                             case 'E':
-                                commandNumbers.append(commandKeys["IntersectionRight"])
+                                commandNumbers.append(RouteLeg(commandKeys["IntersectionRight"], startingNode, endingNode))
 
                             case 'G':  
-                                commandNumbers.append(commandKeys["IntersectionU"])
+                                commandNumbers.append(RouteLeg(commandKeys["IntersectionU"], startingNode, endingNode))
                             
                             case _:
                                 print("Invalid internal connection!")
@@ -253,16 +254,16 @@ def getStepsFromRoute(route):
                     case 'H':
                         match endingKey[1]:
                             case 'A': 
-                                commandNumbers.append(commandKeys["IntersectionU"])
+                                commandNumbers.append(RouteLeg(commandKeys["IntersectionU"], startingNode, endingNode))
 
                             case 'C':
-                                commandNumbers.append(commandKeys["IntersectionLeft"])
+                                commandNumbers.append(RouteLeg(commandKeys["IntersectionLeft"], startingNode, endingNode))
 
                             case 'E':
-                                commandNumbers.append(commandKeys["IntersectionStraight"])
+                                commandNumbers.append(RouteLeg(commandKeys["IntersectionStraight"], startingNode, endingNode))
 
                             case 'G':
-                                commandNumbers.append(commandKeys["IntersectionRight"])
+                                commandNumbers.append(RouteLeg(commandKeys["IntersectionRight"], startingNode, endingNode))
 
                             case _:
                                 print("Invalid internal connection!")
@@ -272,10 +273,10 @@ def getStepsFromRoute(route):
 
             elif (len(startingKey) == 0):
                 #if coming from an action node
-                commandNumbers.append(commandKeys["FollowLineTillMarker"])
+                commandNumbers.append(RouteLeg(commandKeys["FollowLineTillMarker"], startingNode, endingNode))
             else:
                 #internode connection
-                commandNumbers.append(commandKeys["FollowLineTillMarker"])
+                commandNumbers.append(RouteLeg(commandKeys["FollowLineTillMarker"], startingNode, endingNode))
 
         counter +=1
     
