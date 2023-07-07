@@ -18,7 +18,7 @@
 bool PUBLISHDATA = true;
 
 //the robot container that is a wrapper around periphral functions
-RobotContainer MC = RobotContainer(&M1, &M2, &encoder1, &encoder2, A3, A6, A2);
+RobotContainer MC = RobotContainer(&M1, &M2, &encoder1, &encoder2, IN1, A6, A2);
 Communicator CC = Communicator();
 Sequencer SC = Sequencer();
 
