@@ -61,6 +61,7 @@ def initialize():
             if(len(connectionInfo) >= 3):
                 overseerers.append(BotOverSeer(connectionInfo[0], connectionInfo[1], connectionInfo[2], queueOut, queueOutGUI))
                 connectedRobots.append(connectionInfo[0])
+                overseerers[0].sendPacket("civic_79_5")
 
     #see what to do next based on menu result
     startUpAction = queueInGUI.get()

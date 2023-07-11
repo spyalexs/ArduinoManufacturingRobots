@@ -1,7 +1,9 @@
 import time
 import threading
+import os
 
 from gui.GUIOutMessage import GUIOutMessage
+from imageStreaming.image2icon import image2icon
 from getConstants import getCommandLocalizationEffects
 from execution.RouteLeg import RouteLeg
 
@@ -29,6 +31,8 @@ class BotOverSeer:
     
     m_connectionTimeout = 5 # after five seconds of not hearing from bot, assume connection issues
     m_connected = False
+
+    m_iconPacketLocation = "" #the location of the icon packets
     
     def __init__(self, macAddress, port, ip_address, queueToBots, queueToGUI):
         self.m_port = port
@@ -41,6 +45,8 @@ class BotOverSeer:
 
         self.m_lastConnection = time.time()
         self.m_localizationEffects = getCommandLocalizationEffects()
+
+        m_iconPacketLocation = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "gui", "imageStreaming", "packets")
 
     def updateStatus(self, status, UpdateGui:bool = True):
         self.m_status = status
@@ -267,6 +273,33 @@ class BotOverSeer:
 
         #log that a connection was heard from the bot
         self.m_lastConnection = time.time()
+
+    def sendPacket(self, value):
+        #open the file corrosponding to the packet
+        try:
+            packetFile = open(os.path.join(self.m_iconPacketLocation, value + ".bin"), "rb")
+
+        except FileNotFoundError:
+            print("Packet: " + str(value) + " is being generated!")
+
+            #split value into icon name, size and packet number
+            valueArray = value.split("_")
+
+            iconGenerationThread = threading.Thread(target=self.generateAndSendPacket, args=(valueArray[0], valueArray[1]))
+            iconGenerationThread.daemon = True
+            iconGenerationThread.start()
+        
+    def generateAndSendPacket(self, icon, size):
+        #icon hasn't been generated yet, do this now
+
+        try:
+            image2icon(icon, size)
+
+
+        except:
+            print("Failed to generate: " + icon + "!")
+
+
             
 
         
