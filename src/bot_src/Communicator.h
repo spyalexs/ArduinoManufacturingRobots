@@ -40,7 +40,7 @@ class Communicator{
         uint16_t m_localUDPPort = 5005;
         uint16_t m_assignedUDPPort = 0;
 
-        const int m_bufferSize = 50;
+        const int m_bufferSize = 1000;
         byte* m_packetBuffer;
 
         bool m_ready = false; //if the wifi module is ready to commincate

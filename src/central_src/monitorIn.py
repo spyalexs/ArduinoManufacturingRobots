@@ -2,7 +2,7 @@ import queue
 import socket
 import threading
 
-from getConstants import getConnectionPorts
+from getConstants import getConnectionPorts, getPacketBufferLength
 
 try:
     LOCAL_IP = socket.gethostbyname("Alexsmen.mshome.net")
@@ -10,7 +10,6 @@ except socket.gaierror:
     print("Could not find LOCALIP, is the Hotspot/Network up?")
     quit()
     
-BUFFER_LENGTH = 50
 
 def launchPacketMonitor(queueIn):
     #queue to pass the kill signal
@@ -38,6 +37,8 @@ def monitor(queueIn, killQueue):
 
         counter += 1
 
+    bufferLength = getPacketBufferLength()
+
     read = True
     while(read):
         #sequence that allows program to gracefully exit
@@ -47,7 +48,7 @@ def monitor(queueIn, killQueue):
         #read each socket
         for key in sockets.keys():
             try:
-                message, addr = sockets[key].recvfrom(BUFFER_LENGTH)
+                message, addr = sockets[key].recvfrom(bufferLength)
                 
                 if(not str(message) == ""):
 

@@ -71,3 +71,9 @@ def getTheme():
 
     return GUI_THEME #better to look at
 
+def getPacketBufferLength():
+    #returns the length of the packet buffer
+    PACKET_BUFFER_LENGTH = 1000
+
+    return PACKET_BUFFER_LENGTH
+

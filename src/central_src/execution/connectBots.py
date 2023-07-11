@@ -3,7 +3,7 @@ from threading import Thread
 import queue
 import time
 
-from getConstants import getConnectionPorts
+from getConstants import getConnectionPorts, getPacketBufferLength
 
 try:
     LOCAL_IP = socket.gethostbyname("Alexsmen.mshome.net")
@@ -50,6 +50,8 @@ def connectBots(connectorQueue, killQueue):
     #the next port to be assigned
     nextPort = lowerComPort
 
+    bufferLength = getPacketBufferLength()
+
     searching = True
     while(searching):
 
@@ -59,7 +61,7 @@ def connectBots(connectorQueue, killQueue):
 
         #run until entire system is down
         try:
-            message, addr = sock.recvfrom(50)
+            message, addr = sock.recvfrom(bufferLength)
             if(CONNECTION_MESSAGE in str(message)):
                 #trim message to get mac
                 macAddress = str(message).split("$$$")[0].split("MAC:")[1]
@@ -79,7 +81,7 @@ def connectBots(connectorQueue, killQueue):
                     clearing = True
                     while(clearing == True):
                         try:
-                            sock.recv(50)
+                            sock.recv(bufferLength)
                         except TimeoutError:
                             clearing = False
 
@@ -105,7 +107,7 @@ def connectBots(connectorQueue, killQueue):
                     clearing = True
                     while(clearing == True):
                         try:
-                            sock.recv(50)
+                            sock.recv(bufferLength)
                         except TimeoutError:
                             clearing = False
 

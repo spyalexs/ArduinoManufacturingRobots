@@ -2,6 +2,7 @@
 #define motioncontroller_h
 
 #include <ArduinoMotorCarrier.h>
+#include "Display.h"
 
 // a wrapper class around motion, allows for the easy utilization of subroutines and control methods
 
@@ -19,6 +20,9 @@ class RobotContainer{
     uint8_t m_lineFollowerPin;
     uint8_t m_intersectionPin;
     uint8_t m_codePin;
+
+    //robot display
+    Display m_display;
 
     //class-wide constants
     double m_staleTime = 0.1; // the time it takes for control results to need to be refreshed

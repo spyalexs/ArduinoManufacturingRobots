@@ -37,6 +37,14 @@ void setup(){
     Serial.println("Failed to start controller!");
   }
 
+  //set up display basics
+  MC.m_display.setBackground(ILI9341_BLACK);
+  MC.m_display.drawBasicUI();
+
+  MC.m_display.setIconsCount(4);
+
+  MC.m_display.drawPacket();
+
   //get coms set up with central
   CC.connectToNetwork();
   CC.connectToCentral();
@@ -46,7 +54,6 @@ void setup(){
 
 void loop(){
   //nothing can be blocking!
-
   
   //run running command
   if(runningCommand != nullptr){
@@ -76,6 +83,9 @@ void loop(){
 
   //listen to central for commands
   listen();
+
+  //cycle the display
+  MC.m_display.cycle();
 }
 
 

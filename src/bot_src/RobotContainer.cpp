@@ -8,6 +8,7 @@ RobotContainer::RobotContainer(mc::DCMotor* motor1, mc::DCMotor* motor2, mc::Enc
   m_lineFollowerPin = lineFollowerPinName;
   m_intersectionPin = intersectionPinName;
   m_codePin = codePinName;
+  m_display = Display();
 
   pinMode(LED_BUILTIN, OUTPUT);
 }
