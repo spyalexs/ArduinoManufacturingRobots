@@ -31,6 +31,8 @@ void setup(){
   Serial.begin(9600);
 
   SC.setCommunicatorPointer(&CC);
+  CC.setDisplayPointer(&MC.m_display);
+  MC.m_display.setMessagesOutQueue(CC.getMessageOutQueuePointer());
 
   //start up motor carrier
   if(!controller.begin()){
@@ -43,18 +45,21 @@ void setup(){
 
   MC.m_display.setIconsCount(4);
 
-  MC.m_display.drawPacket();
-
   //get coms set up with central
   CC.connectToNetwork();
   CC.connectToCentral();
 
   Serial.println("I am a bot!");
+
+  delay(1000);
+
+  MC.m_display.addIconDrawJob(1, "civic");
 }
 
 void loop(){
   //nothing can be blocking!
   
+
   //run running command
   if(runningCommand != nullptr){
     //if the running command is real
@@ -86,6 +91,9 @@ void loop(){
 
   //cycle the display
   MC.m_display.cycle();
+
+  //cycle communicator
+  CC.cycle();
 }
 
 
@@ -194,6 +202,7 @@ void update(){
 
     //update must be less than 50 bytes
     CC.writeMessageToCentral("bat", String(MC.getBatteryVoltage()));
+
   }
 }
 
@@ -204,6 +213,7 @@ void listen(){
 
   //go through all the packets and handle each
   while(!incomingPackets.empty()){
+
     String packet = incomingPackets.front();
 
     //find the seperator in the packet

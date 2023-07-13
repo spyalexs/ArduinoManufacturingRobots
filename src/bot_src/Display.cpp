@@ -6,7 +6,9 @@ Display::Display(): m_tft(7, 10, 8, 9){
     m_tft.begin();
     
     //display horizontal
-    this->m_tft.setRotation(3);  
+    this->m_tft.setRotation(3);
+
+    //display connection Icon
 }
 
 Display::~Display(){
@@ -47,6 +49,11 @@ void Display::drawBasicUI(){
     this->m_tft.setTextSize(1);
     this->m_tft.print("Connection: ");
 
+    //connection icon
+    this->m_connectionIcon.updateShape(DISPLAY_BOTTOM_BAR_HEIGHT -4, DISPLAY_BOTTOM_BAR_HEIGHT -4, 290, DISPLAY_HEIGHT - (DISPLAY_BOTTOM_BAR_HEIGHT - 2));
+    
+    //battery icon
+    this->m_batteryIcon.updateShape(DISPLAY_BOTTOM_BAR_HEIGHT - 4, DISPLAY_BOTTOM_BAR_HEIGHT - 4, 150, DISPLAY_HEIGHT - (DISPLAY_BOTTOM_BAR_HEIGHT - 2));
 }
 
 bool Display::addPixelToBuffer(Pixel pixel){
@@ -89,28 +96,58 @@ void Display::cycle(){
         switch (this->m_jobQueue.front()){
             //call job based on code from queue
             case 100:
-                pop = this->drawIconOutline(this->m_displayIcons[0]);
+                pop = this->drawIconOutline(&this->m_displayIcons[0]);
                 break;
             case 101: 
-                pop = this->drawIconOutline(this->m_displayIcons[1]);
+                pop = this->drawIconOutline(&this->m_displayIcons[1]);
                 break;           
             case 102:
-                pop = this->drawIconOutline(this->m_displayIcons[2]);
+                pop = this->drawIconOutline(&this->m_displayIcons[2]);
                 break;
             case 103: 
-                pop = this->drawIconOutline(this->m_displayIcons[3]);
+                pop = this->drawIconOutline(&this->m_displayIcons[3]);
                 break;           
             case 104:
-                pop = this->drawIconOutline(this->m_displayIcons[4]);
+                pop = this->drawIconOutline(&this->m_displayIcons[4]);
                 break;
             case 105:  
-                pop = this->drawIconOutline(this->m_displayIcons[5]);
+                pop = this->drawIconOutline(&this->m_displayIcons[5]);
                 break;          
             case 106:                
-                pop = this->drawIconOutline(this->m_displayIcons[6]);
+                pop = this->drawIconOutline(&this->m_displayIcons[6]);
                 break;
             case 107:                
-                pop = this->drawIconOutline(this->m_displayIcons[7]);
+                pop = this->drawIconOutline(&this->m_displayIcons[7]);
+                break;
+            case 110:
+                pop = this->drawIcon(&this->m_displayIcons[0]);
+                break;
+            case 111: 
+                pop = this->drawIcon(&this->m_displayIcons[1]);
+                break;           
+            case 112:
+                pop = this->drawIcon(&this->m_displayIcons[2]);
+                break;
+            case 113: 
+                pop = this->drawIcon(&this->m_displayIcons[3]);
+                break;           
+            case 114:
+                pop = this->drawIcon(&this->m_displayIcons[4]);
+                break;
+            case 115:  
+                pop = this->drawIcon(&this->m_displayIcons[5]);
+                break;          
+            case 116:                
+                pop = this->drawIcon(&this->m_displayIcons[6]);
+                break;
+            case 117:                
+                pop = this->drawIcon(&this->m_displayIcons[7]);
+                break;
+            case 120:
+                pop = this->drawIcon(&this->m_connectionIcon);
+                break;            
+            case 121:
+                pop = this->drawIcon(&this->m_batteryIcon);
                 break;
         }
 
@@ -200,20 +237,20 @@ void Display::drawIconSlots(){
     }
 }
 
-bool Display::drawIconOutline(Icon icon){
+bool Display::drawIconOutline(Icon* icon){
     //draw the outline of the icon
 
     //add in  vertical lines
-    for(int i = 0; i < icon.m_height; i++){
+    for(int i = 0; i < icon->m_height; i++){
         //add left and right pixels
-        this->addPixelToBuffer(Pixel(icon.m_x, icon.m_y + i, ILI9341_WHITE));
-        this->addPixelToBuffer(Pixel(icon.m_x + icon.m_width, icon.m_y + i, ILI9341_WHITE));
+        this->addPixelToBuffer(Pixel(icon->m_x, icon->m_y + i, ILI9341_WHITE));
+        this->addPixelToBuffer(Pixel(icon->m_x + icon->m_width, icon->m_y + i, ILI9341_WHITE));
     }    
     
-    for(int i = 0; i < icon.m_width; i++){
+    for(int i = 0; i < icon->m_width; i++){
         //add top and bottom pixels
-        this->addPixelToBuffer(Pixel(icon.m_x + i, icon.m_y, ILI9341_WHITE));
-        this->addPixelToBuffer(Pixel(icon.m_x + i, icon.m_y + icon.m_height, ILI9341_WHITE));
+        this->addPixelToBuffer(Pixel(icon->m_x + i, icon->m_y, ILI9341_WHITE));
+        this->addPixelToBuffer(Pixel(icon->m_x + i, icon->m_y + icon->m_height, ILI9341_WHITE));
     }
 
     return true;
@@ -228,7 +265,17 @@ int Display::getPixelsInBufferCount(){
     return PIXEL_BUFFER_LENGTH - this->m_writePixel + this->m_pixelsInBuffer;
 }
 
-void Display::drawPacket(){
+void Display::drawPacket(uint8_t* packetBuffer){
+
+    //get the icon based on the front job
+    if(this->m_jobQueue.front() < 110 || this->m_jobQueue.front() > 129){
+        // the joib is not a draw icon
+        Serial.println("Job is not a draw icon, returning");
+        return;
+    }
+
+    //get the icon number from the job queue
+    uint8_t iconNumber = this->m_jobQueue.front() - 110;
 
     if(this->getPixelsInBufferCount() != 0){
         //display buffer should always be empty
@@ -237,18 +284,70 @@ void Display::drawPacket(){
         return;
     }
 
-    uint8_t packet[1000] = {0, 0, 112, 2, 0, 32, 0, 32, 104, 2, 104, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 57, 231, 185, 231, 209, 234, 201, 233, 185, 231, 185, 231, 185, 231, 201, 233, 201, 233, 209, 234, 209, 234, 57, 231, 33, 228, 91, 235, 91, 235, 91, 235, 75, 233, 73, 229, 152, 35, 160, 68, 160, 68, 160, 68, 160, 68, 160, 68, 160, 68, 160, 68, 168, 166, 168, 166, 160, 68, 160, 68, 128, 35, 104, 229, 104, 229, 104, 229, 145, 230, 145, 230, 160, 68, 152, 35, 152, 35, 152, 35, 160, 68, 160, 68, 160, 68, 160, 68, 160, 68, 160, 68, 160, 68, 160, 68, 135, 240, 231, 252, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 80, 1, 0, 32, 33, 228, 24, 227, 152, 35, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 128, 35, 152, 35, 160, 68, 112, 2, 112, 2, 112, 2, 112, 2, 168, 166, 185, 231, 185, 231, 185, 231, 201, 233, 201, 233, 135, 240, 191, 247, 107, 237, 231, 252, 159, 243, 49, 230, 49, 230, 107, 237, 107, 237, 107, 237, 107, 237, 57, 231, 80, 1, 160, 68, 160, 68, 160, 68, 168, 166, 160, 68, 160, 68, 160, 68, 160, 68, 160, 68, 160, 68, 160, 68, 160, 68, 160, 68, 160, 68, 160, 68, 160, 68, 160, 68, 152, 35, 128, 35, 104, 229, 57, 231, 16, 130, 135, 240, 135, 240, 191, 247, 201, 233, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 80, 1, 33, 228, 16, 130, 57, 231, 168, 166, 104, 2, 104, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 128, 35, 112, 2, 112, 2, 16, 130, 24, 227, 112, 2, 112, 2, 160, 68, 168, 166, 185, 231, 185, 231, 201, 233, 209, 234, 91, 235, 135, 240, 75, 233, 135, 240, 159, 243, 159, 243, 191, 247, 159, 243, 75, 233, 0, 32, 49, 230, 107, 237, 107, 237, 91, 235, 91, 235, 91, 235, 24, 227, 0, 32, 0, 32, 0, 32, 0, 32, 0, 32, 0, 32, 0, 32, 0, 32, 0, 32, 0, 32, 0, 32, 0, 32, 16, 130, 0, 32, 24, 227, 107, 237, 135, 240, 135, 240, 159, 243, 191, 247, 191, 247, 209, 234, 0, 0, 0, 0, 0, 0, 0, 0, 56, 66, 33, 228, 49, 230, 0, 32, 80, 1, 104, 2, 104, 2, 104, 2, 104, 2, 104, 2, 104, 2, 104, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 0, 32, 0, 32, 16, 130, 24, 227, 112, 2, 112, 2, 152, 35, 160, 68, 168, 166, 185, 231, 201, 233, 209, 234, 80, 1, 191, 247, 75, 233, 135, 240, 107, 237, 91, 235, 57, 231, 57, 231, 107, 237, 135, 240, 135, 240, 75, 233, 24, 227, 16, 130, 16, 130, 24, 227, 49, 230, 49, 230, 49, 230, 49, 230, 49, 230, 33, 228, 24, 227, 16, 130, 16, 130, 75, 233, 107, 237, 16, 130, 16, 130, 0, 32, 0, 32, 0, 32, 0, 32, 107, 237, 75, 233, 191, 247, 155, 235, 209, 234, 209, 234, 0, 0, 0, 0, 0, 0, 80, 1, 75, 233, 57, 231, 49, 230, 24, 227, 160, 68, 88, 2, 88, 2, 104, 2, 104, 2, 104, 2, 104, 2, 104, 2, 104, 2, 104, 2, 104, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 33, 228, 0, 32, 57, 231, 49, 230, 24, 227, 16, 130, 235, 224, 185, 231, 128, 35, 112, 2, 168, 166, 185, 231, 201, 233, 209, 234, 219, 235, 201, 233, 24, 227, 159, 243, 57, 231, 159, 243, 135, 240, 159, 243, 91, 235, 57, 231, 231, 252, 0, 32, 49, 230, 16, 130, 24, 227, 24, 227, 24, 227, 24, 227, 16, 130, 16, 130, 16, 130, 16, 130, 16, 130, 24, 227, 75, 233, 152, 35, 107, 237, 16, 130, 0, 32, 0, 32, 0, 32, 16, 130, 91, 235, 57, 231, 159, 243, 209, 234, 209, 234, 209, 234, 185, 233, 0, 0, 0, 0, 80, 1, 0, 32, 49, 230, 33, 228, 24, 227, 88, 2, 88, 2, 88, 2, 88, 2, 80, 1, 88, 2, 88, 2, 104, 2, 104, 2, 104, 2, 104, 2, 104, 2, 104, 2, 104, 2, 112, 2, 112, 2, 112, 2, 112, 2, 16, 130, 57, 231, 24, 227, 24, 227, 16, 130, 0, 32, 16, 130, 235, 224, 235, 224, 128, 35, 128, 35, 160, 68, 185, 231, 201, 233, 209, 234, 209, 234, 209, 234, 209, 234, 185, 231, 185, 231, 16, 130, 107, 237, 49, 230, 16, 130, 16, 130, 49, 230, 75, 233, 75, 233, 57, 231, 16, 130, 16, 130, 16, 130, 16, 130, 16, 130, 16, 130, 16, 130, 16, 130, 33, 228, 159, 243, 159, 243, 107, 237, 16, 130, 16, 130, 0, 32, 0, 32, 24, 227, 135, 240, 135, 240, 209, 234, 209, 234, 209, 234, 185, 231, 57, 231, 0, 0};
-    int startingx = this->m_displayIcons[0].m_x + 1;
-    int startingy = this->m_displayIcons[0].m_y + 1;
+    //uint8_t packet[1000] = {0, 0, 112, 2, 0, 32, 0, 32, 104, 2, 104, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 57, 231, 185, 231, 209, 234, 201, 233, 185, 231, 185, 231, 185, 231, 201, 233, 201, 233, 209, 234, 209, 234, 57, 231, 33, 228, 91, 235, 91, 235, 91, 235, 75, 233, 73, 229, 152, 35, 160, 68, 160, 68, 160, 68, 160, 68, 160, 68, 160, 68, 160, 68, 168, 166, 168, 166, 160, 68, 160, 68, 128, 35, 104, 229, 104, 229, 104, 229, 145, 230, 145, 230, 160, 68, 152, 35, 152, 35, 152, 35, 160, 68, 160, 68, 160, 68, 160, 68, 160, 68, 160, 68, 160, 68, 160, 68, 135, 240, 231, 252, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 80, 1, 0, 32, 33, 228, 24, 227, 152, 35, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 128, 35, 152, 35, 160, 68, 112, 2, 112, 2, 112, 2, 112, 2, 168, 166, 185, 231, 185, 231, 185, 231, 201, 233, 201, 233, 135, 240, 191, 247, 107, 237, 231, 252, 159, 243, 49, 230, 49, 230, 107, 237, 107, 237, 107, 237, 107, 237, 57, 231, 80, 1, 160, 68, 160, 68, 160, 68, 168, 166, 160, 68, 160, 68, 160, 68, 160, 68, 160, 68, 160, 68, 160, 68, 160, 68, 160, 68, 160, 68, 160, 68, 160, 68, 160, 68, 152, 35, 128, 35, 104, 229, 57, 231, 16, 130, 135, 240, 135, 240, 191, 247, 201, 233, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 80, 1, 33, 228, 16, 130, 57, 231, 168, 166, 104, 2, 104, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 128, 35, 112, 2, 112, 2, 16, 130, 24, 227, 112, 2, 112, 2, 160, 68, 168, 166, 185, 231, 185, 231, 201, 233, 209, 234, 91, 235, 135, 240, 75, 233, 135, 240, 159, 243, 159, 243, 191, 247, 159, 243, 75, 233, 0, 32, 49, 230, 107, 237, 107, 237, 91, 235, 91, 235, 91, 235, 24, 227, 0, 32, 0, 32, 0, 32, 0, 32, 0, 32, 0, 32, 0, 32, 0, 32, 0, 32, 0, 32, 0, 32, 0, 32, 16, 130, 0, 32, 24, 227, 107, 237, 135, 240, 135, 240, 159, 243, 191, 247, 191, 247, 209, 234, 0, 0, 0, 0, 0, 0, 0, 0, 56, 66, 33, 228, 49, 230, 0, 32, 80, 1, 104, 2, 104, 2, 104, 2, 104, 2, 104, 2, 104, 2, 104, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 0, 32, 0, 32, 16, 130, 24, 227, 112, 2, 112, 2, 152, 35, 160, 68, 168, 166, 185, 231, 201, 233, 209, 234, 80, 1, 191, 247, 75, 233, 135, 240, 107, 237, 91, 235, 57, 231, 57, 231, 107, 237, 135, 240, 135, 240, 75, 233, 24, 227, 16, 130, 16, 130, 24, 227, 49, 230, 49, 230, 49, 230, 49, 230, 49, 230, 33, 228, 24, 227, 16, 130, 16, 130, 75, 233, 107, 237, 16, 130, 16, 130, 0, 32, 0, 32, 0, 32, 0, 32, 107, 237, 75, 233, 191, 247, 155, 235, 209, 234, 209, 234, 0, 0, 0, 0, 0, 0, 80, 1, 75, 233, 57, 231, 49, 230, 24, 227, 160, 68, 88, 2, 88, 2, 104, 2, 104, 2, 104, 2, 104, 2, 104, 2, 104, 2, 104, 2, 104, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 33, 228, 0, 32, 57, 231, 49, 230, 24, 227, 16, 130, 235, 224, 185, 231, 128, 35, 112, 2, 168, 166, 185, 231, 201, 233, 209, 234, 219, 235, 201, 233, 24, 227, 159, 243, 57, 231, 159, 243, 135, 240, 159, 243, 91, 235, 57, 231, 231, 252, 0, 32, 49, 230, 16, 130, 24, 227, 24, 227, 24, 227, 24, 227, 16, 130, 16, 130, 16, 130, 16, 130, 16, 130, 24, 227, 75, 233, 152, 35, 107, 237, 16, 130, 0, 32, 0, 32, 0, 32, 16, 130, 91, 235, 57, 231, 159, 243, 209, 234, 209, 234, 209, 234, 185, 233, 0, 0, 0, 0, 80, 1, 0, 32, 49, 230, 33, 228, 24, 227, 88, 2, 88, 2, 88, 2, 88, 2, 80, 1, 88, 2, 88, 2, 104, 2, 104, 2, 104, 2, 104, 2, 104, 2, 104, 2, 104, 2, 112, 2, 112, 2, 112, 2, 112, 2, 16, 130, 57, 231, 24, 227, 24, 227, 16, 130, 0, 32, 16, 130, 235, 224, 235, 224, 128, 35, 128, 35, 160, 68, 185, 231, 201, 233, 209, 234, 209, 234, 209, 234, 209, 234, 185, 231, 185, 231, 16, 130, 107, 237, 49, 230, 16, 130, 16, 130, 49, 230, 75, 233, 75, 233, 57, 231, 16, 130, 16, 130, 16, 130, 16, 130, 16, 130, 16, 130, 16, 130, 16, 130, 33, 228, 159, 243, 159, 243, 107, 237, 16, 130, 16, 130, 0, 32, 0, 32, 24, 227, 135, 240, 135, 240, 209, 234, 209, 234, 209, 234, 185, 231, 57, 231, 0, 0};
+    int startingx = this->getIcon(iconNumber)->m_x + 1;
+    int startingy = this->getIcon(iconNumber)->m_y + getIcon(iconNumber)->getPacketRow() + 1;
+    int size = this->getIcon(iconNumber)->getIconImageSize();
+    int packetSize = this->getIcon(iconNumber)->getBytesPerPacket();
 
-    for(int i = 0; i < 936; i += 2){
-        uint16_t color = packet[i] << 8 | packet[i+1];
+    for(int i = 0; i < packetSize; i += 2){
+        uint16_t color = packetBuffer[i] << 8 | packetBuffer[i+1];
 
-        this->addPixelToBuffer(Pixel(startingx + (int(i / 2) % 78), startingy + floor((i / 2) / 78), color));
+        this->addPixelToBuffer(Pixel(startingx + (int(i / 2) % size), startingy + floor((i / 2) / size), color));
+    }
+}
+
+bool Display::drawIcon(Icon* icon){
+    //draw an icon by requesting packets
+
+    //check for end
+    if(!icon->m_isDrawing){
+        //icon is no longer drawing - job is over
+        return true;
     }
 
+    if(this->mp_messagesOutQueue == nullptr){
+        //cannot draw icon as cannot find commuicator pointer
+        Serial.println("Cannot draw icon as cannot find commuicator pointer!");
+        return true;
+    }
+
+    //if a packet needs requested
+    int nextPacket = icon->getNextPacketNumber();
+    if(nextPacket != -1){
+        //a packet does need requested
+        //add to communicator queue
+
+        mp_messagesOutQueue->push("iconRequest$" + icon->m_iconName + "_" + String(icon->getIconImageSize()) + "_" + String(nextPacket));
+    }
+
+
+    return false;
 }
 
-void Display::drawIcon(){
-
+void Display::setMessagesOutQueue(std::queue<String>* queue){
+    // set the pointer to the messages out queue
+    this->mp_messagesOutQueue = queue;
 }
+
+void Display::addIconDrawJob(uint8_t iconNumber, String iconName){
+    //call this to begin drawing an icon
+
+    this->m_jobQueue.push(110 + iconNumber);
+    this->getIcon(iconNumber)->beginDrawing(iconName);
+}
+
+Icon* Display::getIcon(uint8_t iconNumber){
+    if(iconNumber < 10){
+        //return an item icon
+        return &(this->m_displayIcons[iconNumber]);
+    } else if(iconNumber == 10){
+        return &(this->m_connectionIcon);
+    } else if(iconNumber == 11){
+        return &(this->m_batteryIcon);
+    }
+
+    Serial.println("Could not find matching icon");
+    return nullptr;
+}
+

@@ -25,6 +25,8 @@ def initialize():
     queueIn = queue.Queue()
     #thread safe queu for messages out of central
     queueOut = queue.Queue()
+    #queue to send packets to bots
+    queuePacketOut = queue.Queue()
 
     #queue for incomming gui requests - from GUI to central
     queueInGUI = queue.Queue()
@@ -38,7 +40,7 @@ def initialize():
     subThreadKills.append(launchPacketMonitor(queueIn))
     
     #create a thread to send messages out serial
-    subThreadKills.append(launchPacketPublisher(queueOut))
+    subThreadKills.append(launchPacketPublisher(queueOut, queuePacketOut))
 
     #launch the gui
     subThreadKills.append(launchGUI(queueInGUI, queueOutGUI))
@@ -59,9 +61,8 @@ def initialize():
 
             #add bot overseerer to new connection
             if(len(connectionInfo) >= 3):
-                overseerers.append(BotOverSeer(connectionInfo[0], connectionInfo[1], connectionInfo[2], queueOut, queueOutGUI))
+                overseerers.append(BotOverSeer(connectionInfo[0], connectionInfo[1], connectionInfo[2], queueOut, queuePacketOut, queueOutGUI))
                 connectedRobots.append(connectionInfo[0])
-                overseerers[0].sendPacket("civic_79_5")
 
     #see what to do next based on menu result
     startUpAction = queueInGUI.get()

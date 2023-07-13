@@ -3,6 +3,8 @@
 
 #include <Arduino.h>
 
+#include "Display.h"
+
 #include <WiFiNINA.h>
 #include <WiFiUdp.h>
 
@@ -22,6 +24,9 @@ class Communicator{
         
         void cycle();
 
+        void setDisplayPointer(Display* display);
+
+        std::queue<String>* getMessageOutQueuePointer();
     private:
         WiFiSSLClient m_wifiClient;
         int m_wifiStatus = WL_IDLE_STATUS;
@@ -46,6 +51,11 @@ class Communicator{
         bool m_ready = false; //if the wifi module is ready to commincate
         bool m_connected = false; //if the commincator is connected and has a port #
         double m_connectionTimeout = 1000; //timeout for connection protocol
+
+        Display* mp_display = nullptr; // a pointer to the display
+
+        std::queue<String> m_pendingMessages;
+
 
         double getTime();
 };

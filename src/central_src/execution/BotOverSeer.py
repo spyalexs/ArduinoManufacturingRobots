@@ -34,11 +34,12 @@ class BotOverSeer:
 
     m_iconPacketLocation = "" #the location of the icon packets
     
-    def __init__(self, macAddress, port, ip_address, queueToBots, queueToGUI):
+    def __init__(self, macAddress, port, ip_address, queueToBots, queuePacketOut, queueToGUI):
         self.m_port = port
         self.m_mac = macAddress
         self.m_ip = ip_address
         self.m_queue = queueToBots
+        self.m_queuePacketOut = queuePacketOut
         self.m_queueGui = queueToGUI
 
         self.m_lastIssue = 0
@@ -46,7 +47,7 @@ class BotOverSeer:
         self.m_lastConnection = time.time()
         self.m_localizationEffects = getCommandLocalizationEffects()
 
-        m_iconPacketLocation = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "gui", "imageStreaming", "packets")
+        self.m_iconPacketLocation = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "imageStreaming", "packets")
 
     def updateStatus(self, status, UpdateGui:bool = True):
         self.m_status = status
@@ -277,27 +278,48 @@ class BotOverSeer:
     def sendPacket(self, value):
         #open the file corrosponding to the packet
         try:
+            #read in packet
             packetFile = open(os.path.join(self.m_iconPacketLocation, value + ".bin"), "rb")
+            packetBytes = packetFile.read()
+
+            #send packet and recieve address to output queue
+            self.m_queuePacketOut.put(((self.m_ip, int(self.m_port)), packetBytes))
 
         except FileNotFoundError:
             print("Packet: " + str(value) + " is being generated!")
 
             #split value into icon name, size and packet number
-            valueArray = value.split("_")
-
-            iconGenerationThread = threading.Thread(target=self.generateAndSendPacket, args=(valueArray[0], valueArray[1]))
+            
+            iconGenerationThread = threading.Thread(target=self.generateAndSendPacket, args=(value,))
             iconGenerationThread.daemon = True
             iconGenerationThread.start()
         
-    def generateAndSendPacket(self, icon, size):
+    def generateAndSendPacket(self, value):
         #icon hasn't been generated yet, do this now
 
-        try:
-            image2icon(icon, size)
+        valueArray = value.split("_")
 
+        if(len(valueArray) != 3):
+            return
+
+        try:
+            image2icon(valueArray[0], int(valueArray[1]))
+
+            try:
+                #read in packet
+                packetFile = open(os.path.join(self.m_iconPacketLocation, value + ".bin"), "rb")
+                packetBytes = packetFile.read()
+
+                print("Sending to publisher")
+
+                #send packet and recieve address to output queue
+                self.m_queuePacketOut.put(((self.m_ip, int(self.m_port)), packetBytes))
+
+            except FileNotFoundError:
+                print("Attempted to generate packet but unexpectedly failed!") 
 
         except:
-            print("Failed to generate: " + icon + "!")
+            print("Failed to generate: " + valueArray[0] + "!")
 
 
             

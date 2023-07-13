@@ -13,11 +13,11 @@ def handleBotMessage(message, queueInGUI, overseers):
     
     target = messageArray[0]# the bot that sent in the message
     characteristic = messageArray[1] # the characteristic the message is about
-    value = float(messageArray[2]) # the value of the message
+    value = messageArray[2] # the value of the message
 
     if(characteristic == "bat"):
         #messages concerning battery voltage
-        queueInGUI.put(GUIOutMessage(target, characteristic, value))
+        queueInGUI.put(GUIOutMessage(target, characteristic, float(value)))
 
     if(characteristic == "commandStatus"):
         #message concerning command status

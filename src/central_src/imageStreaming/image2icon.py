@@ -3,7 +3,7 @@ import numpy as np
 import os
 import math
 
-def image2icon(iconName, size):
+def image2icon(iconName, size: int):
     #iconName = string representing the icon
     #size = the size of the icon - always a square
 
@@ -55,8 +55,10 @@ def image2icon(iconName, size):
     keyCoordinates = []
     position = invScale * .5
     while(position < len(squareBitmap)):
+
         keyCoordinates.append(round(position))
         position += invScale
+
 
     #create a scaled bitmap
     scaledBitmap = np.zeros((size, size, 4))
@@ -87,6 +89,15 @@ def image2icon(iconName, size):
     while(True):
         #stop at end of image
         if(counter >= len(scaledBitmap)):
+            #write last packet to file
+            file = open(os.path.join(filePath, "packets", iconName + "_" + str(size) + "_" + str(packetCounter) + ".bin"), "wb")
+            
+            file.write(bytearray(packetBytes))
+            file.close
+
+            packetBytes = []
+            packetCounter += 1
+            innerCounter = 0
 
             break
 
@@ -94,8 +105,7 @@ def image2icon(iconName, size):
         if(innerCounter >= rowsPerPacket):
             #write packet to file
             file = open(os.path.join(filePath, "packets", iconName + "_" + str(size) + "_" + str(packetCounter) + ".bin"), "wb")
-            
-            print(packetBytes)
+
             file.write(bytearray(packetBytes))
             file.close
 
@@ -119,8 +129,9 @@ def rgb888to565(pixel):
     b1 = 0
     b2 = 0
 
+    # may have to do some color balancing
     r5 = pixel[0] / 8
-    g6 = pixel[1] / 4
+    g6 = math.floor(math.pow(pixel[1], 3) / 65025)
     b5 = pixel[2] / 8
 
     #byte 1 string
@@ -187,4 +198,4 @@ def rgb888to565(pixel):
 
 if __name__ == "__main__":
     #test parse the jeep icon
-    image2icon("civic", 78)
+    image2icon("power", 18)

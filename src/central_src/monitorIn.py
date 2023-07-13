@@ -49,18 +49,21 @@ def monitor(queueIn, killQueue):
         for key in sockets.keys():
             try:
                 message, addr = sockets[key].recvfrom(bufferLength)
-                
+
                 if(not str(message) == ""):
+                    try:
+                        #get usable part of message
+                        messageString = (str(message).split("$$$")[0])[2:]
 
-                    #get usable part of message
-                    messageString = (str(message).split("$$$")[0]).split("b'")[1]
+                        #break down into sub messages
+                        subMessages = messageString.split("$$")
 
-                    #break down into sub messages
-                    subMessages = messageString.split("$$")
-
-                    #write out sub messages with the name of the sender attached
-                    for subMessage in subMessages:
-                        queueIn.put(str(key) + "$" + subMessage)
+                        #write out sub messages with the name of the sender attached
+                        for subMessage in subMessages:
+                            queueIn.put(str(key) + "$" + subMessage)
+                    except IndexError:
+                        print("Monitor In: index out of range!")
+                        print("Message: " + str(message))
             except TimeoutError:
                 read = True
 

@@ -90,9 +90,12 @@ bool Communicator::connectToCentral(){
             //find port number
             for(int i = 0; i < this->m_bufferSize; i++){
                 //port number is right after colcon
+
                 if((char)m_packetBuffer[i] == ':'){
                     //get number from next four bytes
                     this->m_assignedUDPPort = 1000 * ((int)this->m_packetBuffer[i+1] - 48) + 100 * ((int)m_packetBuffer[i+2] - 48) + 10 * ((int)m_packetBuffer[i+3] - 48) + ((int)m_packetBuffer[i+4] - 48);
+
+                    break;
                 }
             }
 
@@ -116,6 +119,9 @@ bool Communicator::connectToCentral(){
     }
 
     Serial.println("I was assigned: " + String(m_assignedUDPPort));
+
+    //show connection on display
+    this->mp_display->addIconDrawJob(10, "wifi");
 
     return true;
 }
@@ -148,7 +154,15 @@ void Communicator::writeMessageToCentral(String characteristic, String value){
 }
 
 void Communicator::cycle(){
+    if(!this->m_pendingMessages.empty()){
+        //if there is a pending message
 
+        //write the message
+        this->writeMessageToCentral(this->m_pendingMessages.front());
+
+        //remove the message from the to-do
+        this->m_pendingMessages.pop();
+    }
 }
 
 std::queue<String> Communicator::checkForPackets(){
@@ -162,11 +176,35 @@ std::queue<String> Communicator::checkForPackets(){
 
         this->m_Udp.readBytes(m_packetBuffer, m_bufferSize);
 
-        //this only works when there is a "\0" character at the end of the string
-        String packetMessage = String((char*)m_packetBuffer);
-        packets.push(packetMessage);
+        //check to see if packet is a standard message or icon bytes
+        //weird error of not reading some messages later -- look here
+        if(String((char*)m_packetBuffer).indexOf("$$$") == -1 || String((char*)m_packetBuffer).indexOf("$$$") > 200){
 
+            //packet is icon
+            if(mp_display != nullptr){
+                //if display is ready for packet
+                mp_display->drawPacket(m_packetBuffer);
+                
+            }
+        } else {
+            //packet is an string based message
+
+            //this only works when there is a "\0" character at the end of the string
+            //look here if memory leak -- queue could become massive
+            String packetMessage = String((char*)m_packetBuffer);
+            packets.push(packetMessage);
+        }
     }
     
     return packets;
+}
+
+void Communicator::setDisplayPointer(Display* display){
+    //set the pointer to the display - used to send icon packets directly
+    this->mp_display = display;
+}
+
+std::queue<String>* Communicator::getMessageOutQueuePointer(){
+    //send a pointer to the message out queue
+    return &this->m_pendingMessages;
 }

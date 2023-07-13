@@ -26,7 +26,7 @@
 
 #define DISPLAY_MIN_ICON_SPACING 12
 
-#define PIXEL_BUFFER_LENGTH 2000
+#define PIXEL_BUFFER_LENGTH 1000
 
 // backlight will eventually go in GPIO breakout board
 
@@ -43,11 +43,14 @@ class Display{
         int m_pixelsInBuffer = 0; //the next pixel to be added to the queue
         Pixel m_pixelBuffer[PIXEL_BUFFER_LENGTH]; //array of all pixels that need written
 
-        std::queue<uint8_t> m_jobQueue;
+        std::queue<uint8_t> m_jobQueue; // queue of display jobs
+        std::queue<String>* mp_messagesOutQueue = nullptr; // queue in comminucator of messages that need to be sent
 
         int m_requestedIconCount = 0; // the number of icons on the display
 
         Icon m_displayIcons[8];
+        Icon m_connectionIcon; // the icon to display the connection
+        Icon m_batteryIcon; // the icon to display the battery
 
     public:
         //constructor
@@ -74,19 +77,29 @@ class Display{
         bool addPixelToBuffer(Pixel pixel);
 
         //draw the outline of an icon
-        bool drawIconOutline(Icon icon);
+        bool drawIconOutline(Icon* icon);
 
         //returns how many pixels are in the buffer
         int getPixelsInBufferCount();
 
         //draw an individual packet recieve from central
-        void drawPacket();
+        void drawPacket(uint8_t* packetBuffer);
 
         //draw an icon by requesting packets from central
-        void drawIcon();
+        bool drawIcon(Icon* icon);
+
+        //set the output queue
+        void setMessagesOutQueue(std::queue<String>* queue);
+
+        // call to actually start drawing an icon
+        void addIconDrawJob(uint8_t iconNumber, String iconName);
+
+        //return an icon
+        Icon* getIcon(uint8_t iconNumber);
 };
 
 /*Job Reference
-    1xx - draw icon number xx
+    10x - draw icon outline number xx
+    11x - draw icon image number xx
 */
 #endif

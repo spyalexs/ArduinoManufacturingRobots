@@ -3,18 +3,18 @@ import queue
 import threading
 from getConstants import getListeningPort
 
-def launchPacketPublisher(queueOut):
+def launchPacketPublisher(queueOut, queuePacketOut):
     #queue to pass the kill signal to the thread
     killQueue = queue.Queue()
 
-    publisherThread = threading.Thread(target=publish, args=(queueOut, killQueue))
+    publisherThread = threading.Thread(target=publish, args=(queueOut, queuePacketOut, killQueue))
     publisherThread.daemon = True
     publisherThread.start()
 
     return killQueue
 
 
-def publish(queueOut, killQueue):
+def publish(queueOut, queuePacketOut, killQueue):
     #COM - the serial port to be published to
     #queueOut - the queue to publish messages from
 
@@ -48,6 +48,21 @@ def publish(queueOut, killQueue):
                 else:
                     #print messages without address
                     print("Invalid Message: " + messageOut)
+            except queue.Empty:
+                #this should never happen...
+                print("Queue unexpectently went empty... odd.")
+                break
+
+        if not queuePacketOut.empty():
+            #if there is a packet that needs sent to the bot
+
+            try:
+                #get packet from queue
+                packetTuple = queuePacketOut.get()
+
+                #these come pre packaged
+                outSocket.sendto(packetTuple[1], (packetTuple[0][0], listeningPort))
+
             except queue.Empty:
                 #this should never happen...
                 print("Queue unexpectently went empty... odd.")
