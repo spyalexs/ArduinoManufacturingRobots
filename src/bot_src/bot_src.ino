@@ -58,7 +58,7 @@ void setup(){
 
 void loop(){
   //nothing can be blocking!
-  
+  MC.printEncoderState();
 
   //run running command
   if(runningCommand != nullptr){
@@ -94,6 +94,9 @@ void loop(){
 
   //cycle communicator
   CC.cycle();
+
+  //cycle robot container
+  MC.cycle();
 }
 
 

@@ -158,3 +158,60 @@ void RobotContainer::velocityControl(double* Power1, double* Power2){
   *Power1 = power1;
   *Power2 = power2;
 }
+
+bool RobotContainer::isEncoderClicked(){
+  return digitalRead(!this->m_encoderClickPin);
+}
+
+void RobotContainer::cycleEncoder(){
+  //this works because of low cycle time
+  
+  //check to see if a direction signal is being sent
+  bool ccw = digitalRead(this->m_encoderCCWFPin);  
+  bool cw = digitalRead(this->m_encoderCWFPin);  
+
+  if(ccw != cw){
+    //direction signal
+    
+    //check against previous state
+    if(this->m_encoderLastPosition == ccw){
+      //if cw has changed moving in cw direction
+      m_encoderDirection = true;
+    } else{
+      //moving in ccw direction
+      m_encoderDirection = false;
+    }
+
+    return;
+  } 
+
+  if(ccw != this->m_encoderLastPosition){
+    //if state has changed
+
+    //set signal 
+    this->m_encoderLastPosition = ccw;
+
+    //increment counts
+    if(this->m_encoderDirection){
+      this->m_encoderCounts++;
+    } else {
+      this->m_encoderCounts--;
+    }
+  }
+}
+
+int RobotContainer::getDisplayEncoderCounts(){
+  return this->m_encoderCounts;
+}
+
+void RobotContainer::resetDisplayEncoder(){
+  this->m_encoderCounts = 0;
+}
+
+void RobotContainer::cycle(){
+  //cycle encoder
+  this->cycleEncoder();
+
+  //cycle display
+  this->m_display.cycle();
+}

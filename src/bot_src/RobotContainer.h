@@ -7,6 +7,13 @@
 // a wrapper class around motion, allows for the easy utilization of subroutines and control methods
 
 class RobotContainer{
+  private:
+    //encoder
+    bool m_encoderDirection = true; //true: CW,  false:: CCW
+    bool m_encoderLastPosition = true; //both high true, both low false
+    int m_encoderCounts = 0; //counts are even on low and high on odd
+
+    void cycleEncoder();
   public:
     RobotContainer(mc::DCMotor* motor1, mc::DCMotor* motor2, mc::Encoder* encoder1, mc::Encoder* encoder2, uint8_t lineFollowerPinName, uint8_t intersectionPinName, uint8_t codePinName);
 
@@ -21,6 +28,10 @@ class RobotContainer{
     uint8_t m_intersectionPin;
     uint8_t m_codePin;
 
+    uint8_t m_encoderClickPin = 12;
+    uint8_t m_encoderCWFPin = 7;
+    uint8_t m_encoderCCWFPin = 8;
+    
     //robot display
     Display m_display;
 
@@ -47,6 +58,7 @@ class RobotContainer{
     double m_velPreviousCPS2 = 0;
     double m_velPreviousTime = 0;
 
+    
     //getter and setter functions
     void setMotor1(int duty);
     void setMotor2(int duty);
@@ -67,6 +79,12 @@ class RobotContainer{
     void lineControl(double* Corrrection1, double* Correction2);
     void velocityControl(double* Power1, double* Power2);
 
+    //encoder
+    bool isEncoderClicked();
+    int getDisplayEncoderCounts();
+    void resetDisplayEncoder();
+
+    void cycle();
 };
 
 
