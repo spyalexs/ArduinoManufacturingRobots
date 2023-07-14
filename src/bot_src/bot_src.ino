@@ -6,6 +6,7 @@
 #include "RobotContainer.h"
 #include "Communicator.h"
 #include "Sequencer.h"
+#include "CycleOverseer.h"
 
 //commands
 #include "TurnRight.h"
@@ -15,12 +16,14 @@
 #include "FollowLineOnMarker.h"
 #include "TestCommand.h"
 
+
 bool PUBLISHDATA = true;
 
 //the robot container that is a wrapper around periphral functions
 RobotContainer MC = RobotContainer(&M1, &M2, &encoder1, &encoder2, IN1, A6, A2);
 Communicator CC = Communicator();
 Sequencer SC = Sequencer();
+CycleOverseer CO = CycleOverseer(50);
 
 int lastUpdate = 0; //last time the update was sent to central
 int updateFrequency = 1; //Hz
@@ -58,7 +61,6 @@ void setup(){
 
 void loop(){
   //nothing can be blocking!
-  Serial.println(MC.getDistance());
 
   //run running command
   if(runningCommand != nullptr){
@@ -82,21 +84,23 @@ void loop(){
       runningCommand->run();
     }
   }
+  CO.clock();
 
   //update central with general information
   update();
+  CO.clock();
 
   //listen to central for commands
   listen();
-
-  //cycle the display
-  MC.m_display.cycle();
+  CO.clock();
 
   //cycle communicator
   CC.cycle();
+  CO.clock();
 
   //cycle robot container
   MC.cycle();
+  CO.endCycle();
 }
 
 
