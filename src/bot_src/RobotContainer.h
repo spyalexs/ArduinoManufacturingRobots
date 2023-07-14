@@ -14,6 +14,8 @@ class RobotContainer{
     int m_encoderCounts = 0; //counts are even on low and high on odd
 
     void cycleEncoder();
+
+    uint8_t m_cycleCounter = 0; // counter for cycle - switch between cycles
   public:
     RobotContainer(mc::DCMotor* motor1, mc::DCMotor* motor2, mc::Encoder* encoder1, mc::Encoder* encoder2, uint8_t lineFollowerPinName, uint8_t intersectionPinName, uint8_t codePinName);
 
@@ -31,6 +33,9 @@ class RobotContainer{
     uint8_t m_encoderClickPin = 12;
     uint8_t m_encoderCWFPin = 7;
     uint8_t m_encoderCCWFPin = 8;
+
+    uint8_t m_ultrasonicTriggerPin = 11;
+    uint8_t m_ultrasonicEchoPin = 12;
     
     //robot display
     Display m_display;
@@ -58,6 +63,7 @@ class RobotContainer{
     double m_velPreviousCPS2 = 0;
     double m_velPreviousTime = 0;
 
+    double m_ultrasonicDistance = -1;
     
     //getter and setter functions
     void setMotor1(int duty);
@@ -83,6 +89,10 @@ class RobotContainer{
     bool isEncoderClicked();
     int getDisplayEncoderCounts();
     void resetDisplayEncoder();
+
+    //ultrasonic sensor
+    double getDistance();
+    void cycleUltrasonic();
 
     void cycle();
 };

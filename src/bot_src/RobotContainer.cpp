@@ -11,6 +11,10 @@ RobotContainer::RobotContainer(mc::DCMotor* motor1, mc::DCMotor* motor2, mc::Enc
   m_display = Display();
 
   pinMode(LED_BUILTIN, OUTPUT);
+
+  //configure ultrasonic pins
+  pinMode(this->m_ultrasonicTriggerPin, OUTPUT);
+  pinMode(this->m_ultrasonicEchoPin, INPUT);
 }
 
 void RobotContainer::setMotor1(int duty){
@@ -208,10 +212,68 @@ void RobotContainer::resetDisplayEncoder(){
   this->m_encoderCounts = 0;
 }
 
+void RobotContainer::cycleUltrasonic(){
+  //cycle the ultrasonic sensor
+
+  //ensure trigger is low for some time - it should be by default
+  digitalWrite(this->m_ultrasonicTriggerPin, LOW);
+  delayMicroseconds(5);
+
+  //send pulse
+  digitalWrite(this->m_ultrasonicTriggerPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(this->m_ultrasonicTriggerPin, LOW);
+
+  //wait until pulse has finished sending
+  while(!digitalRead(this->m_ultrasonicEchoPin)){
+  }
+
+  long pingSent = micros(); // pulse timer
+  bool recievedPulse = false;
+  
+  long time = 0;
+
+  //delay while waiting for pulse to return / timeout to occur
+  while(!recievedPulse && time < pingSent + 5000){
+    //update time
+    time = micros();
+
+    if(!digitalRead(m_ultrasonicEchoPin)){
+      //mark if a pulse was recieved 
+      recievedPulse = true;
+    }
+  }
+
+  if(recievedPulse){
+    //calculate distance from time
+    //dist = time / (343 * 2 * 1000000)
+    this->m_ultrasonicDistance = 343 * (time - pingSent) / (2.0 * 1000000);
+  } else {
+  // set distance to negative 1 to signal no objects within proximity
+    this->m_ultrasonicDistance = -1;
+  }
+}
+
+double RobotContainer::getDistance(){
+  //return the last distance reading from the ultrasonic sensor
+
+  return this->m_ultrasonicDistance;
+}
+
 void RobotContainer::cycle(){
   //cycle encoder
   this->cycleEncoder();
 
-  //cycle display
-  this->m_display.cycle();
+  //if this becomes a problem -- it should be possible to integrate ultrasonic cycle into display cycle - will just be needlessly complex
+  if(this->m_cycleCounter < 25){
+    //cycle display
+    this->m_display.cycle();
+  } else {
+    this->m_cycleCounter = 0;
+
+    //cycle ultrasonic instead of display every 25 times
+    this->cycleUltrasonic();
+  }
+
+  this->m_cycleCounter++;
 }

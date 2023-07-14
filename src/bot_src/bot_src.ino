@@ -58,7 +58,7 @@ void setup(){
 
 void loop(){
   //nothing can be blocking!
-  MC.printEncoderState();
+  Serial.println(MC.getDistance());
 
   //run running command
   if(runningCommand != nullptr){

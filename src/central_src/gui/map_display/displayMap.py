@@ -149,9 +149,6 @@ def drawMap(root):
 
                 #make a connection between every action point and the starting node
                 
-
-    print(botDrawingLocations)
-
     #write xml generated to file
     ppTree = ET.ElementTree(ppData)
     ET.indent(ppTree, " ")
