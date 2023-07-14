@@ -101,6 +101,9 @@ void Display::cycle(){
 
         switch (this->m_jobQueue.front()){
             //call job based on code from queue
+            case 1:
+                pop = this->drawRect(10, 100, 30, 50, ILI9341_DARKCYAN);
+                break;
             case 100:
                 pop = this->drawIconOutline(&this->m_displayIcons[0]);
                 break;
@@ -361,3 +364,22 @@ Icon* Display::getIcon(uint8_t iconNumber){
     return nullptr;
 }
 
+bool Display::drawRect(int x, int y, int w, int h, uint16_t color){
+    //draw horizontal lines
+    for(int i = x; i < x + w; i++){
+        this->addPixelToBuffer(Pixel(i, y, color));
+        this->addPixelToBuffer(Pixel(i, y + h, color));
+    } 
+
+    //draw vertical lines
+    for(int i = y; i < y + h; i++){
+        this->addPixelToBuffer(Pixel(x, i, color));
+        this->addPixelToBuffer(Pixel(x + w, i, color));
+    } 
+
+    return true;
+}
+
+void Display::drawOpeningMenu(){
+    
+}

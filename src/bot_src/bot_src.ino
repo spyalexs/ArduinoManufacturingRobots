@@ -55,12 +55,10 @@ void setup(){
   Serial.println("I am a bot!");
 
   delay(1000);
-
-  MC.m_display.addIconDrawJob(1, "civic");
 }
 
 void loop(){
-  //nothing can be blocking!
+  //nothing can be blocking
 
   //run running command
   if(runningCommand != nullptr){

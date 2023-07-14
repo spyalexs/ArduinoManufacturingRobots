@@ -97,9 +97,17 @@ class Display{
 
         //return an icon
         Icon* getIcon(uint8_t iconNumber);
+
+        //draw opening menu
+        void drawOpeningMenu();
+
+        //draw rectangle
+        bool drawRect(int x, int y, int w, int h, uint16_t color);
+
 };
 
 /*Job Reference
+    001 - draw a rectangle
     10x - draw icon outline number xx
     11x - draw icon image number xx
 */
