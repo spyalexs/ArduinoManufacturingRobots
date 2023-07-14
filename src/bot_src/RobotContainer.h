@@ -4,6 +4,8 @@
 #include <ArduinoMotorCarrier.h>
 #include "Display.h"
 
+#define CONTAINER_ULTRASONIC_ACTIVE false
+
 // a wrapper class around motion, allows for the easy utilization of subroutines and control methods
 
 class RobotContainer{
@@ -30,9 +32,9 @@ class RobotContainer{
     uint8_t m_intersectionPin;
     uint8_t m_codePin;
 
-    uint8_t m_encoderClickPin = 12;
-    uint8_t m_encoderCWFPin = 7;
-    uint8_t m_encoderCCWFPin = 8;
+    uint8_t m_encoderClickPin = 13;
+    uint8_t m_encoderCWFPin = 11;
+    uint8_t m_encoderCCWFPin = 12;
 
     uint8_t m_ultrasonicTriggerPin = 11;
     uint8_t m_ultrasonicEchoPin = 12;

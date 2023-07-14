@@ -86,6 +86,8 @@ void loop(){
   }
   CO.clock();
 
+  Serial.println(MC.getDisplayEncoderCounts());
+
   //update central with general information
   update();
   CO.clock();
@@ -215,7 +217,6 @@ void update(){
 
 void listen(){
   // listen and handle messages from the central controller
-
   std::queue<String> incomingPackets = CC.checkForPackets();
 
   //go through all the packets and handle each

@@ -38,6 +38,7 @@ class Display{
 
         int m_cycleMicros = 10000; // how long to cycle the display for
         int m_clockCheck = 40; // after how many pixels to check the clock
+        bool m_skipCycle = false; // if to skip the next cycle or not
 
         int m_writePixel = 0; //the next pixel to be written
         int m_pixelsInBuffer = 0; //the next pixel to be added to the queue

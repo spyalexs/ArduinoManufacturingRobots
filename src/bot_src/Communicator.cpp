@@ -173,8 +173,7 @@ std::queue<String> Communicator::checkForPackets(){
 
     //go through and collect all packets that came in 
     while(this->m_Udp.parsePacket()){
-
-        this->m_Udp.readBytes(m_packetBuffer, m_bufferSize);
+        this->m_Udp.read(m_packetBuffer, m_bufferSize);
 
         //check to see if packet is a standard message or icon bytes
         //weird error of not reading some messages later -- look here
@@ -183,8 +182,8 @@ std::queue<String> Communicator::checkForPackets(){
             //packet is icon
             if(mp_display != nullptr){
                 //if display is ready for packet
+
                 mp_display->drawPacket(m_packetBuffer);
-                
             }
         } else {
             //packet is an string based message

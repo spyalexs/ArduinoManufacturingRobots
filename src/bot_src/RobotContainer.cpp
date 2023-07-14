@@ -13,7 +13,13 @@ RobotContainer::RobotContainer(mc::DCMotor* motor1, mc::DCMotor* motor2, mc::Enc
   pinMode(LED_BUILTIN, OUTPUT);
 
   //configure ultrasonic pins
-  pinMode(this->m_ultrasonicTriggerPin, OUTPUT);
+
+  if(CONTAINER_ULTRASONIC_ACTIVE){
+    pinMode(this->m_ultrasonicTriggerPin, OUTPUT); // change to OUTPUT when ultrasonic connect, INPUT for encoder
+  } else {
+    pinMode(this->m_ultrasonicTriggerPin, INPUT);
+  }
+
   pinMode(this->m_ultrasonicEchoPin, INPUT);
 }
 
@@ -271,8 +277,13 @@ void RobotContainer::cycle(){
   } else {
     this->m_cycleCounter = 0;
 
-    //cycle ultrasonic instead of display every 25 times
-    this->cycleUltrasonic();
+    //check to ensure there is an ultrasonic before cycling -- otherwise causes hangups
+    if(CONTAINER_ULTRASONIC_ACTIVE){
+      //cycle ultrasonic instead of display every 25 times
+      this->cycleUltrasonic();
+    } else {
+      this->m_display.cycle();
+    }
   }
 
   this->m_cycleCounter++;
