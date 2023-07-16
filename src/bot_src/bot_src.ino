@@ -48,7 +48,7 @@ void setup(){
   MC.m_display.setBackground(ILI9341_BLACK);
   MC.m_display.drawBasicUI();
 
-  MC.m_display.drawOpeningMenu();
+  MC.m_display.drawTestingMenu();
 
   //get coms set up with central
   CC.connectToNetwork();

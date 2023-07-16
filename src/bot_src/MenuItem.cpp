@@ -15,8 +15,8 @@ void MenuItem::redefine(uint8_t value, String text, uint16_t x, uint16_t y, uint
 
     this->m_value = value;
     this->m_text = text;
-    this->m_x = x;
-    this->m_y = y;
-    this->m_height = height;
-    this->m_width = width;
+    this->m_x = max(min(x, 318), 2);
+    this->m_y = max(min(y, 238), 2);;
+    this->m_height = min(max(height, 2), 238 - y);
+    this->m_width = min(max(width, 2), 318 - x);;
 }

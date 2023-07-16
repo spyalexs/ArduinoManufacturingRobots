@@ -421,21 +421,61 @@ void Display::drawOpeningMenu(){
     this->m_activeMenuItems = 2;
 }
 
-void Display::setMenu(bool isMenu){
-    if(isMenu != this->m_inMenu){
-        //if menu status has changed
+void Display::drawTestingMenu(){
+    //draw a the menus to test hardware
+    this->m_menuItems[0].redefine(1, "<- " + this->m_testingPages[(this->m_testingMenuPage - 1 + DISPLAY_TEST_MENU_PAGES) % DISPLAY_TEST_MENU_PAGES], 16, (DISPLAY_TOP_BAR_HEIGHT + 10), 138, 32);
+    this->m_menuItems[1].redefine(1, this->m_testingPages[(this->m_testingMenuPage + 1) % DISPLAY_TEST_MENU_PAGES] + " ->", 166, (DISPLAY_TOP_BAR_HEIGHT + 10),  138, 32);
 
-        //update menu status
-        this->m_inMenu = isMenu;
+    //draw the page change items
+    this->drawMenuItem(0);
+    this->drawMenuItem(1);
 
-        if(isMenu == true){
-            // if a menu needs to be drawn
-            this->drawOpeningMenu();
+    //draw the test items based on page
+    switch(this->m_testingMenuPage){
+        case 0:
+            //do the quit thing
+            break;
+        case 1:
+            //motor buttons
+            this->m_menuItems[2].redefine(1, "-", 128, (DISPLAY_TOP_BAR_HEIGHT + 52), 80, 60);
+            this->m_menuItems[3].redefine(1, "+", 224, (DISPLAY_TOP_BAR_HEIGHT + 52), 80, 60);
+            this->m_menuItems[4].redefine(1, "-", 128, (DISPLAY_TOP_BAR_HEIGHT + 122), 80, 60);
+            this->m_menuItems[5].redefine(1, "+", 224, (DISPLAY_TOP_BAR_HEIGHT + 122), 80, 60);
 
-        } else {
-            //if a run time interface needs to be drawn
-            this->setIconsCount(4);
-        }
+            //motor labels
+            this->addWriteTextJob(16, DISPLAY_TOP_BAR_HEIGHT + 74, ILI9341_WHITE, 2, "Motor 1: ");
+            this->addWriteTextJob(16, DISPLAY_TOP_BAR_HEIGHT + 144, ILI9341_WHITE, 2, "Motor 2: ");
+
+            //draw the page change items
+            this->drawMenuItem(2);
+            this->drawMenuItem(3);
+            this->drawMenuItem(4);
+            this->drawMenuItem(5);
+
+            //set number of menu items
+            this->m_activeMenuItems = 6; 
+            break;
+
+        case 2:
+
+            //set number of menu items
+            this->m_activeMenuItems = 2;  
+            break;
+
+        case 3:
+
+            //set number of menu items
+            this->m_activeMenuItems = 2;     
+            break;   
+            
+        case 4:
+
+            //set number of menu items
+            this->m_activeMenuItems = 2;
+            break;
+
+        default:
+            Serial.println("Cannot find test menu page: " + this->m_testingMenuPage);
     }
 }
 

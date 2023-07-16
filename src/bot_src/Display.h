@@ -32,6 +32,7 @@
 #define DISPLAY_MAX_SIZE_1_CHARACTERS_PER_CYCLE 10
 
 #define DISPLAY_MAX_MENU_ITEMS 10
+#define DISPLAY_TEST_MENU_PAGES 5
 
 #define PIXEL_BUFFER_LENGTH 1000
 
@@ -64,7 +65,8 @@ class Display{
         uint8_t m_activeMenuItems = 0;
         MenuItem m_menuItems[DISPLAY_MAX_MENU_ITEMS];
 
-        bool m_inMenu = true; //if the display is in menu
+        uint8_t m_testingMenuPage = 1; //if the display is in menu
+        String m_testingPages[DISPLAY_TEST_MENU_PAGES] = {"Exit", "Motors", "LEDs", "Sensors1", "Sensors2"};
 
         //wipe display -- reoccuring function
         bool wipeDisplay(bool entireDisplay, uint16_t color);
@@ -126,9 +128,6 @@ class Display{
         //draw rectangle
         bool drawRect(int x, int y, int w, int h, uint16_t color);
 
-        //change wether the display is in menu or not
-        void setMenu(bool isMenu);
-
         //add wipeDisplayJob
         void addWipeDisplayJob(bool entireDisplay, uint16_t color);
 
@@ -143,6 +142,9 @@ class Display{
 
         //return a pointer to a menu item
         MenuItem* getMenuItemPointer(uint8_t item);
+
+        //Draw the template for the testing menu
+        void drawTestingMenu();
 
 };
 
