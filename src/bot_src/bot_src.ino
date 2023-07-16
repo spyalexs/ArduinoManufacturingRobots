@@ -29,6 +29,8 @@ int lastUpdate = 0; //last time the update was sent to central
 int updateFrequency = 1; //Hz
 
 Command* runningCommand;
+
+bool inMenu = true; // wether or not the bot is in menu mode
  
 void setup(){
   Serial.begin(9600);
@@ -45,8 +47,6 @@ void setup(){
   //set up display basics
   MC.m_display.setBackground(ILI9341_BLACK);
   MC.m_display.drawBasicUI();
-
-  MC.m_display.setIconsCount(4);
 
   //get coms set up with central
   CC.connectToNetwork();
@@ -83,8 +83,6 @@ void loop(){
     }
   }
   CO.clock();
-
-  Serial.println(MC.getDisplayEncoderCounts());
 
   //update central with general information
   update();

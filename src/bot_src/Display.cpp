@@ -99,10 +99,13 @@ void Display::cycle(){
         //wether the job completed
         bool pop = false;
 
-        switch (this->m_jobQueue.front()){
+        switch (this->m_jobQueue.front().m_jobNumber){
             //call job based on code from queue
             case 1:
-                pop = this->drawRect(10, 100, 30, 50, ILI9341_DARKCYAN);
+                pop = this->drawRect(this->m_jobQueue.front().m_param1, this->m_jobQueue.front().m_param2, this->m_jobQueue.front().m_param3, this->m_jobQueue.front().m_param4,this->m_jobQueue.front().m_param5);
+                break;
+            case 2:
+                pop = this->writeText();
                 break;
             case 100:
                 pop = this->drawIconOutline(&this->m_displayIcons[0]);
@@ -157,6 +160,9 @@ void Display::cycle(){
                 break;            
             case 121:
                 pop = this->drawIcon(&this->m_batteryIcon);
+                break;
+            case 255:
+                pop = this->wipeDisplay(this->m_jobQueue.front().m_param1, this->m_jobQueue.front().m_param2);
                 break;
         }
 
@@ -241,8 +247,8 @@ void Display::drawIconSlots(){
         this->m_displayIcons[i+1].updateShape(iconSize, iconSize, round((i / 2) * (iconSize + xSpacing) + xSpacing), DISPLAY_TOP_BAR_HEIGHT + ySpacing * 2 + iconSize);
 
         //draw the icons
-        this->m_jobQueue.push(100 + i);
-        this->m_jobQueue.push(101 + i);
+        this->m_jobQueue.push(DisplayJob(100 + i));
+        this->m_jobQueue.push(DisplayJob(101 + i));
     }
 }
 
@@ -277,14 +283,14 @@ int Display::getPixelsInBufferCount(){
 void Display::drawPacket(uint8_t* packetBuffer){
 
     //get the icon based on the front job
-    if(this->m_jobQueue.front() < 110 || this->m_jobQueue.front() > 129){
+    if(this->m_jobQueue.front().m_jobNumber < 110 || this->m_jobQueue.front().m_jobNumber > 129){
         // the joib is not a draw icon
         Serial.println("Job is not a draw icon, returning");
         return;
     }
 
     //get the icon number from the job queue
-    uint8_t iconNumber = this->m_jobQueue.front() - 110;
+    uint8_t iconNumber = this->m_jobQueue.front().m_jobNumber - 110;
 
     if(this->getPixelsInBufferCount() != 0){
         //display buffer should always be empty
@@ -346,7 +352,7 @@ void Display::setMessagesOutQueue(std::queue<String>* queue){
 void Display::addIconDrawJob(uint8_t iconNumber, String iconName){
     //call this to begin drawing an icon
 
-    this->m_jobQueue.push(110 + iconNumber);
+    this->m_jobQueue.push(DisplayJob(110 + iconNumber));
     this->getIcon(iconNumber)->beginDrawing(iconName);
 }
 
@@ -381,5 +387,138 @@ bool Display::drawRect(int x, int y, int w, int h, uint16_t color){
 }
 
 void Display::drawOpeningMenu(){
-    
+    //draw opening menu
+    this->m_jobQueue.push(DisplayJob(1, 60, (DISPLAY_BOTTOM_BAR_HEIGHT + DISPLAY_TOP_BAR_HEIGHT) / 2 - 35,  70, 70, ILI9341_WHITE));
+    this->m_jobQueue.push(DisplayJob(1, 190, (DISPLAY_BOTTOM_BAR_HEIGHT + DISPLAY_TOP_BAR_HEIGHT) / 2 - 35,  70, 70, ILI9341_WHITE));
 }
+
+void Display::setMenu(bool isMenu){
+    if(isMenu != this->m_inMenu){
+        //if menu status has changed
+
+        //update menu status
+        this->m_inMenu = isMenu;
+
+        if(isMenu == true){
+            // if a menu needs to be drawn
+            this->drawOpeningMenu();
+
+        } else {
+            //if a run time interface needs to be drawn
+            this->setIconsCount(4);
+        }
+    }
+}
+
+void Display::addWipeDisplayJob(bool entireDisplay, uint16_t color = ILI9341_BLACK){
+    this->m_jobQueue.push(DisplayJob(255, entireDisplay, color));
+}
+
+bool Display::wipeDisplay(bool entireDisplay = true, uint16_t color = ILI9341_BLACK){
+    //wipe the display
+
+    //prep starting point
+    if(this->m_jobQueue.front().m_param3 == 65535){
+        if(entireDisplay){
+            this->m_jobQueue.front().m_param3 = 0;
+        } else {
+            this->m_jobQueue.front().m_param3 = DISPLAY_TOP_BAR_HEIGHT;
+        }
+    }
+
+    if(entireDisplay == true){
+        //draw over entire display
+        
+        for(uint16_t y = m_jobQueue.front().m_param3; y < DISPLAY_HEIGHT; y++){
+            for(uint16_t x = 0; x < DISPLAY_WIDTH; x++){
+                this->addPixelToBuffer(Pixel(x, y, color));
+            }
+
+            if(PIXEL_BUFFER_LENGTH - this->getPixelsInBufferCount() < DISPLAY_WIDTH){
+                //not enough room for another row
+                
+                if(y < DISPLAY_HEIGHT - 1){
+                    //more rows still need drawn
+
+                    //save position
+                    this->m_jobQueue.front().m_param3 = y;
+
+                    return false;
+                }
+            }
+        }
+
+    } else {
+        //draw over main portion of display
+
+        for(uint16_t y = m_jobQueue.front().m_param3; y < DISPLAY_HEIGHT - DISPLAY_BOTTOM_BAR_HEIGHT; y++){
+            for(uint16_t x = 0; x < DISPLAY_WIDTH; x++){
+                this->addPixelToBuffer(Pixel(x, y, color));
+            }
+
+            if(PIXEL_BUFFER_LENGTH - this->getPixelsInBufferCount() < DISPLAY_WIDTH){
+                //not enough room for another row
+                
+                if(y < DISPLAY_HEIGHT - DISPLAY_BOTTOM_BAR_HEIGHT - 1){
+                    //more rows still need drawn
+
+                    //save position
+                    this->m_jobQueue.front().m_param3 = y;
+
+                    return false;
+                }
+            }
+        }
+    }
+
+    return true;
+}
+
+void Display::addWriteTextJob(uint16_t x, uint16_t y, uint16_t color, uint8_t textSize, String text){
+    this->m_jobQueue.push(DisplayJob(2, x, y, color, textSize, 65535, text));
+}
+
+
+bool Display::writeText(){
+    //write text as display job
+
+    uint8_t maxCharacters = 0;
+
+    //account for text size - only one or two are options for now
+    if(this->m_jobQueue.front().m_param4 == 1){
+        maxCharacters = DISPLAY_MAX_SIZE_1_CHARACTERS_PER_CYCLE;
+    } else if(this->m_jobQueue.front().m_param4 == 2){
+        maxCharacters = DISPLAY_MAX_SIZE_2_CHARACTERS_PER_CYCLE;
+    } else {
+        Serial.println("Invalid text size : " + String(this->m_jobQueue.front().m_param4));
+        return true;
+    }
+
+    //only do on first loop
+    if(this->m_jobQueue.front().m_param5 == 65535){
+        //prep for writing
+        this->m_tft.setCursor(this->m_jobQueue.front().m_param1, this->m_jobQueue.front().m_param2);
+        this->m_tft.setTextColor(this->m_jobQueue.front().m_param3);
+        this->m_tft.setTextSize(this->m_jobQueue.front().m_param4);
+
+        this->m_jobQueue.front().m_param5 = 0;
+    }
+    
+
+    if(this->m_jobQueue.front().m_text.length() <= maxCharacters){
+        //print entire string as there is room to
+        this->m_tft.print(this->m_jobQueue.front().m_text);
+    } else{
+        //print first part of string
+        this->m_tft.print(this->m_jobQueue.front().m_text.substring(0, maxCharacters));
+
+        //update string that still needs printed
+        this->m_jobQueue.front().m_text = this->m_jobQueue.front().m_text.substring(maxCharacters);
+
+        return false;
+    }
+
+    return true;
+}
+
+

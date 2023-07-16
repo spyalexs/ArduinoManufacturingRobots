@@ -11,6 +11,7 @@
 
 #include "Pixel.h"
 #include "Icon.h"
+#include "DisplayJob.h"
 
 // For the Adafruit shield, these are the default.
 #define TFT_DC 10
@@ -25,6 +26,9 @@
 #define DISPLAY_BOTTOM_BAR_HEIGHT 20
 
 #define DISPLAY_MIN_ICON_SPACING 12
+
+#define DISPLAY_MAX_SIZE_2_CHARACTERS_PER_CYCLE 7
+#define DISPLAY_MAX_SIZE_1_CHARACTERS_PER_CYCLE 10
 
 #define PIXEL_BUFFER_LENGTH 1000
 
@@ -44,7 +48,7 @@ class Display{
         int m_pixelsInBuffer = 0; //the next pixel to be added to the queue
         Pixel m_pixelBuffer[PIXEL_BUFFER_LENGTH]; //array of all pixels that need written
 
-        std::queue<uint8_t> m_jobQueue; // queue of display jobs
+        std::queue<DisplayJob> m_jobQueue; // queue of display jobs
         std::queue<String>* mp_messagesOutQueue = nullptr; // queue in comminucator of messages that need to be sent
 
         int m_requestedIconCount = 0; // the number of icons on the display
@@ -52,6 +56,14 @@ class Display{
         Icon m_displayIcons[8];
         Icon m_connectionIcon; // the icon to display the connection
         Icon m_batteryIcon; // the icon to display the battery
+
+        bool m_inMenu = true; //if the display is in menu
+
+        //wipe display -- reoccuring function
+        bool wipeDisplay(bool entireDisplay, uint16_t color);
+
+        //write text -- reoccuring function
+        bool writeText();
 
     public:
         //constructor
@@ -104,11 +116,23 @@ class Display{
         //draw rectangle
         bool drawRect(int x, int y, int w, int h, uint16_t color);
 
+        //change wether the display is in menu or not
+        void setMenu(bool isMenu);
+
+        //add wipeDisplayJob
+        void addWipeDisplayJob(bool entireDisplay, uint16_t color);
+
+        //add write text job
+        void addWriteTextJob(uint16_t x, uint16_t y, uint16_t color, uint8_t textSize, String text);
+
 };
 
 /*Job Reference
     001 - draw a rectangle
+    002 - print text
     10x - draw icon outline number xx
     11x - draw icon image number xx
+    255 - wipe display
+
 */
 #endif
