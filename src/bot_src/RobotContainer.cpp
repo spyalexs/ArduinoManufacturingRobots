@@ -21,6 +21,7 @@ RobotContainer::RobotContainer(mc::DCMotor* motor1, mc::DCMotor* motor2, mc::Enc
   }
 
   pinMode(this->m_ultrasonicEchoPin, INPUT);
+  pinMode(this->m_encoderClickPin, INPUT);
 }
 
 void RobotContainer::setMotor1(int duty){
@@ -180,6 +181,16 @@ void RobotContainer::cycleEncoder(){
   bool ccw = digitalRead(this->m_encoderCCWFPin);  
   bool cw = digitalRead(this->m_encoderCWFPin);  
 
+  //check for click
+  if(this->isEncoderClicked() == true && this->m_encoderReleased == true){
+    //call menu selection 
+    this->handleMenuSelection(); 
+
+    this->m_encoderReleased = false;
+  } else if(this->isEncoderClicked() == false){
+    this->m_encoderReleased == true;
+  }
+
   if(ccw != cw){
     //direction signal
     
@@ -273,7 +284,7 @@ void RobotContainer::cycle(){
   //if this becomes a problem -- it should be possible to integrate ultrasonic cycle into display cycle - will just be needlessly complex
   if(this->m_cycleCounter < 25){
     //cycle display
-    this->m_display.cycle();
+    this->m_display.cycle(this->getDisplayEncoderCounts());
   } else {
     this->m_cycleCounter = 0;
 
@@ -282,9 +293,17 @@ void RobotContainer::cycle(){
       //cycle ultrasonic instead of display every 25 times
       this->cycleUltrasonic();
     } else {
-      this->m_display.cycle();
+      this->m_display.cycle(this->getDisplayEncoderCounts());
     }
   }
 
   this->m_cycleCounter++;
+}
+
+void RobotContainer::handleMenuSelection(){
+  //handle a selection in a menu
+  if(this->m_display.getSelectedMenuItem() >=0){
+    //if a menu item has been selected
+    Serial.println(this->m_display.getMenuItemPointer(this->m_display.getSelectedMenuItem())->m_text);
+  }
 }

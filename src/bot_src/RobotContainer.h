@@ -14,8 +14,11 @@ class RobotContainer{
     bool m_encoderDirection = true; //true: CW,  false:: CCW
     bool m_encoderLastPosition = true; //both high true, both low false
     int m_encoderCounts = 0; //counts are even on low and high on odd
+    bool m_encoderReleased = true;
 
     void cycleEncoder();
+
+    void handleMenuSelection();
 
     uint8_t m_cycleCounter = 0; // counter for cycle - switch between cycles
   public:
@@ -32,7 +35,7 @@ class RobotContainer{
     uint8_t m_intersectionPin;
     uint8_t m_codePin;
 
-    uint8_t m_encoderClickPin = 13;
+    uint8_t m_encoderClickPin = 1;
     uint8_t m_encoderCWFPin = 11;
     uint8_t m_encoderCCWFPin = 12;
 

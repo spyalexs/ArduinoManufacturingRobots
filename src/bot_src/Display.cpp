@@ -82,7 +82,7 @@ bool Display::addPixelToBuffer(Pixel pixel){
     return true;
 }
 
-void Display::cycle(){
+void Display::cycle(int encoderCount){
     if(this->m_skipCycle == true){
         //skip cycle for the cause
         this->m_skipCycle = false;
@@ -91,6 +91,30 @@ void Display::cycle(){
 
     int pixelsUpdated = 0;
     long cycleEnd = micros() + this->m_cycleMicros;
+
+    //cycle highlight
+    if(m_activeMenuItems > 0){
+        //only bother if there is a menu
+        
+        //find which is selected by encoder
+        uint8_t activeItem = abs(encoderCount) % (this->m_activeMenuItems + 1);
+        if(activeItem != this->m_selectedMenuItem){
+            //highlighting should occur
+
+            if(this->m_selectedMenuItem == 0){
+                //no item was previous highlighted
+                this->highlightMenuItem(activeItem - 1);
+                this->m_selectedMenuItem = activeItem;
+            }else if(this->highlightMenuItem(m_selectedMenuItem - 1, true)){
+                //if the previous item can be unhighlighted, if not try again next cycle
+                if(activeItem != 0){
+                    this->highlightMenuItem(activeItem - 1);
+                }
+
+                this->m_selectedMenuItem = activeItem;
+            }
+        }
+    }
 
     //if buffer is empty - add job
     if(this->getPixelsInBufferCount() == 0 && this->m_jobQueue.empty() == false){
@@ -102,7 +126,7 @@ void Display::cycle(){
         switch (this->m_jobQueue.front().m_jobNumber){
             //call job based on code from queue
             case 1:
-                pop = this->drawRect(this->m_jobQueue.front().m_param1, this->m_jobQueue.front().m_param2, this->m_jobQueue.front().m_param3, this->m_jobQueue.front().m_param4,this->m_jobQueue.front().m_param5);
+                pop = this->drawRect(this->m_jobQueue.front().m_param1, this->m_jobQueue.front().m_param2, this->m_jobQueue.front().m_param3, this->m_jobQueue.front().m_param4, this->m_jobQueue.front().m_param5);
                 break;
             case 2:
                 pop = this->writeText();
@@ -301,9 +325,9 @@ void Display::drawPacket(uint8_t* packetBuffer){
     
     //uint8_t packet[1000] = {0, 0, 112, 2, 0, 32, 0, 32, 104, 2, 104, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 57, 231, 185, 231, 209, 234, 201, 233, 185, 231, 185, 231, 185, 231, 201, 233, 201, 233, 209, 234, 209, 234, 57, 231, 33, 228, 91, 235, 91, 235, 91, 235, 75, 233, 73, 229, 152, 35, 160, 68, 160, 68, 160, 68, 160, 68, 160, 68, 160, 68, 160, 68, 168, 166, 168, 166, 160, 68, 160, 68, 128, 35, 104, 229, 104, 229, 104, 229, 145, 230, 145, 230, 160, 68, 152, 35, 152, 35, 152, 35, 160, 68, 160, 68, 160, 68, 160, 68, 160, 68, 160, 68, 160, 68, 160, 68, 135, 240, 231, 252, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 80, 1, 0, 32, 33, 228, 24, 227, 152, 35, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 128, 35, 152, 35, 160, 68, 112, 2, 112, 2, 112, 2, 112, 2, 168, 166, 185, 231, 185, 231, 185, 231, 201, 233, 201, 233, 135, 240, 191, 247, 107, 237, 231, 252, 159, 243, 49, 230, 49, 230, 107, 237, 107, 237, 107, 237, 107, 237, 57, 231, 80, 1, 160, 68, 160, 68, 160, 68, 168, 166, 160, 68, 160, 68, 160, 68, 160, 68, 160, 68, 160, 68, 160, 68, 160, 68, 160, 68, 160, 68, 160, 68, 160, 68, 160, 68, 152, 35, 128, 35, 104, 229, 57, 231, 16, 130, 135, 240, 135, 240, 191, 247, 201, 233, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 80, 1, 33, 228, 16, 130, 57, 231, 168, 166, 104, 2, 104, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 128, 35, 112, 2, 112, 2, 16, 130, 24, 227, 112, 2, 112, 2, 160, 68, 168, 166, 185, 231, 185, 231, 201, 233, 209, 234, 91, 235, 135, 240, 75, 233, 135, 240, 159, 243, 159, 243, 191, 247, 159, 243, 75, 233, 0, 32, 49, 230, 107, 237, 107, 237, 91, 235, 91, 235, 91, 235, 24, 227, 0, 32, 0, 32, 0, 32, 0, 32, 0, 32, 0, 32, 0, 32, 0, 32, 0, 32, 0, 32, 0, 32, 0, 32, 16, 130, 0, 32, 24, 227, 107, 237, 135, 240, 135, 240, 159, 243, 191, 247, 191, 247, 209, 234, 0, 0, 0, 0, 0, 0, 0, 0, 56, 66, 33, 228, 49, 230, 0, 32, 80, 1, 104, 2, 104, 2, 104, 2, 104, 2, 104, 2, 104, 2, 104, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 0, 32, 0, 32, 16, 130, 24, 227, 112, 2, 112, 2, 152, 35, 160, 68, 168, 166, 185, 231, 201, 233, 209, 234, 80, 1, 191, 247, 75, 233, 135, 240, 107, 237, 91, 235, 57, 231, 57, 231, 107, 237, 135, 240, 135, 240, 75, 233, 24, 227, 16, 130, 16, 130, 24, 227, 49, 230, 49, 230, 49, 230, 49, 230, 49, 230, 33, 228, 24, 227, 16, 130, 16, 130, 75, 233, 107, 237, 16, 130, 16, 130, 0, 32, 0, 32, 0, 32, 0, 32, 107, 237, 75, 233, 191, 247, 155, 235, 209, 234, 209, 234, 0, 0, 0, 0, 0, 0, 80, 1, 75, 233, 57, 231, 49, 230, 24, 227, 160, 68, 88, 2, 88, 2, 104, 2, 104, 2, 104, 2, 104, 2, 104, 2, 104, 2, 104, 2, 104, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 112, 2, 33, 228, 0, 32, 57, 231, 49, 230, 24, 227, 16, 130, 235, 224, 185, 231, 128, 35, 112, 2, 168, 166, 185, 231, 201, 233, 209, 234, 219, 235, 201, 233, 24, 227, 159, 243, 57, 231, 159, 243, 135, 240, 159, 243, 91, 235, 57, 231, 231, 252, 0, 32, 49, 230, 16, 130, 24, 227, 24, 227, 24, 227, 24, 227, 16, 130, 16, 130, 16, 130, 16, 130, 16, 130, 24, 227, 75, 233, 152, 35, 107, 237, 16, 130, 0, 32, 0, 32, 0, 32, 16, 130, 91, 235, 57, 231, 159, 243, 209, 234, 209, 234, 209, 234, 185, 233, 0, 0, 0, 0, 80, 1, 0, 32, 49, 230, 33, 228, 24, 227, 88, 2, 88, 2, 88, 2, 88, 2, 80, 1, 88, 2, 88, 2, 104, 2, 104, 2, 104, 2, 104, 2, 104, 2, 104, 2, 104, 2, 112, 2, 112, 2, 112, 2, 112, 2, 16, 130, 57, 231, 24, 227, 24, 227, 16, 130, 0, 32, 16, 130, 235, 224, 235, 224, 128, 35, 128, 35, 160, 68, 185, 231, 201, 233, 209, 234, 209, 234, 209, 234, 209, 234, 185, 231, 185, 231, 16, 130, 107, 237, 49, 230, 16, 130, 16, 130, 49, 230, 75, 233, 75, 233, 57, 231, 16, 130, 16, 130, 16, 130, 16, 130, 16, 130, 16, 130, 16, 130, 16, 130, 33, 228, 159, 243, 159, 243, 107, 237, 16, 130, 16, 130, 0, 32, 0, 32, 24, 227, 135, 240, 135, 240, 209, 234, 209, 234, 209, 234, 185, 231, 57, 231, 0, 0};
     int startingx = this->getIcon(iconNumber)->m_x + 1;
+    int packetSize = this->getIcon(iconNumber)->getBytesPerPacket();
     int startingy = this->getIcon(iconNumber)->m_y + getIcon(iconNumber)->getPacketRow() + 1;
     int size = this->getIcon(iconNumber)->getIconImageSize();
-    int packetSize = this->getIcon(iconNumber)->getBytesPerPacket();
 
     for(int i = 0; i < packetSize; i += 2){
         uint16_t color = packetBuffer[i] << 8 | packetBuffer[i+1];
@@ -388,8 +412,13 @@ bool Display::drawRect(int x, int y, int w, int h, uint16_t color){
 
 void Display::drawOpeningMenu(){
     //draw opening menu
-    this->m_jobQueue.push(DisplayJob(1, 60, (DISPLAY_BOTTOM_BAR_HEIGHT + DISPLAY_TOP_BAR_HEIGHT) / 2 - 35,  70, 70, ILI9341_WHITE));
-    this->m_jobQueue.push(DisplayJob(1, 190, (DISPLAY_BOTTOM_BAR_HEIGHT + DISPLAY_TOP_BAR_HEIGHT) / 2 - 35,  70, 70, ILI9341_WHITE));
+    this->m_menuItems[0].redefine(1, "Run", 50, (-DISPLAY_BOTTOM_BAR_HEIGHT + DISPLAY_HEIGHT + DISPLAY_TOP_BAR_HEIGHT) / 2 - 40,  90, 90);
+    this->m_menuItems[1].redefine(1, "Test", 180, (-DISPLAY_BOTTOM_BAR_HEIGHT + DISPLAY_HEIGHT + DISPLAY_TOP_BAR_HEIGHT) / 2 - 40,  90, 90);
+
+    this->drawMenuItem(0);
+    this->drawMenuItem(1);
+
+    this->m_activeMenuItems = 2;
 }
 
 void Display::setMenu(bool isMenu){
@@ -519,6 +548,50 @@ bool Display::writeText(){
     }
 
     return true;
+}
+
+bool Display::highlightMenuItem(uint8_t item, bool unhighlight){
+    if(item >= DISPLAY_MAX_MENU_ITEMS){
+        Serial.println("Cannot Highlight Item: " + String(item) + ". Item number exceeds max allowable.");
+        return false;
+    }
+
+    if(unhighlight == true){
+        //do unhighlighting
+
+        if(this->m_jobQueue.empty() == true){   
+            //only add to job queue if empty to prevent mass backup
+
+            //draw highlight as box
+            this->m_jobQueue.push(DisplayJob(1, this->m_menuItems[item].m_x - 1, this->m_menuItems[item].m_y - 1, this->m_menuItems[item].m_width + 2, this->m_menuItems[item].m_height + 2, ILI9341_BLACK));
+            this->m_jobQueue.push(DisplayJob(1, this->m_menuItems[item].m_x - 2, this->m_menuItems[item].m_y - 2, this->m_menuItems[item].m_width + 4, this->m_menuItems[item].m_height + 4, ILI9341_BLACK));
+        } else {
+            return false;
+        }
+    } else {
+
+        //do highlighting
+        this->m_jobQueue.push(DisplayJob(1, this->m_menuItems[item].m_x - 1, this->m_menuItems[item].m_y - 1, this->m_menuItems[item].m_width + 2, this->m_menuItems[item].m_height + 2, ILI9341_GREEN));
+        this->m_jobQueue.push(DisplayJob(1, this->m_menuItems[item].m_x - 2, this->m_menuItems[item].m_y - 2, this->m_menuItems[item].m_width + 4, this->m_menuItems[item].m_height + 4, ILI9341_GREEN));
+    }
+
+    return true;
+}
+
+void Display::drawMenuItem(uint8_t item){
+    //draw box
+    this->m_jobQueue.push(DisplayJob(1, this->m_menuItems[item].m_x, this->m_menuItems[item].m_y, this->m_menuItems[item].m_width, this->m_menuItems[item].m_height, ILI9341_WHITE));
+
+    //draw text
+    this->addWriteTextJob(this->m_menuItems[item].m_x + this->m_menuItems[item].m_width / 2 - (this->m_menuItems[item].m_text.length() * 6), this->m_menuItems[item].m_y + this->m_menuItems[item].m_height / 2 - 4, ILI9341_WHITE, 2, this->m_menuItems[item].m_text);
+}
+
+uint8_t Display::getSelectedMenuItem(){
+    return this->m_selectedMenuItem - 1;
+}
+
+MenuItem* Display::getMenuItemPointer(uint8_t item){
+    return &(this->m_menuItems[item]);
 }
 
 

@@ -12,6 +12,7 @@
 #include "Pixel.h"
 #include "Icon.h"
 #include "DisplayJob.h"
+#include "MenuItem.h"
 
 // For the Adafruit shield, these are the default.
 #define TFT_DC 10
@@ -29,6 +30,8 @@
 
 #define DISPLAY_MAX_SIZE_2_CHARACTERS_PER_CYCLE 7
 #define DISPLAY_MAX_SIZE_1_CHARACTERS_PER_CYCLE 10
+
+#define DISPLAY_MAX_MENU_ITEMS 10
 
 #define PIXEL_BUFFER_LENGTH 1000
 
@@ -57,6 +60,10 @@ class Display{
         Icon m_connectionIcon; // the icon to display the connection
         Icon m_batteryIcon; // the icon to display the battery
 
+        uint8_t m_selectedMenuItem = 0;
+        uint8_t m_activeMenuItems = 0;
+        MenuItem m_menuItems[DISPLAY_MAX_MENU_ITEMS];
+
         bool m_inMenu = true; //if the display is in menu
 
         //wipe display -- reoccuring function
@@ -64,6 +71,9 @@ class Display{
 
         //write text -- reoccuring function
         bool writeText();
+
+        //highlight menu item
+        bool highlightMenuItem(uint8_t item, bool unhighlight = false);
 
     public:
         //constructor
@@ -84,7 +94,7 @@ class Display{
         void drawIconSlots();
 
         //cycle for a specified amount of time
-        void cycle();
+        void cycle(int encoderCount);
 
         //add pixel to pixel buffer so it can be written to screen
         bool addPixelToBuffer(Pixel pixel);
@@ -124,6 +134,15 @@ class Display{
 
         //add write text job
         void addWriteTextJob(uint16_t x, uint16_t y, uint16_t color, uint8_t textSize, String text);
+
+        //draw a menu item
+        void drawMenuItem(uint8_t item);
+
+        //return the selected menu item
+        uint8_t getSelectedMenuItem();
+
+        //return a pointer to a menu item
+        MenuItem* getMenuItemPointer(uint8_t item);
 
 };
 
