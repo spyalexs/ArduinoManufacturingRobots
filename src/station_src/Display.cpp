@@ -29,7 +29,7 @@ void Display::drawBasicUI(){
     this->m_tft.drawLine(0, DISPLAY_TOP_BAR_HEIGHT, DISPLAY_WIDTH - 1, DISPLAY_TOP_BAR_HEIGHT, ILI9341_WHITE);
     this->m_tft.setCursor(10, 5);
     this->m_tft.setTextSize(2);
-    this->m_tft.print("Destination: ");
+    this->m_tft.print("Item: ");
 
     //draw bottom bar
 
@@ -54,6 +54,14 @@ void Display::drawBasicUI(){
     
     //battery icon
     this->m_batteryIcon.updateShape(DISPLAY_BOTTOM_BAR_HEIGHT - 4, DISPLAY_BOTTOM_BAR_HEIGHT - 4, 150, DISPLAY_HEIGHT - (DISPLAY_BOTTOM_BAR_HEIGHT - 2));
+
+    //item icon
+    this->m_itemIcon.updateShape( DISPLAY_HEIGHT - (DISPLAY_BOTTOM_BAR_HEIGHT + 65 + DISPLAY_TOP_BAR_HEIGHT), DISPLAY_HEIGHT - (DISPLAY_BOTTOM_BAR_HEIGHT + 65 + DISPLAY_TOP_BAR_HEIGHT), 15, DISPLAY_TOP_BAR_HEIGHT + 50);
+    //draw this outline
+    this->m_jobQueue.push(DisplayJob(124));
+
+    //progress bar
+    this->m_jobQueue.push(DisplayJob(1, 15, DISPLAY_TOP_BAR_HEIGHT + 10, DISPLAY_WIDTH - 30, 30, ILI9341_DARKGREY));
 }
 
 bool Display::addPixelToBuffer(Pixel pixel){
@@ -82,7 +90,7 @@ bool Display::addPixelToBuffer(Pixel pixel){
     return true;
 }
 
-void Display::cycle(int encoderCount){
+void Display::cycle(){
     if(this->m_skipCycle == true){
         //skip cycle for the cause
         this->m_skipCycle = false;
@@ -91,30 +99,6 @@ void Display::cycle(int encoderCount){
 
     int pixelsUpdated = 0;
     long cycleEnd = micros() + this->m_cycleMicros;
-
-    //cycle highlight
-    if(m_activeMenuItems > 0){
-        //only bother if there is a menu
-        
-        //find which is selected by encoder
-        uint8_t activeItem = abs(encoderCount) % (this->m_activeMenuItems + 1);
-        if(activeItem != this->m_selectedMenuItem){
-            //highlighting should occur
-
-            if(this->m_selectedMenuItem == 0){
-                //no item was previous highlighted
-                this->highlightMenuItem(activeItem - 1);
-                this->m_selectedMenuItem = activeItem;
-            }else if(this->highlightMenuItem(m_selectedMenuItem - 1, true)){
-                //if the previous item can be unhighlighted, if not try again next cycle
-                if(activeItem != 0){
-                    this->highlightMenuItem(activeItem - 1);
-                }
-
-                this->m_selectedMenuItem = activeItem;
-            }
-        }
-    }
 
     //if buffer is empty - add job
     if(this->getPixelsInBufferCount() == 0 && this->m_jobQueue.empty() == false){
@@ -131,59 +115,29 @@ void Display::cycle(int encoderCount){
             case 2:
                 pop = this->writeText();
                 break;
-            case 100:
-                pop = this->drawIconOutline(&this->m_displayIcons[0]);
-                break;
-            case 101: 
-                pop = this->drawIconOutline(&this->m_displayIcons[1]);
-                break;           
-            case 102:
-                pop = this->drawIconOutline(&this->m_displayIcons[2]);
-                break;
-            case 103: 
-                pop = this->drawIconOutline(&this->m_displayIcons[3]);
-                break;           
-            case 104:
-                pop = this->drawIconOutline(&this->m_displayIcons[4]);
-                break;
-            case 105:  
-                pop = this->drawIconOutline(&this->m_displayIcons[5]);
-                break;          
-            case 106:                
-                pop = this->drawIconOutline(&this->m_displayIcons[6]);
-                break;
-            case 107:                
-                pop = this->drawIconOutline(&this->m_displayIcons[7]);
-                break;
-            case 110:
-                pop = this->drawIcon(&this->m_displayIcons[0]);
-                break;
-            case 111: 
-                pop = this->drawIcon(&this->m_displayIcons[1]);
-                break;           
-            case 112:
-                pop = this->drawIcon(&this->m_displayIcons[2]);
-                break;
-            case 113: 
-                pop = this->drawIcon(&this->m_displayIcons[3]);
-                break;           
-            case 114:
-                pop = this->drawIcon(&this->m_displayIcons[4]);
-                break;
-            case 115:  
-                pop = this->drawIcon(&this->m_displayIcons[5]);
-                break;          
-            case 116:                
-                pop = this->drawIcon(&this->m_displayIcons[6]);
-                break;
-            case 117:                
-                pop = this->drawIcon(&this->m_displayIcons[7]);
-                break;
             case 120:
                 pop = this->drawIcon(&this->m_connectionIcon);
                 break;            
             case 121:
                 pop = this->drawIcon(&this->m_batteryIcon);
+                break;
+            case 122:
+                pop = this->drawIcon(&this->m_itemIcon);
+                break;
+            case 124:
+                pop = this->drawIconOutline(&this->m_itemIcon);
+                break;
+            case 130:
+                pop = this->updateProgressBar(); 
+                break;           
+            case 132:
+                pop = this->wipeTransferStatusLabel();
+                break;
+            case 140:
+                pop = this->wipeIcon(this->m_jobQueue.front().m_param1);
+                break;
+            case 201:
+                pop = this->wipeItem();
                 break;
             case 255:
                 pop = this->wipeDisplay(this->m_jobQueue.front().m_param1, this->m_jobQueue.front().m_param2);
@@ -221,58 +175,6 @@ void Display::cycle(int encoderCount){
             //has reached end of buffer - start over
             this->m_writePixel = 0;
         }
-    }
-}
-
-bool Display::setIconsCount(int icons){
-
-    if(icons != this->m_requestedIconCount){
-        //if the number of icons is changing
-
-        switch (icons){
-            //if a doable value send to be drawn
-            case 2: 
-            case 4: 
-            case 6:
-            case 8:
-                this->m_requestedIconCount = icons;
-                drawIconSlots();
-        
-                break;
-
-            default:
-                Serial.println("Unable to adjust the number of display icons to :" + String(icons));
-        }
-    }
-}
-
-void Display::drawIconSlots(){
-    //get heights and widths
-    int iconZoneHeight = DISPLAY_HEIGHT - DISPLAY_BOTTOM_BAR_HEIGHT - DISPLAY_TOP_BAR_HEIGHT;
-    int maxIconHeight = round((iconZoneHeight - DISPLAY_MIN_ICON_SPACING * 3) / 2);
-    int maxIconWidth = round((DISPLAY_WIDTH - (int(this->m_requestedIconCount / 2) + 1) * DISPLAY_MIN_ICON_SPACING) / (this->m_requestedIconCount / 2));
-
-    //the size of the icons - there a square
-    int iconSize = 0;
-    int xSpacing = DISPLAY_MIN_ICON_SPACING, ySpacing = DISPLAY_MIN_ICON_SPACING;
-    if (maxIconWidth > maxIconHeight){
-        iconSize = maxIconHeight;
-        xSpacing = round((DISPLAY_WIDTH - (iconSize * this->m_requestedIconCount / 2)) / (this->m_requestedIconCount / 2 + 1));
-    } else {
-        iconSize = maxIconWidth;
-        ySpacing = round((iconZoneHeight - (iconSize * 2)) / 3);
-    }
-
-    //go through each pair of vertically stacked icons and define them
-    for(int i = 0; i < m_requestedIconCount; i += 2){
-        //upper icon
-        this->m_displayIcons[i].updateShape(iconSize, iconSize, round((i / 2) * (iconSize + xSpacing) + xSpacing), DISPLAY_TOP_BAR_HEIGHT + ySpacing);
-        //lower icon
-        this->m_displayIcons[i+1].updateShape(iconSize, iconSize, round((i / 2) * (iconSize + xSpacing) + xSpacing), DISPLAY_TOP_BAR_HEIGHT + ySpacing * 2 + iconSize);
-
-        //draw the icons
-        this->m_jobQueue.push(DisplayJob(100 + i));
-        this->m_jobQueue.push(DisplayJob(101 + i));
     }
 }
 
@@ -381,13 +283,13 @@ void Display::addIconDrawJob(uint8_t iconNumber, String iconName){
 }
 
 Icon* Display::getIcon(uint8_t iconNumber){
-    if(iconNumber < 10){
-        //return an item icon
-        return &(this->m_displayIcons[iconNumber]);
-    } else if(iconNumber == 10){
+
+    if(iconNumber == 10){
         return &(this->m_connectionIcon);
     } else if(iconNumber == 11){
         return &(this->m_batteryIcon);
+    } else if(iconNumber = 12){
+        return &(this->m_itemIcon);
     }
 
     Serial.println("Could not find matching icon");
@@ -408,107 +310,6 @@ bool Display::drawRect(int x, int y, int w, int h, uint16_t color){
     } 
 
     return true;
-}
-
-void Display::drawOpeningMenu(){
-    //draw opening menu
-    this->m_menuItems[0].redefine(1, "Run", 50, (-DISPLAY_BOTTOM_BAR_HEIGHT + DISPLAY_HEIGHT + DISPLAY_TOP_BAR_HEIGHT) / 2 - 40,  90, 90);
-    this->m_menuItems[1].redefine(2, "Test", 180, (-DISPLAY_BOTTOM_BAR_HEIGHT + DISPLAY_HEIGHT + DISPLAY_TOP_BAR_HEIGHT) / 2 - 40,  90, 90);
-
-    this->drawMenuItem(0);
-    this->drawMenuItem(1);
-
-    this->m_activeMenuItems = 2;
-}
-
-void Display::drawTestingMenu(uint8_t page){
-    //note current test menu page
-    this->m_testingMenuPage = page;
-
-    //draw a the menus to test hardware
-    this->m_menuItems[0].redefine(3, "<- " + this->m_testingPages[getPreviousTestingMenuPage()], 16, (DISPLAY_TOP_BAR_HEIGHT + 10), 138, 32);
-    this->m_menuItems[1].redefine(4, this->m_testingPages[getNextTestingMenuPage()] + " ->", 166, (DISPLAY_TOP_BAR_HEIGHT + 10),  138, 32);
-
-    //draw the page change items
-    this->drawMenuItem(0);
-    this->drawMenuItem(1);
-
-    //draw the test items based on page
-    switch(this->m_testingMenuPage){
-        case 0:
-            //do the quit thing
-            break;
-        case 1:
-            //motor buttons
-            this->m_menuItems[2].redefine(5, "-", 128, (DISPLAY_TOP_BAR_HEIGHT + 52), 80, 60);
-            this->m_menuItems[3].redefine(6, "+", 224, (DISPLAY_TOP_BAR_HEIGHT + 52), 80, 60);
-            this->m_menuItems[4].redefine(7, "-", 128, (DISPLAY_TOP_BAR_HEIGHT + 122), 80, 60);
-            this->m_menuItems[5].redefine(8, "+", 224, (DISPLAY_TOP_BAR_HEIGHT + 122), 80, 60);
-
-            //motor labels
-            this->addWriteTextJob(16, DISPLAY_TOP_BAR_HEIGHT + 74, ILI9341_WHITE, 2, "Motor 1: ");
-            this->addWriteTextJob(16, DISPLAY_TOP_BAR_HEIGHT + 144, ILI9341_WHITE, 2, "Motor 2: ");
-
-            //draw the page change items
-            this->drawMenuItem(2);
-            this->drawMenuItem(3);
-            this->drawMenuItem(4);
-            this->drawMenuItem(5);
-
-            //set number of menu items
-            this->m_activeMenuItems = 6; 
-            break;
-
-        case 2:
-            //LED Buttons
-            this->m_menuItems[2].redefine(9, "LED 1", 20, (DISPLAY_TOP_BAR_HEIGHT + 52), 80, 60);
-            this->m_menuItems[3].redefine(10, "LED 2", 120, (DISPLAY_TOP_BAR_HEIGHT + 52), 80, 60);
-            this->m_menuItems[4].redefine(11, "LED 3", 220, (DISPLAY_TOP_BAR_HEIGHT + 52), 80, 60);
-            this->m_menuItems[5].redefine(12, "LED 4", 20, (DISPLAY_TOP_BAR_HEIGHT + 122), 80, 60);
-            this->m_menuItems[6].redefine(13, "LED 5", 120, (DISPLAY_TOP_BAR_HEIGHT + 122), 80, 60);
-
-            //draw the page change items
-            this->drawMenuItem(2);
-            this->drawMenuItem(3);
-            this->drawMenuItem(4);
-            this->drawMenuItem(5);
-            this->drawMenuItem(6);
-
-            //set number of menu items
-            this->m_activeMenuItems = 7;  
-            break;
-
-        case 3:
-            //UV Sensors and ultrasonic
-            this->m_menuItems[2].redefine(14, "UV1: " , 20, (DISPLAY_TOP_BAR_HEIGHT + 52), 130, 60);
-            this->m_menuItems[3].redefine(15, "UV2: ", 170, (DISPLAY_TOP_BAR_HEIGHT + 52), 130, 60);
-            this->m_menuItems[4].redefine(16, "UV3: ", 20, (DISPLAY_TOP_BAR_HEIGHT + 122), 130, 60);
-            this->m_menuItems[5].redefine(17, "US: ", 170, (DISPLAY_TOP_BAR_HEIGHT + 122), 130, 60);
-
-            this->drawMenuItem(2);
-            this->drawMenuItem(3);
-            this->drawMenuItem(4);
-            this->drawMenuItem(5);
-            
-            //set number of menu items
-            this->m_activeMenuItems = 6;     
-            break;   
-            
-        case 4:
-            // Motor Encoders
-            this->m_menuItems[2].redefine(18, "EN1: " , 20, (DISPLAY_TOP_BAR_HEIGHT + 82), 130, 60);
-            this->m_menuItems[3].redefine(19, "EN2: ", 170, (DISPLAY_TOP_BAR_HEIGHT + 82), 130, 60);
-
-            this->drawMenuItem(2);
-            this->drawMenuItem(3);
-
-            //set number of menu items
-            this->m_activeMenuItems = 4;
-            break;
-
-        default:
-            Serial.println("Cannot find test menu page: " + this->m_testingMenuPage);
-    }
 }
 
 void Display::addWipeDisplayJob(bool entireDisplay, uint16_t color = ILI9341_BLACK){
@@ -622,61 +423,171 @@ bool Display::writeText(){
     return true;
 }
 
-bool Display::highlightMenuItem(uint8_t item, bool unhighlight){
-    if(item >= DISPLAY_MAX_MENU_ITEMS){
-        Serial.println("Cannot Highlight Item: " + String(item) + ". Item number exceeds max allowable.");
-        return false;
+
+//update progress bar
+bool Display::updateProgressBar(){
+    //calculate transfer progress
+    double progress = ((millis() / 1000.0) - this->m_transferStartTime) / DISPLAY_ITEM_TRANSFER_TIME;
+
+    //calculate the number of pixels to fill in
+    int pixels = round(progress * (DISPLAY_WIDTH - 32));
+
+    //initial parameter if needed
+    if(this->m_jobQueue.front().m_param1 == 65535){
+        this->m_jobQueue.front().m_param1 = DISPLAY_TOP_BAR_HEIGHT + 11;
     }
 
-    if(unhighlight == true){
-        //do unhighlighting
-
-        if(this->m_jobQueue.empty() == true){   
-            //only add to job queue if empty to prevent mass backup
-
-            //draw highlight as box
-            this->m_jobQueue.push(DisplayJob(1, this->m_menuItems[item].m_x - 1, this->m_menuItems[item].m_y - 1, this->m_menuItems[item].m_width + 2, this->m_menuItems[item].m_height + 2, ILI9341_BLACK));
-            this->m_jobQueue.push(DisplayJob(1, this->m_menuItems[item].m_x - 2, this->m_menuItems[item].m_y - 2, this->m_menuItems[item].m_width + 4, this->m_menuItems[item].m_height + 4, ILI9341_BLACK));
-        } else {
-            return false;
+    if(progress < 1.0){
+        //if transfer is not complete
+    
+        // fill in pixels
+        for(int y = DISPLAY_TOP_BAR_HEIGHT + 11; y < DISPLAY_TOP_BAR_HEIGHT + 40; y++){
+            for(int x = this->m_previousProgressPixels + 16; x <= pixels + 16; x++){
+                this->addPixelToBuffer(Pixel(x, y, ILI9341_YELLOW));
+            }
         }
+        
+        //update previous pixels
+        this->m_previousProgressPixels = pixels;
     } else {
+        //transfer complete - draw all green
+        for(int y = this->m_jobQueue.front().m_param1; y < DISPLAY_TOP_BAR_HEIGHT + 40; y++){
+            
+            //check to make sure row fits
+            if(PIXEL_BUFFER_LENGTH - this->getPixelsInBufferCount() < DISPLAY_WIDTH - 32)
+            {
+                this->m_jobQueue.front().m_param1 = y;
+                
+                //false and come back again
+                return false;
+            }
 
-        //do highlighting
-        this->m_jobQueue.push(DisplayJob(1, this->m_menuItems[item].m_x - 1, this->m_menuItems[item].m_y - 1, this->m_menuItems[item].m_width + 2, this->m_menuItems[item].m_height + 2, ILI9341_GREEN));
-        this->m_jobQueue.push(DisplayJob(1, this->m_menuItems[item].m_x - 2, this->m_menuItems[item].m_y - 2, this->m_menuItems[item].m_width + 4, this->m_menuItems[item].m_height + 4, ILI9341_GREEN));
+            for(int x = 16; x <= DISPLAY_WIDTH - 16; x++){
+                this->addPixelToBuffer(Pixel(x, y, ILI9341_GREEN));
+            }
+        }
+
+        //end progress bar update
+        return true;
+    }
+
+    return false;
+}
+
+//begin an item transfer
+void Display::beginTransfer(String target){
+    //set start time
+    this->m_transferStartTime = millis() / 1000.0;
+
+
+    this->m_jobQueue.push(DisplayJob(132));
+    this->updateTransferStatusLabel(false, target);
+    this->m_jobQueue.push(DisplayJob(130));
+    this->m_jobQueue.push(DisplayJob(132));
+    this->updateTransferStatusLabel(true, target);
+}
+
+//update transfer status label
+bool Display::updateTransferStatusLabel(bool finished, String target){
+    //if the transfer is finished
+    if(finished){
+//write label
+        this->addWriteTextJob((DISPLAY_WIDTH + 15 +DISPLAY_HEIGHT - (65 + DISPLAY_TOP_BAR_HEIGHT + DISPLAY_BOTTOM_BAR_HEIGHT) - 144) / 2, DISPLAY_TOP_BAR_HEIGHT + 104, ILI9341_GREEN, 2, "Recieved By:");
+        this->addWriteTextJob((DISPLAY_WIDTH + 15 +DISPLAY_HEIGHT - (65 + DISPLAY_TOP_BAR_HEIGHT + DISPLAY_BOTTOM_BAR_HEIGHT) - target.length() * 12) / 2, DISPLAY_TOP_BAR_HEIGHT + 125, ILI9341_GREEN, 2, target);
+    } else {
+        //write label
+        this->addWriteTextJob((DISPLAY_WIDTH + 15 + DISPLAY_HEIGHT - (65 + DISPLAY_TOP_BAR_HEIGHT + DISPLAY_BOTTOM_BAR_HEIGHT) - 144) / 2, DISPLAY_TOP_BAR_HEIGHT + 104, ILI9341_YELLOW, 2, "Transfer To:");
+        this->addWriteTextJob((DISPLAY_WIDTH + 15 + DISPLAY_HEIGHT - (65 + DISPLAY_TOP_BAR_HEIGHT + DISPLAY_BOTTOM_BAR_HEIGHT) - target.length() * 12) / 2, DISPLAY_TOP_BAR_HEIGHT + 125, ILI9341_YELLOW, 2, target);
     }
 
     return true;
 }
 
-void Display::drawMenuItem(uint8_t item){
-    //draw box
-    this->m_jobQueue.push(DisplayJob(1, this->m_menuItems[item].m_x, this->m_menuItems[item].m_y, this->m_menuItems[item].m_width, this->m_menuItems[item].m_height, ILI9341_WHITE));
+//wipe transfrer status label
+bool Display::wipeTransferStatusLabel(){
+    //initialize parameter if needed
+    if(this->m_jobQueue.front().m_param1 == 65535){
+        this->m_jobQueue.front().m_param1 = DISPLAY_TOP_BAR_HEIGHT + 104;
+    }
 
-    //draw text
-    this->addWriteTextJob(this->m_menuItems[item].m_x + this->m_menuItems[item].m_width / 2 - (this->m_menuItems[item].m_text.length() * 6), this->m_menuItems[item].m_y + this->m_menuItems[item].m_height / 2 - 4, ILI9341_WHITE, 2, this->m_menuItems[item].m_text);
+    //wipe zone
+    for (int y = this->m_jobQueue.front().m_param1; y < DISPLAY_TOP_BAR_HEIGHT + 145; y++){
+        if(PIXEL_BUFFER_LENGTH - this->getPixelsInBufferCount() < 146){
+            this->m_jobQueue.front().m_param1 = y;
+
+            return false;
+        }
+
+        for(int x = floor(DISPLAY_WIDTH + 15 + DISPLAY_HEIGHT - (65 + DISPLAY_TOP_BAR_HEIGHT + DISPLAY_BOTTOM_BAR_HEIGHT) - 144) / 2; x < ceil(DISPLAY_WIDTH + 15 + DISPLAY_HEIGHT - (65 + DISPLAY_TOP_BAR_HEIGHT + DISPLAY_BOTTOM_BAR_HEIGHT) + 144) / 2; x++){
+            this->addPixelToBuffer(Pixel(x,y,ILI9341_BLACK));
+        }
+    }
+
+    return true;
 }
 
-uint8_t Display::getSelectedMenuItem(){
-    return this->m_selectedMenuItem - 1;
+void Display::updateItem(String item){
+    //wipe item label
+    this->m_jobQueue.push(DisplayJob(201));
+
+    //wipe item icon
+    this->m_jobQueue.push(DisplayJob(201, 12));
+
+    //write new label
+    this->addWriteTextJob(82, 5, ILI9341_WHITE, 2, item);
+
+    //draw icon
+    this->addIconDrawJob(12, item);
 }
 
-MenuItem* Display::getMenuItemPointer(uint8_t item){
-    return &(this->m_menuItems[item]);
+bool Display::wipeItem(){
+    //initialize parameter if need be
+    if(this->m_jobQueue.front().m_param1 == 65535){
+        this->m_jobQueue.front().m_param1 = 5;
+    }
+
+    //wipe zone
+    for(int y = this->m_jobQueue.front().m_param1; y < DISPLAY_TOP_BAR_HEIGHT; y++){
+
+        //check to see if there is enough room in the buffer for next row
+        if(PIXEL_BUFFER_LENGTH - this->getPixelsInBufferCount() < DISPLAY_WIDTH - 82){
+            this->m_jobQueue.front().m_param1 = y;
+
+            return false;
+        }
+
+        for(int x = 82; x < DISPLAY_WIDTH; x++){
+            this->addPixelToBuffer(Pixel(x, y, ILI9341_BLACK));
+        }
+    }
+
+    return true;
 }
 
-void Display::disableMenu(){
-    this->m_activeMenuItems = 0;
-}
+bool Display::wipeIcon(uint8_t iconNumber){
+    //get icon
 
-uint8_t Display::getPreviousTestingMenuPage(){
-    //return the previous testing menu page
-    return (this->m_testingMenuPage + DISPLAY_TEST_MENU_PAGES - 1) % DISPLAY_TEST_MENU_PAGES;
-}
+    Icon* icon = this->getIcon(iconNumber);
 
-uint8_t Display::getNextTestingMenuPage(){
-    //return the next testing menu page
-    return (this->m_testingMenuPage + 1) % DISPLAY_TEST_MENU_PAGES;
-}
+        //initialize parameter if need be
+    if(this->m_jobQueue.front().m_param2 == 65535){
+        this->m_jobQueue.front().m_param2 = icon->m_y + 1;
+    }
 
+    //wipe zone
+    for(int y = this->m_jobQueue.front().m_param2; y < icon->m_y + icon->m_height - 1; y++){
+
+        //check to see if there is enough room in the buffer for next row
+        if(PIXEL_BUFFER_LENGTH - this->getPixelsInBufferCount() < icon->m_height){
+            this->m_jobQueue.front().m_param2 = y;
+
+            return false;
+        }
+
+        for(int x = icon->m_x; x < icon->m_x + icon->m_width - 2; x++){
+            this->addPixelToBuffer(Pixel(x, y, ILI9341_BLACK));
+        }
+    }
+
+    return true;
+}

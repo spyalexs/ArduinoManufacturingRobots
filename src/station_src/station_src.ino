@@ -10,7 +10,7 @@
 bool PUBLISHDATA = true;
 
 //the robot container that is a wrapper around periphral functions
-StationContainer MC = StationContainer(&M1, &M2, &encoder1, &encoder2, IN1, A6, A2);
+StationContainer MC = StationContainer();
 Communicator CC = Communicator();
 CycleOverseer CO = CycleOverseer(50);
 
@@ -19,6 +19,7 @@ int updateFrequency = 1; //Hz
 
 bool inMenu = true; // wether or not the bot is in menu mode
  
+long startTime = 0;
 void setup(){
   Serial.begin(9600);
 
@@ -34,7 +35,7 @@ void setup(){
   MC.m_display.setBackground(ILI9341_BLACK);
   MC.m_display.drawBasicUI();
 
-  MC.m_display.drawOpeningMenu();
+  MC.m_display.drawBasicUI();
 
   //get coms set up with central
   CC.connectToNetwork();
@@ -43,6 +44,10 @@ void setup(){
   Serial.println("I am a station!");
 
   delay(1000);
+
+  MC.m_display.updateItem("Mustang");
+
+  startTime = millis() + 50000;
 }
 
 void loop(){
@@ -63,6 +68,12 @@ void loop(){
   //cycle robot container
   MC.cycle();
   CO.endCycle();
+
+  if(startTime < millis()){
+    MC.m_display.beginTransfer("Test Bot");
+
+    startTime = startTime + 10000000;
+  }
 }
 
 void update(){

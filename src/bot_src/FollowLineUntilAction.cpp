@@ -23,8 +23,6 @@ void FollowLineUntilAction::cycle(){
   if(mp_MC->isOnIntersectionMarker()){
     m_intersectionCounter += 1;
   }
-
-  delay(20);
 }
 
 void FollowLineUntilAction::cleanup(){

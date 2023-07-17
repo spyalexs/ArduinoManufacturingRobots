@@ -123,6 +123,9 @@ bool Communicator::connectToCentral(){
     //show connection on display
     this->mp_display->addIconDrawJob(10, "wifi");
 
+    //show port number on display
+    this->mp_display->addWriteTextJob(47, DISPLAY_HEIGHT - 14, ILI9341_WHITE, 1, String(this->m_assignedUDPPort));
+
     return true;
 }
 

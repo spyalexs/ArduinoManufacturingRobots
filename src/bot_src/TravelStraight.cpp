@@ -18,8 +18,6 @@ void TravelStraight::cycle(){
 
   mp_MC->setMotor1(power1);
   mp_MC->setMotor2(power2);
-
-  delay(20);
 }
 
 void TravelStraight::cleanup(){

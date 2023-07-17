@@ -32,6 +32,8 @@
 
 #define PIXEL_BUFFER_LENGTH 1000
 
+#define DISPLAY_ITEM_TRANSFER_TIME 30
+
 // backlight will eventually go in GPIO breakout board
 
 
@@ -53,9 +55,14 @@ class Display{
 
         int m_requestedIconCount = 0; // the number of icons on the display
 
-        Icon m_displayIcons[8];
+        Icon m_itemIcon; // the icon to display what item the station has
         Icon m_connectionIcon; // the icon to display the connection
         Icon m_batteryIcon; // the icon to display the battery
+
+        //transfer
+        bool m_isTransering = false; // wether the station is currently making an item transfer
+        double m_transferStartTime = 0;
+        int m_previousProgressPixels = 0;
 
         //wipe display -- reoccuring function
         bool wipeDisplay(bool entireDisplay, uint16_t color);
@@ -78,11 +85,8 @@ class Display{
         //set up the basic UI - do before the loop
         void drawBasicUI();
 
-        //draw icon slots - in loop
-        void drawIconSlots();
-
         //cycle for a specified amount of time
-        void cycle(int encoderCount);
+        void cycle();
 
         //add pixel to pixel buffer so it can be written to screen
         bool addPixelToBuffer(Pixel pixel);
@@ -108,9 +112,6 @@ class Display{
         //return an icon
         Icon* getIcon(uint8_t iconNumber);
 
-        //draw opening menu
-        void drawOpeningMenu();
-
         //draw rectangle
         bool drawRect(int x, int y, int w, int h, uint16_t color);
 
@@ -119,6 +120,27 @@ class Display{
 
         //add write text job
         void addWriteTextJob(uint16_t x, uint16_t y, uint16_t color, uint8_t textSize, String text);
+
+        //update progress bar
+        bool updateProgressBar();
+
+        //begin an item transfer
+        void beginTransfer(String target);
+
+        //update transfer status label
+        bool updateTransferStatusLabel(bool finished, String target);
+
+        //wipe transfrer status label
+        bool wipeTransferStatusLabel();
+
+        //update the item
+        void updateItem(String item);
+
+        //wipe the item
+        bool wipeItem();
+
+        //wipe any icon
+        bool wipeIcon(uint8_t iconNumber);
 
 };
 
