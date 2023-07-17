@@ -245,6 +245,9 @@ def runRouting(startingNodeName, endingNodeName, targetBot, queue):
 
         #send commands to controlled to be processed
         queue.put(GUIInMessage(targetBot, "commandSequence", commands, Direct=False))
+
+        #send message to bot telling it its destination
+        queue.put(GUIInMessage(targetBot, "destination", commands[len(commands) - 1].m_endingLocation, Direct=True))
     else:
         print("Failed to route between: " + startingNodeName + " and " + endingNodeName)
 

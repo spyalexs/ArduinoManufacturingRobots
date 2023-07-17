@@ -680,19 +680,3 @@ uint8_t Display::getNextTestingMenuPage(){
     return (this->m_testingMenuPage + 1) % DISPLAY_TEST_MENU_PAGES;
 }
 
-void Display::updateDestination(String destination){
-    //update the destination portion of the display
-
-    //wipe old destination
-    for(int y = 10; y < DISPLAY_TOP_BAR_HEIGHT; y++){
-        for(int  x = 156; x < DISPLAY_WIDTH; x++){
-            this->addPixelToBuffer(Pixel(x,y, ILI9341_BLACK));
-        }
-    }
-
-    if(destination != "None"){
-        //write new destination
-        this->addWriteTextJob(156, 5, ILI9341_WHITE, 2, destination);
-    }
-}
-

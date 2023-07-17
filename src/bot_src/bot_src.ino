@@ -227,9 +227,11 @@ void listen(){
     String dataString = packet.substring(firstSeperator + 1);
     int secondSeperator = dataString.indexOf("$");
     String characteristic = dataString.substring(0, secondSeperator);
-    int value = dataString.substring(secondSeperator + 1).toInt();
 
     if(characteristic == "commandIssue"){
+      //in this case, the value is in int
+      int value = dataString.substring(secondSeperator + 1).toInt();
+
       switch (value){
         case 255:
           //abort running command and cancel all other commands in queue
@@ -254,6 +256,12 @@ void listen(){
           assignCommand(value);
         break;
       }
+    } else if (characteristic == "destination"){
+      //value is a string containing the destination
+      String destination = dataString.substring(secondSeperator + 1);
+
+      //write the destination
+      MC.m_display.updateDestination(destination);
     }
 
     //remove packet after it has been handled

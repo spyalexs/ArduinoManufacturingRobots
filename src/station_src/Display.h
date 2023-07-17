@@ -12,7 +12,6 @@
 #include "Pixel.h"
 #include "Icon.h"
 #include "DisplayJob.h"
-#include "MenuItem.h"
 
 // For the Adafruit shield, these are the default.
 #define TFT_DC 10
@@ -30,9 +29,6 @@
 
 #define DISPLAY_MAX_SIZE_2_CHARACTERS_PER_CYCLE 7
 #define DISPLAY_MAX_SIZE_1_CHARACTERS_PER_CYCLE 10
-
-#define DISPLAY_MAX_MENU_ITEMS 10
-#define DISPLAY_TEST_MENU_PAGES 5
 
 #define PIXEL_BUFFER_LENGTH 1000
 
@@ -61,21 +57,11 @@ class Display{
         Icon m_connectionIcon; // the icon to display the connection
         Icon m_batteryIcon; // the icon to display the battery
 
-        uint8_t m_selectedMenuItem = 0;
-        uint8_t m_activeMenuItems = 0;
-        MenuItem m_menuItems[DISPLAY_MAX_MENU_ITEMS];
-
-        uint8_t m_testingMenuPage = 1; //if the display is in menu
-        String m_testingPages[DISPLAY_TEST_MENU_PAGES] = {"Exit", "Motors", "LEDs", "Sensors1", "Sensors2"};
-
         //wipe display -- reoccuring function
         bool wipeDisplay(bool entireDisplay, uint16_t color);
 
         //write text -- reoccuring function
         bool writeText();
-
-        //highlight menu item
-        bool highlightMenuItem(uint8_t item, bool unhighlight = false);
 
     public:
         //constructor
@@ -133,29 +119,6 @@ class Display{
 
         //add write text job
         void addWriteTextJob(uint16_t x, uint16_t y, uint16_t color, uint8_t textSize, String text);
-
-        //draw a menu item
-        void drawMenuItem(uint8_t item);
-
-        //return the selected menu item
-        uint8_t getSelectedMenuItem();
-
-        //return a pointer to a menu item
-        MenuItem* getMenuItemPointer(uint8_t item);
-
-        //Draw the template for the testing menu
-        void drawTestingMenu(uint8_t page = 1);
-
-        //disable menus for running by setting the active menu items to zero
-        void disableMenu();
-
-        // returns the next testing menu page
-        uint8_t getNextTestingMenuPage();
-
-        //returns the previous testing menu page
-        uint8_t getPreviousTestingMenuPage();
-
-        void updateDestination(String Destination);
 
 };
 

@@ -109,7 +109,9 @@ def handleGUIIn():
         #handle all messages in the queu
         if message.m_direct == True:
             #if the message is ment to go directly to the robot
-            sendStringToBot(message.getDirectString())
+            for overseer in overseerers:
+                if overseer.m_port == message.getDirectString()[0]:
+                    overseer.sendMessageToBot(message.getDirectString()[1])
         else:
             #if the message should first be controller processed
             if message.m_characteristic == "commandSequence":
