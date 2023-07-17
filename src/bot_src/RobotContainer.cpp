@@ -342,6 +342,9 @@ void RobotContainer::handleEncoderClick(){
         //clear old
         this->m_display.addWipeDisplayJob(false, ILI9341_BLACK);
 
+        //reset encoder counts so the highlight begins off
+        this->resetDisplayEncoder();
+
         //disable menu
         this->m_display.disableMenu();
 
@@ -354,6 +357,9 @@ void RobotContainer::handleEncoderClick(){
         //clear old
         this->m_display.addWipeDisplayJob(false, ILI9341_BLACK);
 
+        //reset encoder counts so the highlight begins off
+        this->resetDisplayEncoder();
+
         //draw test menu
         this->m_display.drawTestingMenu();
         break;
@@ -363,6 +369,9 @@ void RobotContainer::handleEncoderClick(){
 
         //wipe old page
         this->m_display.addWipeDisplayJob(false, ILI9341_BLACK);
+
+        //reset encoder counts so the highlight begins off
+        this->resetDisplayEncoder();
 
         if(this->m_display.getPreviousTestingMenuPage() == 0){
           //if exit test menu page, draw main menu
@@ -379,6 +388,9 @@ void RobotContainer::handleEncoderClick(){
 
         //wipe old page
         this->m_display.addWipeDisplayJob(false, ILI9341_BLACK);
+
+        //reset encoder counts so the highlight begins off
+        this->resetDisplayEncoder();
 
         if(this->m_display.getNextTestingMenuPage() == 0){
           //if exit test menu page, draw main menu
