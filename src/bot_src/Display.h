@@ -144,7 +144,16 @@ class Display{
         MenuItem* getMenuItemPointer(uint8_t item);
 
         //Draw the template for the testing menu
-        void drawTestingMenu();
+        void drawTestingMenu(uint8_t page = 1);
+
+        //disable menus for running by setting the active menu items to zero
+        void disableMenu();
+
+        // returns the next testing menu page
+        uint8_t getNextTestingMenuPage();
+
+        //returns the previous testing menu page
+        uint8_t getPreviousTestingMenuPage();
 
 };
 

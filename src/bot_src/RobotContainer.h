@@ -5,6 +5,7 @@
 #include "Display.h"
 
 #define CONTAINER_ULTRASONIC_ACTIVE false
+#define CONTAINER_ENCODER_CLICK_MIN_TIME 500 //ms
 
 // a wrapper class around motion, allows for the easy utilization of subroutines and control methods
 
@@ -15,6 +16,8 @@ class RobotContainer{
     bool m_encoderLastPosition = true; //both high true, both low false
     int m_encoderCounts = 0; //counts are even on low and high on odd
     bool m_encoderReleased = true;
+    bool m_encoderClickSent = false;
+    long m_encoderClickStart = 0.0;
 
     void cycleEncoder();
 
@@ -35,8 +38,8 @@ class RobotContainer{
     uint8_t m_intersectionPin;
     uint8_t m_codePin;
 
-    uint8_t m_encoderClickPin = 1;
-    uint8_t m_encoderCWFPin = 11;
+    uint8_t m_encoderClickPin = 11;
+    uint8_t m_encoderCWFPin = 12;
     uint8_t m_encoderCCWFPin = 12;
 
     uint8_t m_ultrasonicTriggerPin = 11;
@@ -94,6 +97,7 @@ class RobotContainer{
     bool isEncoderClicked();
     int getDisplayEncoderCounts();
     void resetDisplayEncoder();
+    void handleEncoderClick();
 
     //ultrasonic sensor
     double getDistance();

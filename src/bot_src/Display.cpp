@@ -413,7 +413,7 @@ bool Display::drawRect(int x, int y, int w, int h, uint16_t color){
 void Display::drawOpeningMenu(){
     //draw opening menu
     this->m_menuItems[0].redefine(1, "Run", 50, (-DISPLAY_BOTTOM_BAR_HEIGHT + DISPLAY_HEIGHT + DISPLAY_TOP_BAR_HEIGHT) / 2 - 40,  90, 90);
-    this->m_menuItems[1].redefine(1, "Test", 180, (-DISPLAY_BOTTOM_BAR_HEIGHT + DISPLAY_HEIGHT + DISPLAY_TOP_BAR_HEIGHT) / 2 - 40,  90, 90);
+    this->m_menuItems[1].redefine(2, "Test", 180, (-DISPLAY_BOTTOM_BAR_HEIGHT + DISPLAY_HEIGHT + DISPLAY_TOP_BAR_HEIGHT) / 2 - 40,  90, 90);
 
     this->drawMenuItem(0);
     this->drawMenuItem(1);
@@ -421,10 +421,13 @@ void Display::drawOpeningMenu(){
     this->m_activeMenuItems = 2;
 }
 
-void Display::drawTestingMenu(){
+void Display::drawTestingMenu(uint8_t page){
+    //note current test menu page
+    this->m_testingMenuPage = page;
+
     //draw a the menus to test hardware
-    this->m_menuItems[0].redefine(1, "<- " + this->m_testingPages[(this->m_testingMenuPage - 1 + DISPLAY_TEST_MENU_PAGES) % DISPLAY_TEST_MENU_PAGES], 16, (DISPLAY_TOP_BAR_HEIGHT + 10), 138, 32);
-    this->m_menuItems[1].redefine(1, this->m_testingPages[(this->m_testingMenuPage + 1) % DISPLAY_TEST_MENU_PAGES] + " ->", 166, (DISPLAY_TOP_BAR_HEIGHT + 10),  138, 32);
+    this->m_menuItems[0].redefine(3, "<- " + this->m_testingPages[getPreviousTestingMenuPage()], 16, (DISPLAY_TOP_BAR_HEIGHT + 10), 138, 32);
+    this->m_menuItems[1].redefine(4, this->m_testingPages[getNextTestingMenuPage()] + " ->", 166, (DISPLAY_TOP_BAR_HEIGHT + 10),  138, 32);
 
     //draw the page change items
     this->drawMenuItem(0);
@@ -437,10 +440,10 @@ void Display::drawTestingMenu(){
             break;
         case 1:
             //motor buttons
-            this->m_menuItems[2].redefine(1, "-", 128, (DISPLAY_TOP_BAR_HEIGHT + 52), 80, 60);
-            this->m_menuItems[3].redefine(1, "+", 224, (DISPLAY_TOP_BAR_HEIGHT + 52), 80, 60);
-            this->m_menuItems[4].redefine(1, "-", 128, (DISPLAY_TOP_BAR_HEIGHT + 122), 80, 60);
-            this->m_menuItems[5].redefine(1, "+", 224, (DISPLAY_TOP_BAR_HEIGHT + 122), 80, 60);
+            this->m_menuItems[2].redefine(5, "-", 128, (DISPLAY_TOP_BAR_HEIGHT + 52), 80, 60);
+            this->m_menuItems[3].redefine(6, "+", 224, (DISPLAY_TOP_BAR_HEIGHT + 52), 80, 60);
+            this->m_menuItems[4].redefine(7, "-", 128, (DISPLAY_TOP_BAR_HEIGHT + 122), 80, 60);
+            this->m_menuItems[5].redefine(8, "+", 224, (DISPLAY_TOP_BAR_HEIGHT + 122), 80, 60);
 
             //motor labels
             this->addWriteTextJob(16, DISPLAY_TOP_BAR_HEIGHT + 74, ILI9341_WHITE, 2, "Motor 1: ");
@@ -457,21 +460,50 @@ void Display::drawTestingMenu(){
             break;
 
         case 2:
+            //LED Buttons
+            this->m_menuItems[2].redefine(9, "LED 1", 20, (DISPLAY_TOP_BAR_HEIGHT + 52), 80, 60);
+            this->m_menuItems[3].redefine(10, "LED 2", 120, (DISPLAY_TOP_BAR_HEIGHT + 52), 80, 60);
+            this->m_menuItems[4].redefine(11, "LED 3", 220, (DISPLAY_TOP_BAR_HEIGHT + 52), 80, 60);
+            this->m_menuItems[5].redefine(12, "LED 4", 20, (DISPLAY_TOP_BAR_HEIGHT + 122), 80, 60);
+            this->m_menuItems[6].redefine(13, "LED 5", 120, (DISPLAY_TOP_BAR_HEIGHT + 122), 80, 60);
+
+            //draw the page change items
+            this->drawMenuItem(2);
+            this->drawMenuItem(3);
+            this->drawMenuItem(4);
+            this->drawMenuItem(5);
+            this->drawMenuItem(6);
 
             //set number of menu items
-            this->m_activeMenuItems = 2;  
+            this->m_activeMenuItems = 7;  
             break;
 
         case 3:
+            //UV Sensors and ultrasonic
+            this->m_menuItems[2].redefine(14, "UV1: " , 20, (DISPLAY_TOP_BAR_HEIGHT + 52), 130, 60);
+            this->m_menuItems[3].redefine(15, "UV2: ", 170, (DISPLAY_TOP_BAR_HEIGHT + 52), 130, 60);
+            this->m_menuItems[4].redefine(16, "UV3: ", 20, (DISPLAY_TOP_BAR_HEIGHT + 122), 130, 60);
+            this->m_menuItems[5].redefine(17, "US: ", 170, (DISPLAY_TOP_BAR_HEIGHT + 122), 130, 60);
 
+            this->drawMenuItem(2);
+            this->drawMenuItem(3);
+            this->drawMenuItem(4);
+            this->drawMenuItem(5);
+            
             //set number of menu items
-            this->m_activeMenuItems = 2;     
+            this->m_activeMenuItems = 6;     
             break;   
             
         case 4:
+            // Motor Encoders
+            this->m_menuItems[2].redefine(18, "EN1: " , 20, (DISPLAY_TOP_BAR_HEIGHT + 82), 130, 60);
+            this->m_menuItems[3].redefine(19, "EN2: ", 170, (DISPLAY_TOP_BAR_HEIGHT + 82), 130, 60);
+
+            this->drawMenuItem(2);
+            this->drawMenuItem(3);
 
             //set number of menu items
-            this->m_activeMenuItems = 2;
+            this->m_activeMenuItems = 4;
             break;
 
         default:
@@ -491,7 +523,7 @@ bool Display::wipeDisplay(bool entireDisplay = true, uint16_t color = ILI9341_BL
         if(entireDisplay){
             this->m_jobQueue.front().m_param3 = 0;
         } else {
-            this->m_jobQueue.front().m_param3 = DISPLAY_TOP_BAR_HEIGHT;
+            this->m_jobQueue.front().m_param3 = DISPLAY_TOP_BAR_HEIGHT + 1;
         }
     }
 
@@ -634,4 +666,17 @@ MenuItem* Display::getMenuItemPointer(uint8_t item){
     return &(this->m_menuItems[item]);
 }
 
+void Display::disableMenu(){
+    this->m_activeMenuItems = 0;
+}
+
+uint8_t Display::getPreviousTestingMenuPage(){
+    //return the previous testing menu page
+    return (this->m_testingMenuPage + DISPLAY_TEST_MENU_PAGES - 1) % DISPLAY_TEST_MENU_PAGES;
+}
+
+uint8_t Display::getNextTestingMenuPage(){
+    //return the next testing menu page
+    return (this->m_testingMenuPage + 1) % DISPLAY_TEST_MENU_PAGES;
+}
 

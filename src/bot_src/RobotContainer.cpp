@@ -171,7 +171,31 @@ void RobotContainer::velocityControl(double* Power1, double* Power2){
 }
 
 bool RobotContainer::isEncoderClicked(){
-  return digitalRead(!this->m_encoderClickPin);
+
+  if(!digitalRead(this->m_encoderClickPin)){
+    //if a click signal is being sent
+
+    if(this->m_encoderReleased){
+      //start timer - tune out false signals
+      this->m_encoderReleased = false;
+
+      this->m_encoderClickStart = millis();
+    }
+
+  } else{
+    //encoder click signal stopped so reset logic
+    this->m_encoderReleased = true;
+    this->m_encoderClickSent = false;
+  }
+
+  if(m_encoderClickStart + CONTAINER_ENCODER_CLICK_MIN_TIME < millis() && this->m_encoderClickSent == false && this->m_encoderReleased == false){
+    //the encoder has been pressed for the right time and the signal hasn't been sent
+    this->m_encoderClickSent = true;
+    return true;
+  }
+
+  return false;
+
 }
 
 void RobotContainer::cycleEncoder(){
@@ -181,14 +205,10 @@ void RobotContainer::cycleEncoder(){
   bool ccw = digitalRead(this->m_encoderCCWFPin);  
   bool cw = digitalRead(this->m_encoderCWFPin);  
 
-  //check for click
-  if(this->isEncoderClicked() == true && this->m_encoderReleased == true){
-    //call menu selection 
-    this->handleMenuSelection(); 
-
-    this->m_encoderReleased = false;
-  } else if(this->isEncoderClicked() == false){
-    this->m_encoderReleased == true;
+  //cycle / handle clicks
+  if(this->isEncoderClicked()){
+    Serial.println("Clicked");
+    handleEncoderClick();
   }
 
   if(ccw != cw){
@@ -305,5 +325,74 @@ void RobotContainer::handleMenuSelection(){
   if(this->m_display.getSelectedMenuItem() >=0){
     //if a menu item has been selected
     Serial.println(this->m_display.getMenuItemPointer(this->m_display.getSelectedMenuItem())->m_text);
+  }
+}
+
+void RobotContainer::handleEncoderClick(){
+  uint8_t item = this->m_display.getSelectedMenuItem();
+
+
+  if(item != 255){
+    //if a menu item has been selected get its value to determine course of action
+
+    switch(this->m_display.getMenuItemPointer(item)->m_value){
+      case 1:
+        //move from start menu to running ui
+
+        //clear old
+        this->m_display.addWipeDisplayJob(false, ILI9341_BLACK);
+
+        //disable menu
+        this->m_display.disableMenu();
+
+        //draw in icon holders
+        this->m_display.setIconsCount(6);
+        break;
+      case 2:
+        //move from start menu to test menu
+
+        //clear old
+        this->m_display.addWipeDisplayJob(false, ILI9341_BLACK);
+
+        //draw test menu
+        this->m_display.drawTestingMenu();
+        break;
+
+      case 3:
+        //move back a testing menu page
+
+        //wipe old page
+        this->m_display.addWipeDisplayJob(false, ILI9341_BLACK);
+
+        if(this->m_display.getPreviousTestingMenuPage() == 0){
+          //if exit test menu page, draw main menu
+          this->m_display.drawOpeningMenu();
+        } else {
+          //draw previous testing menu page
+          this->m_display.drawTestingMenu(this->m_display.getPreviousTestingMenuPage());
+        }
+
+        break;
+
+      case 4:
+        //move up a testing menu page
+
+        //wipe old page
+        this->m_display.addWipeDisplayJob(false, ILI9341_BLACK);
+
+        if(this->m_display.getNextTestingMenuPage() == 0){
+          //if exit test menu page, draw main menu
+          this->m_display.drawOpeningMenu();
+        } else {
+          //draw previous testing menu page
+          this->m_display.drawTestingMenu(this->m_display.getNextTestingMenuPage());
+        }
+
+        break;
+
+      default:
+        Serial.println("Not Ready for that action yet");
+    }
+    
   }
 }

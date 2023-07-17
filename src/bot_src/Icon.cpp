@@ -91,14 +91,10 @@ int Icon::strategicPacketNumber(int packetNumber){
 int Icon::getBytesPerPacket(){
     //return the number of bytes in the current packet
     
-    Serial.println(this->m_numberOfPackets);
-
     if(this->m_currentPacket == this->m_numberOfPackets - 1){
         // the last packet - this has the possibility of containing less rows
         // rows remaining * bytes per row
-        Serial.println(getIconImageSize());
-        Serial.println((this->getIconImageSize() - (this->m_currentPacket * floor(900 / ((this->m_width - 1) * 2)))) * (this->getIconImageSize() * 2));
-
+       
         return (this->getIconImageSize() - (this->m_currentPacket * floor(900 / ((this->m_width - 1) * 2)))) * (this->getIconImageSize() * 2);
     }
 
