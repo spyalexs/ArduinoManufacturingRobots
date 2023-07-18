@@ -11,7 +11,8 @@ except socket.gaierror:
     print("Could not find LOCALIP, is the Hotspot/Network up?")
     quit()
 
-CONNECTION_MESSAGE = "Im a bot! MAC:"
+BOT_CONNECTION_MESSAGE = "Im a bot! MAC:"
+STATION_CONNECTION_MESSAGE = "Im a station! MAC:"
 CONNECTION_REPLY = "Connection Established on:"
 REPLY_FREQUENCY = 20 #Hz
 CONNECTION_TIMEOUT = 5 #seconds
@@ -62,13 +63,21 @@ def connectBots(connectorQueue, killQueue):
         #run until entire system is down
         try:
             message, addr = sock.recvfrom(bufferLength)
-            if(CONNECTION_MESSAGE in str(message)):
+            if(BOT_CONNECTION_MESSAGE in str(message) or STATION_CONNECTION_MESSAGE in str(message)):
                 #trim message to get mac
                 macAddress = str(message).split("$$$")[0].split("MAC:")[1]
 
                 if(macAddress in knownMACs.keys()):
                     #the device is already connected
-                    print("Reconnection from: " + macAddress + ". Reassigning to port: " + str(knownMACs[macAddress]))
+
+                    #determine if the connection is from a bot or station
+                    if(BOT_CONNECTION_MESSAGE in str(message)):
+                        #bot connection
+                        print("Bot --- Reconnection from: " + macAddress + ". Reassigning to port: " + str(knownMACs[macAddress]))
+                    else:
+                        #station connection
+                        print("Bot --- Reconnection from: " + macAddress + ". Reassigning to port: " + str(knownMACs[macAddress]))
+
 
                     #reply back with connection port
                     message = bytes(CONNECTION_REPLY + str(knownMACs[macAddress]) +"$$$", 'utf-8')
@@ -89,10 +98,20 @@ def connectBots(connectorQueue, killQueue):
                     #new connection
                     knownMACs[macAddress] = nextPort
 
-                    print("Connection from: " + macAddress + ". Assigning to port: " + str(knownMACs[macAddress]))
+                    #determine wether connection is from a bot or station
+                    if(BOT_CONNECTION_MESSAGE in str(message)):
+                        #connection from bot
+                        print("Bot --- Connection from: " + macAddress + ". Assigning to port: " + str(knownMACs[macAddress]))
 
-                    #send back to main thread to be added to bot overseer
-                    connectorQueue.put(macAddress + "$" + str(nextPort) + "$" + str(addr[0]) + "$" + str(addr[1]))
+                        #send back to main thread to be added to bot overseer
+                        connectorQueue.put(macAddress + "$" + str(nextPort) + "$" + str(addr[0]) + "$" + str(addr[1]) + "$bot")
+
+                    else:
+                        #connection from station
+                        print("Station --- Connection from: " + macAddress + ". Assigning to port: " + str(knownMACs[macAddress]))
+
+                        #send back to main thread to be added to bot overseer
+                        connectorQueue.put(macAddress + "$" + str(nextPort) + "$" + str(addr[0]) + "$" + str(addr[1]) + "$station")
 
                     #send back connection string
                     message = bytes(CONNECTION_REPLY + str(nextPort) +"$$$", 'utf-8')

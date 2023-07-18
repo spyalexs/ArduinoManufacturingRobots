@@ -14,7 +14,7 @@ baseMap = getBaseMap()
 #the current bot locations as far as the gui knows
 botLocationsGUI = dict()
 
-def make(queueIn, queueOut, robots, killQueue):
+def make(queueIn, queueOut, robots, stations, killQueue):
     #create the GUI window for the first time
 
     #apply gui theme
@@ -41,6 +41,12 @@ def make(queueIn, queueOut, robots, killQueue):
 
     robotsFrameLayout = []
 
+    #determine if all the rows are full or if there is space for the station
+    rowsFull = False
+    if(counter % 3 == 0):
+        rowsFull = True
+    
+
     for robotRow in robotRows:
         #each row of robot pannels
         robotRowLayout = []
@@ -50,6 +56,18 @@ def make(queueIn, queueOut, robots, killQueue):
             robotRowLayout.append(sg.Frame(robot, frameLayout))
 
         robotsFrameLayout.append(robotRowLayout)
+
+    #make station frame
+    if(len(stations) >= 1):
+        #if a station has been connected -- add pannel
+        stationFrame = sg.Frame("Stations", getStationFrame(stations, robots, ["civic", "mustang", "jeep"]))
+
+        #if there is space in the rows, add the station frame to a not full row
+        if not rowsFull:
+            robotsFrameLayout[(len(robotsFrameLayout) - 1)].append(stationFrame)
+        else:
+            #no space, make a new row
+            robotsFrameLayout.append([sg.Frame(robot, stationFrame)])
 
     #get the layout for the map sceen
     mapLayout = [[sg.Image(key="MapImage")]]
@@ -67,7 +85,7 @@ def make(queueIn, queueOut, robots, killQueue):
     queueIn.put(GUIInMessage("All", "ready", True, Direct=False))
 
     #keeps an eye on the gui for event and such as it runs
-    monitor(window, queueIn, queueOut, killQueue)
+    monitor(window, queueIn, queueOut, killQueue, robots)
 
 def getRobotFrameLayout(name):
     #do a little processing to format the keys correctly
@@ -87,7 +105,19 @@ def getRobotFrameLayout(name):
     
     return robotFrameLayout
 
-def monitor(window, queueIn, queueOut, killQueue):
+def getStationFrame(connectedStations, connectedRobots, items):
+    #get the station frame layout
+
+    stationFrameLayout = [
+        [sg.Text("Station"), sg.Combo(connectedStations, enable_events=False, key="SelectedStation", default_value=connectedStations[0])],
+        [sg.Text("Item"), sg.Combo(items, enable_events=False, key="StationItem"), sg.Button("Set Item", key="SetStationItem", enable_events=True)],
+        [sg.Text("Transfer To", key="Station Transfer"), sg.Combo(connectedRobots, enable_events=False, key="StationTransferTarget"), sg.Button("Transfer", key="TransferStation Item", enable_events=True)],
+        [sg.Text("Battery Voltage: "), sg.Text("0.00", key="SelectedStationBatteryVoltage"), sg.Text("Connection Status:"), sg.Radio("", "1", key="SelectedStationConnectionStatus", circle_color="white")]
+    ]
+
+    return stationFrameLayout
+
+def monitor(window, queueIn, queueOut, killQueue, robots):
     #monitor the Gui for events
 
     while True:  
@@ -107,7 +137,7 @@ def monitor(window, queueIn, queueOut, killQueue):
             handleEvents(event, values, window, queueIn)
 
         #update the attributes displayed on the window
-        update(window, queueOut)
+        update(window, values, queueOut, robots)
     
 def handleEvents(event, values, window, queueIn):
     #handle the gui events
@@ -139,7 +169,7 @@ def handleEvents(event, values, window, queueIn):
         if(not values[event.split("SetLocation")[0] + "LocationMenu"] == ""):
             queueIn.put(GUIInMessage(event.split("SetLocation")[0], "locationSet", values[event.split("SetLocation")[0] + "LocationMenu"], Direct=False))
 
-def update(window, queueOut):
+def update(window, values, queueOut, robots):
     # to effectively clear queue - do two stage message scanning
 
     inputDictionary = dict()
@@ -154,16 +184,23 @@ def update(window, queueOut):
     mapUpdated = False # if the map has been updated and needs to be redrawn
 
     for topic in inputDictionary:
+        #set the location of the bot
+
+        #get the target robot/station
+        target = str(topic).split("$")[0]
+
+        #if target is a station - see if its the selected on
+        if(target == values["SelectedStation"]):
+            #change the target frame to the selected station window
+            target = "SelectedStation"
+
         if("bat" in topic):
-            #get the target robot
-            target = str(topic).split("$")[0]
-            
+
             #update battery voltage display
             window[target + "BatteryVoltage"].update(value=f'{inputDictionary[topic]:0,.2f}')
 
         if("connectionStatus" in topic):
-            #get the target robot
-            target = str(topic).split("$")[0]
+            #set the robot's connect status
 
             #link value to color
             #2 - unknown = white
@@ -185,8 +222,7 @@ def update(window, queueOut):
             window[target + "connectionStatus"].update(circle_color = color)
 
         if("commandStatus" in topic):
-            #get the target robot
-            target = str(topic).split("$")[0]
+            #set the robot's status on the command progress bar
 
             match inputDictionary[topic]:
                 case 0:
@@ -206,7 +242,6 @@ def update(window, queueOut):
         
         if("localizationStatus" in topic):
             #set the status of the localization radio on the displa
-            target = str(topic).split("$")[0]
 
             match inputDictionary[topic]:
                 case 0:
@@ -221,13 +256,12 @@ def update(window, queueOut):
             mapUpdated = True
 
         if("locationCurrent" in topic):
-            #set the location of the bot
-            target = str(topic).split("$")[0]
+            #set the robot's location
             botLocationsGUI[target] = inputDictionary[topic]
-             
+            
             #update the origin for the route setter for the particular bot's frame
             window[target + "RouteFrom"].update(value=inputDictionary[topic])
-                       
+                    
             #mark the map to be updated
             mapUpdated = True
 

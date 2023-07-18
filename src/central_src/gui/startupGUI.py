@@ -29,6 +29,7 @@ def createStartupGui(queueIn, queueOut, killQueue):
 
 def monitorStartUpGUI(window, queueIn, queueOut, killQueue):
     connectedBots = []
+    connectedStations = []
 
     while(True):
         #sequence that allows program to gracefully exit
@@ -52,18 +53,32 @@ def monitorStartUpGUI(window, queueIn, queueOut, killQueue):
             connection = queueIn.get()
             #make the message more friendly
             connectionInfo = str(connection).split("$")
-            if(len(connectionInfo) >= 3):
-                connectionString = connectionInfo[1] + ": " + connectionInfo[0] + "  " + connectionInfo[2]
+            if(len(connectionInfo) >= 5):
+                connectionString =connectionInfo[4] + " --- " + connectionInfo[1] + ": " + connectionInfo[0] + "  " + connectionInfo[2]
 
                 window["startupOutput"].print(str(connectionString))
                         
-                connectedBots.append(str(connectionInfo[1]))
+                if(connectionInfo[4] == "bot"):
+                    #connection is bot
+                    connectedBots.append(str(connectionInfo[1]))
+
+                elif(connectionInfo[4] == "station"):
+                    #connection is station
+                    connectedStations.append(str(connectionInfo[1]))
+
+                else:
+                    #somethings wrong
+                    print("Cannot connect unknown connection type of " + connectionInfo[4])
 
                 #update bot counter
                 window["connectedCount"].update(value=str(len(connectedBots)))
+            else: 
+                #somethings missing
+                print("Invalid connection information: " + connectionInfo)
 
         
     window.close()
 
-    return connectedBots
-    
+    return connectedBots, connectedStations
+
+

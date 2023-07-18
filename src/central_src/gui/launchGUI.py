@@ -20,7 +20,7 @@ def launchGUI(queueIn, queueOut):
 
 def runGUI(queueIn, queueOut, killQueue):
     print("Starting Startup Python GUI")
-    connectedBots = createStartupGui(queueOut, queueIn, killQueue)
+    connectedBots, connectedStations = createStartupGui(queueOut, queueIn, killQueue)
 
     print("Starting Runtime Python GUI.")
-    make(queueIn, queueOut, connectedBots, killQueue)
+    make(queueIn, queueOut, connectedBots, connectedStations, killQueue)

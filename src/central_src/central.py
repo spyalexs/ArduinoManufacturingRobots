@@ -47,27 +47,49 @@ def initialize():
     #launch the connection thread
     subThreadKills.append(launchBotConnector(connectionQueue))
 
-    connectedRobots = []
+    #if bots were connected during startup
+    botConnected = False
     while(queueInGUI.empty()):
         #wait for connections until menu closed
         time.sleep(.05)
 
         while(not connectionQueue.empty()):
             connection = connectionQueue.get()
+
+            #put bot in the startup gui
             queueOutGUI.put(connection)
 
             #get bot info from message
             connectionInfo = str(connection).split("$")
 
             #add bot overseerer to new connection
-            if(len(connectionInfo) >= 3):
-                overseerers.append(BotOverSeer(connectionInfo[0], connectionInfo[1], connectionInfo[2], queueOut, queuePacketOut, queueOutGUI))
-                connectedRobots.append(connectionInfo[0])
+            if(len(connectionInfo) >= 5):
+
+                #determine if new connection is bot or station
+                if(connectionInfo[4] == "bot"):
+                    #set up bot overseer
+                    overseerers.append(BotOverSeer(connectionInfo[0], connectionInfo[1], connectionInfo[2], queueOut, queuePacketOut, queueOutGUI))
+
+                    #mark that at least one bot was connected
+                    botConnected = True
+                elif(connectionInfo[4] == "station"):
+                    
+                    #send station to gui
+                    print("")
+
+                else:
+                    #something really isn't right
+                    print("Cannot connect to type: " + connectionInfo[4])
+
+            
+            else:
+                #somethings not right...
+                print("Invalid connection detected: " + connection)
 
     #see what to do next based on menu result
     startUpAction = queueInGUI.get()
 
-    if(str(startUpAction) == "Stop" or len(connectedRobots) == 0):
+    if(str(startUpAction) == "Stop" or botConnected == False):
         #if stop then return - kinda crashes but thats cool cause it should just stop
         return
 
