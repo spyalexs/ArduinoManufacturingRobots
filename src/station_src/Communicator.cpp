@@ -180,7 +180,7 @@ std::queue<String> Communicator::checkForPackets(){
 
         //check to see if packet is a standard message or icon bytes
         //weird error of not reading some messages later -- look here
-        if(String((char*)m_packetBuffer).indexOf("$$$") == -1 || String((char*)m_packetBuffer).indexOf("$$$") > 200){
+        if(!(String((char*)m_packetBuffer).indexOf(String(this->m_assignedUDPPort)) == 0)){
 
             //packet is icon
             if(mp_display != nullptr){

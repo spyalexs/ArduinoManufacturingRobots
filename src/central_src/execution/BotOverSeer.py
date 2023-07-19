@@ -1,13 +1,12 @@
 import time
-import threading
-import os
 
 from gui.GUIOutMessage import GUIOutMessage
-from imageStreaming.image2icon import image2icon
 from getConstants import getCommandLocalizationEffects
 from execution.RouteLeg import RouteLeg
 
-class BotOverSeer:
+from execution.OverSeer import OverSeer
+
+class BotOverSeer(OverSeer):
     # a class to monitor an individual bot's function on the controller end
     
     # for now, the bot overseer will be overriden by direct to bot messages!
@@ -18,51 +17,25 @@ class BotOverSeer:
     m_targetLocation = None # the location the bot is currently heading to 
     m_localizing = False # if the robot is currently being localized by the controller
 
+    #commands
     m_patience = .5 # how long to wait before attempting to reissue a command
     m_lastIssue = None
     m_written = False
     m_confirmed = False
     m_messageNumber = 1
 
-    m_status = 0 # keeps track of the bot's status
-
     m_commands = [] # list of raw commands to send to bot - ment for manually sending commands
     m_route = [] # list of steps sent to the bot - meant for going through a route
     
-    m_connectionTimeout = 5 # after five seconds of not hearing from bot, assume connection issues
-    m_connected = False
+    m_status = 0 # the connection status of the bot
 
-    m_iconPacketLocation = "" #the location of the icon packets
-    
     def __init__(self, macAddress, port, ip_address, queueToBots, queuePacketOut, queueToGUI):
-        self.m_port = port
-        self.m_mac = macAddress
-        self.m_ip = ip_address
-        self.m_queue = queueToBots
-        self.m_queuePacketOut = queuePacketOut
-        self.m_queueGui = queueToGUI
-
-        self.m_lastIssue = 0
-
-        self.m_lastConnection = time.time()
         self.m_localizationEffects = getCommandLocalizationEffects()
 
-        self.m_iconPacketLocation = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "imageStreaming", "packets")
+        super().__init__(macAddress, port, ip_address, queueToBots, queuePacketOut, queueToGUI)
 
-    def updateStatus(self, status, UpdateGui:bool = True):
-        self.m_status = status
-
-        print("My status is: " + str(status))
-
-        #send status to gui
-        self.sendStatusToGui(status)
-
-        #also clear the patience timer so next command is immediate
-        self.m_lastIssue = 0
-
-        if(UpdateGui):
-            #update the connection on the gui
-            self.sendConnectionStatusToGui()
+        #specify that this is a bot overseer
+        self.m_type = "bot"
 
     def externalSentMessage(self, characteristic, value):
         #TODO - implement this via publisher
@@ -82,7 +55,21 @@ class BotOverSeer:
             
             #if doing nothing allow command to pass through
             return False # block the message - only messages from the overseer may reach the bot
+        
+    def updateStatus(self, status, UpdateGui:bool = True):
+        self.m_status = status
 
+        print("My status is: " + str(status))
+
+        #send status to gui
+        self.sendCommandStatusToGui(status)
+
+        #also clear the patience timer so next command is immediate
+        self.m_lastIssue = 0
+
+        if(UpdateGui):
+            #update the connection on the gui
+            self.sendConnectionStatusToGui()
 
     def issueCommand(self, command):
         #if no command sequence already being ran, add a sequence to be ran
@@ -90,7 +77,7 @@ class BotOverSeer:
         #special abort case
         if(command == 255):
             #the current sequence needs to be aborted 
-            self.sendMessageToBot(self.m_port + "$commandIssue$255")
+            self.sendMessageToOverseen(self.m_port + "$commandIssue$255")
             
             #note that this breaks the localization tracking
             self.m_localizing = False
@@ -115,7 +102,6 @@ class BotOverSeer:
         else:
             print("Failed to add new command to bot: " + str(self.m_port) + ". The command/route queue is already full.")
 
-
     def issueRoute(self, route):
         if(not self.m_localizing):
             print("Cannot execute route, robot: " + self.m_port + " is not localizing. Set location to begin localizing")
@@ -132,25 +118,25 @@ class BotOverSeer:
         else:
             print("Failed to add new command to bot: " + str(self.m_port) + ". The command/route queue is already full.")
 
-
-
     def cycle(self):
         #check connection status
-        if(self.m_lastConnection + self.m_connectionTimeout < time.time()):
-            if(self.m_connected):
-                self.m_connected = False
+        #run super cycle
+        previousConnectionState = self.m_connected
 
-                #update information on the gui
-                self.updateStatus(0)
+        super().cycle()
 
-                #tell the gui to update the connection only if it has changed
-                self.sendConnectionStatusToGui()
+        #if connection status has changed
+        if(not self.m_connected == previousConnectionState):
+            #update information on the gui
+            self.updateStatus(0)
 
+        if(self.m_connected):
             #if disconnected, clear all commands
             self.m_commands = []
                                     
             self.m_written = False
             self.m_confirmed = False
+        
 
         #check the bots status
         if(self.m_status == 255):
@@ -179,7 +165,7 @@ class BotOverSeer:
                     self.m_confirmed = False #command has not yet been confirmed
 
                     #write command to bot
-                    self.sendMessageToBot(self.m_port + "$commandIssue$" + str(self.m_commands[0].m_step))
+                    self.sendMessageToOverseen(self.m_port + "$commandIssue$" + str(self.m_commands[0].m_step))
 
                     #note the target location for localization purposes
                     self.m_targetLocation = self.m_commands[0].m_endingLocation
@@ -197,20 +183,15 @@ class BotOverSeer:
 
 
                 #issue confirmation
-                self.sendMessageToBot(self.m_port + "$commandIssue$" + str(253))
+                self.sendMessageToOverseen(self.m_port + "$commandIssue$" + str(253))
         elif(self.m_status == 2):
             #set the robot's location to the in progress point
             self.setLocation(self.m_progressLocation, Clearing=False)
 
 
-    def sendStatusToGui(self, status):
+    def sendCommandStatusToGui(self, status):
         #put a gui message in the GUI queue
         message = GUIOutMessage(self.m_port, "commandStatus", status)
-        self.m_queueGui.put(message)
-
-    def sendConnectionStatusToGui(self):
-        #put a gui message in the GUI queue
-        message = GUIOutMessage(self.m_port, "connectionStatus", int(self.m_connected))
         self.m_queueGui.put(message)
 
     def sendLocalizationStatusToGui(self):
@@ -223,15 +204,11 @@ class BotOverSeer:
         message = GUIOutMessage(self.m_port, "locationCurrent", self.m_currentLocation)
         self.m_queueGui.put(message)
 
-    def sendMessageToBot(self, message):
-        #send a message to the bot
-        self.m_queue.put(self.m_ip + ":" + message)
-
-    def sendInitialStateToGUI(self):
+    def sendInitialBotStateToGUI(self):
         #send the initial state of the robot to the gui... this is needed because the gui is brought up significantly after the overseers
-        
-        #connection
-        self.sendConnectionStatusToGui()
+
+        #super
+        super().sendInitialStateToGUI()
 
         #location
         self.sendLocationToGui()
@@ -265,61 +242,7 @@ class BotOverSeer:
             #tell the gui that the robot is now localizing
             self.sendLocalizationStatusToGui()
 
-    def connectionHeard(self):
-        if(not self.m_connected):
-            self.m_connected = True
 
-            #tell the gui to update the connection only if it has changed
-            self.sendConnectionStatusToGui()
-
-        #log that a connection was heard from the bot
-        self.m_lastConnection = time.time()
-
-    def sendPacket(self, value):
-        #open the file corrosponding to the packet
-        try:
-            #read in packet
-            packetFile = open(os.path.join(self.m_iconPacketLocation, value + ".bin"), "rb")
-            packetBytes = packetFile.read()
-
-            #send packet and recieve address to output queue
-            self.m_queuePacketOut.put(((self.m_ip, int(self.m_port)), packetBytes))
-
-        except FileNotFoundError:
-            print("Packet: " + str(value) + " is being generated!")
-
-            #split value into icon name, size and packet number
-            
-            iconGenerationThread = threading.Thread(target=self.generateAndSendPacket, args=(value,))
-            iconGenerationThread.daemon = True
-            iconGenerationThread.start()
-        
-    def generateAndSendPacket(self, value):
-        #icon hasn't been generated yet, do this now
-
-        valueArray = value.split("_")
-
-        if(len(valueArray) != 3):
-            return
-
-        try:
-            image2icon(valueArray[0], int(valueArray[1]))
-
-            try:
-                #read in packet
-                packetFile = open(os.path.join(self.m_iconPacketLocation, value + ".bin"), "rb")
-                packetBytes = packetFile.read()
-
-                print("Sending to publisher")
-
-                #send packet and recieve address to output queue
-                self.m_queuePacketOut.put(((self.m_ip, int(self.m_port)), packetBytes))
-
-            except FileNotFoundError:
-                print("Attempted to generate packet but unexpectedly failed!") 
-
-        except:
-            print("Failed to generate: " + valueArray[0] + "!")
 
 
             

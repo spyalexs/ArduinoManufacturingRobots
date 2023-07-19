@@ -11,9 +11,11 @@ from publishToBot import launchPacketPublisher
 from handleMessage import handleBotMessage
 from gui.launchGUI import launchGUI
 from execution.BotOverSeer import BotOverSeer
+from execution.OverSeer import OverSeer
+from execution.StationOverSeer import StationOverSeer
 from execution.connectBots import launchBotConnector
 
-overseerers = [] # a list of commander classes that tell robots what to do
+overseers: OverSeer = [] # a list of commander classes that tell robots what to do
 subThreadKills = [] #a list of all the thread PIDS
 
 #this is the main thread for the central controller
@@ -68,15 +70,13 @@ def initialize():
                 #determine if new connection is bot or station
                 if(connectionInfo[4] == "bot"):
                     #set up bot overseer
-                    overseerers.append(BotOverSeer(connectionInfo[0], connectionInfo[1], connectionInfo[2], queueOut, queuePacketOut, queueOutGUI))
+                    overseers.append(BotOverSeer(connectionInfo[0], connectionInfo[1], connectionInfo[2], queueOut, queuePacketOut, queueOutGUI))
 
                     #mark that at least one bot was connected
                     botConnected = True
                 elif(connectionInfo[4] == "station"):
-                    
-                    #send station to gui
-                    print("")
-
+                    #set up station overseer
+                    overseers.append(StationOverSeer(connectionInfo[0], connectionInfo[1], connectionInfo[2], queueOut, queuePacketOut, queueOutGUI))
                 else:
                     #something really isn't right
                     print("Cannot connect to type: " + connectionInfo[4])
@@ -112,7 +112,7 @@ def cycle():
     
     handleGUIIn() #2
 
-    for overseer in overseerers: #3
+    for overseer in overseers: #3
         overseer.cycle()
 
     time.sleep(.05)
@@ -122,7 +122,7 @@ def handleMessagesIn():
     while(not queueIn.empty()):
        message = queueIn.get()
         #print(message)
-       handleBotMessage(message, queueOutGui, overseerers)
+       handleBotMessage(message, queueOutGui, overseers)
 
 def handleGUIIn():
     #processes messages from the GUI
@@ -131,29 +131,29 @@ def handleGUIIn():
         #handle all messages in the queu
         if message.m_direct == True:
             #if the message is ment to go directly to the robot
-            for overseer in overseerers:
+            for overseer in overseers:
                 if overseer.m_port == message.getDirectString()[0]:
-                    overseer.sendMessageToBot(message.getDirectString()[1])
+                    overseer.sendMessageToOverseen(message.getDirectString()[1])
         else:
             #if the message should first be controller processed
             if message.m_characteristic == "commandSequence":
                 
                 # find the bot it belongs to and give the commands
-                for overseer in overseerers:
+                for overseer in overseers:
                     if overseer.m_port == message.m_target:
                         overseer.issueRoute(message.m_value)
 
             if message.m_characteristic == "commandIssue":
                 # find the bot it belongs to and give the command
 
-                for overseer in overseerers:
+                for overseer in overseers:
                     if overseer.m_port == message.m_target:
                         overseer.issueCommand(message.m_value)
 
             if message.m_characteristic == "locationSet":
                 #set the location for of the robot in the locatalization system
 
-                for overseer in overseerers:
+                for overseer in overseers:
                     if overseer.m_port == message.m_target:
                         overseer.setLocation(message.m_value) 
 
@@ -162,8 +162,27 @@ def handleGUIIn():
                     #if the GUI has sent to central that it is ready
 
                     #have each overseerer send an initial status
-                    for overseer in overseerers:
+                    for overseer in overseers:
                         overseer.sendInitialStateToGUI()
+
+            if message.m_characteristic == "SetStationItem":
+                #gui has sent to set the item in a station
+
+                for overseer in overseers:
+                    if(overseer.m_type == "station" and overseer.m_port == message.m_target):
+                        overseer.setStationItem(message.m_value)
+                    else:
+                        print("Cannot set item type on: " + overseer.m_type)
+
+            if message.m_characteristic == "DispenseStationItem":
+                #gui has reqested that an item be transfered
+
+                for overseer in overseers:
+                    if(overseer.m_type == "station" and overseer.m_port == message.m_target):
+                        overseer.dispenseItem(message.m_value)
+                    else:
+                        print("Cannot set item type on: " + overseer.m_type)
+
                 
                  
 def sendMessageToBot(BotName, Characteristic, Value):

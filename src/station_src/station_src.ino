@@ -19,7 +19,6 @@ int updateFrequency = 1; //Hz
 
 bool inMenu = true; // wether or not the bot is in menu mode
  
-long startTime = 0;
 void setup(){
   Serial.begin(9600);
 
@@ -44,10 +43,6 @@ void setup(){
   Serial.println("I am a station!");
 
   delay(1000);
-
-  MC.m_display.updateItem("Mustang");
-
-  startTime = millis() + 50000;
 }
 
 void loop(){
@@ -68,12 +63,6 @@ void loop(){
   //cycle robot container
   MC.cycle();
   CO.endCycle();
-
-  if(startTime < millis()){
-    MC.m_display.beginTransfer("Test Bot");
-
-    startTime = startTime + 10000000;
-  }
 }
 
 void update(){
@@ -106,11 +95,20 @@ void listen(){
     String dataString = packet.substring(firstSeperator + 1);
     int secondSeperator = dataString.indexOf("$");
     String characteristic = dataString.substring(0, secondSeperator);
-    int value = dataString.substring(secondSeperator + 1).toInt();
 
-    if(characteristic == "transferProduct"){
+    if(characteristic == "setItem"){
+        //get item type from message
+        String item = dataString.substring(secondSeperator + 1);
 
-    } else if(characteristic == "stockPart")
+        //update item type in display
+        MC.m_display.updateItem(item);
+    } else if(characteristic == "dispenseItem"){
+        //get item type from message
+        String target = dataString.substring(secondSeperator + 1);
+
+        //transfer item to target
+        MC.m_display.beginTransfer(target);
+    }
 
     //remove packet after it has been handled
     incomingPackets.pop();

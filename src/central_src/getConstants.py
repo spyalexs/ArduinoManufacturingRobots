@@ -77,3 +77,14 @@ def getPacketBufferLength():
 
     return PACKET_BUFFER_LENGTH
 
+def getItemInformation():
+    #returns a dictionary and corrosponding item information
+    #syntax: [Item, (IconName, LoadTime, UnloadTime)]
+
+    items = {"civic": ("civic", 30, 30),
+                "mustang" : ("mustang", 40, 40),
+                "jeep" : ("jeep", 40, 30),
+             }
+    
+    return items
+

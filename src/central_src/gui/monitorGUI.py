@@ -2,7 +2,7 @@ import PySimpleGUI as sg
 import threading
 from PIL import Image, ImageTk
 
-from getConstants import getCommandKeys, getTheme
+from getConstants import getCommandKeys, getTheme, getItemInformation
 from gui.GUIInMessage import GUIInMessage
 from createRoute import route, getLocations
 from gui.map_display.displayMap import getBaseMap, drawBots
@@ -60,7 +60,14 @@ def make(queueIn, queueOut, robots, stations, killQueue):
     #make station frame
     if(len(stations) >= 1):
         #if a station has been connected -- add pannel
-        stationFrame = sg.Frame("Stations", getStationFrame(stations, robots, ["civic", "mustang", "jeep"]))
+
+        #process item keys
+        itemKeys = []
+        for key in getItemInformation().keys():
+            itemKeys.append(key)
+
+
+        stationFrame = sg.Frame("Stations", getStationFrame(stations, robots, itemKeys))
 
         #if there is space in the rows, add the station frame to a not full row
         if not rowsFull:
@@ -111,8 +118,8 @@ def getStationFrame(connectedStations, connectedRobots, items):
     stationFrameLayout = [
         [sg.Text("Station"), sg.Combo(connectedStations, enable_events=False, key="SelectedStation", default_value=connectedStations[0])],
         [sg.Text("Item"), sg.Combo(items, enable_events=False, key="StationItem"), sg.Button("Set Item", key="SetStationItem", enable_events=True)],
-        [sg.Text("Transfer To", key="Station Transfer"), sg.Combo(connectedRobots, enable_events=False, key="StationTransferTarget"), sg.Button("Transfer", key="TransferStation Item", enable_events=True)],
-        [sg.Text("Battery Voltage: "), sg.Text("0.00", key="SelectedStationBatteryVoltage"), sg.Text("Connection Status:"), sg.Radio("", "1", key="SelectedStationConnectionStatus", circle_color="white")]
+        [sg.Text("Transfer To", key="Station Transfer"), sg.Combo(connectedRobots, enable_events=False, key="StationTransferTarget"), sg.Button("Transfer", key="TransferStationItem", enable_events=True)],
+        [sg.Text("Battery Voltage: "), sg.Text("0.00", key="SelectedStationBatteryVoltage"), sg.Text("Connection Status:"), sg.Radio("", "1", key="SelectedStationconnectionStatus", circle_color="white")]
     ]
 
     return stationFrameLayout
@@ -168,6 +175,20 @@ def handleEvents(event, values, window, queueIn):
         #Set the location of a robot
         if(not values[event.split("SetLocation")[0] + "LocationMenu"] == ""):
             queueIn.put(GUIInMessage(event.split("SetLocation")[0], "locationSet", values[event.split("SetLocation")[0] + "LocationMenu"], Direct=False))
+
+    if("SetStationItem" in event):
+        #set the item a station transfers
+        
+        if(not values["StationItem"] == ""):
+            queueIn.put(GUIInMessage(values["SelectedStation"], "SetStationItem", values["StationItem"], Direct=False))
+
+    if("TransferStationItem") in event:
+        #send or recieve an item from a bot
+
+        if(not values["StationTransferTarget"] == ""):
+            queueIn.put(GUIInMessage(values["SelectedStation"], "DispenseStationItem", values["StationTransferTarget"], Direct=False))
+
+
 
 def update(window, values, queueOut, robots):
     # to effectively clear queue - do two stage message scanning
