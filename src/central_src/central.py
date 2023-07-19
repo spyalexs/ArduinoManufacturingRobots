@@ -172,16 +172,28 @@ def handleGUIIn():
                     if(overseer.m_type == "station" and overseer.m_port == message.m_target):
                         overseer.setStationItem(message.m_value)
                     else:
-                        print("Cannot set item type on: " + overseer.m_type)
+                        if(overseer.m_port == message.m_target):
+                            print("Cannot set item type on: " + overseer.m_type)
 
             if message.m_characteristic == "DispenseStationItem":
-                #gui has reqested that an item be transfered
+                #gui has reqested that an item be transfered to bot
 
                 for overseer in overseers:
                     if(overseer.m_type == "station" and overseer.m_port == message.m_target):
                         overseer.dispenseItem(message.m_value)
                     else:
-                        print("Cannot set item type on: " + overseer.m_type)
+                        if(overseer.m_port == message.m_target):
+                            print("Cannot dispense item from: " + overseer.m_type)
+
+            if message.m_characteristic == "CollectStationItem":
+                #gui has requested that an item be transfered from bot
+
+                for overseer in overseers:
+                    if(overseer.m_type == "station" and overseer.m_port == message.m_target):
+                        overseer.collectItem(message.m_value)
+                    else:
+                        if(overseer.m_port == message.m_target):
+                            print("Cannot collect item on: " + overseer.m_type)
 
                 
                  

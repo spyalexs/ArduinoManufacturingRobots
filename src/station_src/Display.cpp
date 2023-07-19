@@ -475,28 +475,39 @@ bool Display::updateProgressBar(){
 }
 
 //begin an item transfer
-void Display::beginTransfer(String target){
+void Display::beginTransfer(bool recieving, String target){
     //set start time
     this->m_transferStartTime = millis() / 1000.0;
 
 
     this->m_jobQueue.push(DisplayJob(132));
-    this->updateTransferStatusLabel(false, target);
+    this->updateTransferStatusLabel(false, recieving, target);
     this->m_jobQueue.push(DisplayJob(130));
     this->m_jobQueue.push(DisplayJob(132));
-    this->updateTransferStatusLabel(true, target);
+    this->updateTransferStatusLabel(true, recieving, target);
 }
 
 //update transfer status label
-bool Display::updateTransferStatusLabel(bool finished, String target){
+bool Display::updateTransferStatusLabel(bool finished, bool recieving, String target){
     //if the transfer is finished
     if(finished){
-//write label
-        this->addWriteTextJob((DISPLAY_WIDTH + 15 +DISPLAY_HEIGHT - (65 + DISPLAY_TOP_BAR_HEIGHT + DISPLAY_BOTTOM_BAR_HEIGHT) - 144) / 2, DISPLAY_TOP_BAR_HEIGHT + 104, ILI9341_GREEN, 2, "Recieved By:");
+        //write label
+
+        if(recieving){
+            this->addWriteTextJob((DISPLAY_WIDTH + 15 +DISPLAY_HEIGHT - (65 + DISPLAY_TOP_BAR_HEIGHT + DISPLAY_BOTTOM_BAR_HEIGHT) - 144) / 2, DISPLAY_TOP_BAR_HEIGHT + 104, ILI9341_GREEN, 2, "Gotten From:");
+        }else{
+            this->addWriteTextJob((DISPLAY_WIDTH + 15 +DISPLAY_HEIGHT - (65 + DISPLAY_TOP_BAR_HEIGHT + DISPLAY_BOTTOM_BAR_HEIGHT) - 144) / 2, DISPLAY_TOP_BAR_HEIGHT + 104, ILI9341_GREEN, 2, "Recieved By:");
+        }
+
         this->addWriteTextJob((DISPLAY_WIDTH + 15 +DISPLAY_HEIGHT - (65 + DISPLAY_TOP_BAR_HEIGHT + DISPLAY_BOTTOM_BAR_HEIGHT) - target.length() * 12) / 2, DISPLAY_TOP_BAR_HEIGHT + 125, ILI9341_GREEN, 2, target);
     } else {
-        //write label
-        this->addWriteTextJob((DISPLAY_WIDTH + 15 + DISPLAY_HEIGHT - (65 + DISPLAY_TOP_BAR_HEIGHT + DISPLAY_BOTTOM_BAR_HEIGHT) - 144) / 2, DISPLAY_TOP_BAR_HEIGHT + 104, ILI9341_YELLOW, 2, "Transfer To:");
+        //write label   
+
+        if(recieving){
+            this->addWriteTextJob((DISPLAY_WIDTH + 15 + DISPLAY_HEIGHT - (65 + DISPLAY_TOP_BAR_HEIGHT + DISPLAY_BOTTOM_BAR_HEIGHT) - 144) / 2, DISPLAY_TOP_BAR_HEIGHT + 104, ILI9341_YELLOW, 2, "Obtain From:");
+        }else{
+            this->addWriteTextJob((DISPLAY_WIDTH + 15 + DISPLAY_HEIGHT - (65 + DISPLAY_TOP_BAR_HEIGHT + DISPLAY_BOTTOM_BAR_HEIGHT) - 144) / 2, DISPLAY_TOP_BAR_HEIGHT + 104, ILI9341_YELLOW, 2, "Transfer To:");
+        } 
         this->addWriteTextJob((DISPLAY_WIDTH + 15 + DISPLAY_HEIGHT - (65 + DISPLAY_TOP_BAR_HEIGHT + DISPLAY_BOTTOM_BAR_HEIGHT) - target.length() * 12) / 2, DISPLAY_TOP_BAR_HEIGHT + 125, ILI9341_YELLOW, 2, target);
     }
 

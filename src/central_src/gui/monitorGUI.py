@@ -118,7 +118,7 @@ def getStationFrame(connectedStations, connectedRobots, items):
     stationFrameLayout = [
         [sg.Text("Station"), sg.Combo(connectedStations, enable_events=False, key="SelectedStation", default_value=connectedStations[0])],
         [sg.Text("Item"), sg.Combo(items, enable_events=False, key="StationItem"), sg.Button("Set Item", key="SetStationItem", enable_events=True)],
-        [sg.Text("Transfer To", key="Station Transfer"), sg.Combo(connectedRobots, enable_events=False, key="StationTransferTarget"), sg.Button("Transfer", key="TransferStationItem", enable_events=True)],
+        [sg.Text("Transfer", key="Station Transfer"), sg.Combo(["To", "From"], enable_events=False, key="StationTransferDirection"), sg.Combo(connectedRobots, enable_events=False, key="StationTransferTarget"), sg.Button("Transfer", key="TransferStationItem", enable_events=True)],
         [sg.Text("Battery Voltage: "), sg.Text("0.00", key="SelectedStationBatteryVoltage"), sg.Text("Connection Status:"), sg.Radio("", "1", key="SelectedStationconnectionStatus", circle_color="white")]
     ]
 
@@ -185,8 +185,16 @@ def handleEvents(event, values, window, queueIn):
     if("TransferStationItem") in event:
         #send or recieve an item from a bot
 
-        if(not values["StationTransferTarget"] == ""):
-            queueIn.put(GUIInMessage(values["SelectedStation"], "DispenseStationItem", values["StationTransferTarget"], Direct=False))
+        if(not values["StationTransferTarget"] == "" and not values["StationTransferDirection"] == ""):
+            
+            #transfer direction
+            if(values["StationTransferDirection"] == "To"):
+                #item to bot from station
+                queueIn.put(GUIInMessage(values["SelectedStation"], "DispenseStationItem", values["StationTransferTarget"], Direct=False))
+            else:
+                #item from bot to station
+                queueIn.put(GUIInMessage(values["SelectedStation"], "CollectStationItem", values["StationTransferTarget"], Direct=False))
+
 
 
 

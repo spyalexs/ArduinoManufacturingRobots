@@ -103,11 +103,16 @@ void listen(){
         //update item type in display
         MC.m_display.updateItem(item);
     } else if(characteristic == "dispenseItem"){
-        //get item type from message
+        //get target bot from message
         String target = dataString.substring(secondSeperator + 1);
 
         //transfer item to target
-        MC.m_display.beginTransfer(target);
+        MC.m_display.beginTransfer(true, target);
+    } else if (characteristic == "recieveItem"){
+      //get target bot from message
+      String target = dataString.substring(secondSeperator + 1);
+
+      MC.m_display.beginTransfer(true, target);
     }
 
     //remove packet after it has been handled

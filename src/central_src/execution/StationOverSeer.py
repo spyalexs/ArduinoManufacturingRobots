@@ -11,7 +11,6 @@ class StationOverSeer(OverSeer):
 
         self.m_type = "station"
 
-
     def cycle(self):
         #call super cycle to maintain connection
 
@@ -34,3 +33,8 @@ class StationOverSeer(OverSeer):
 
         #tell station to dispense an item to a certain bot
         self.sendMessageToOverseen(self.m_port + "$dispenseItem$" + target)
+
+    def collectItem(self, target):
+
+        #tell station to recieve an item from a certain bot
+        self.sendMessageToOverseen(self.m_port + "$recieveItem$" + target)

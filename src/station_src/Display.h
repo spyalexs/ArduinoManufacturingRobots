@@ -125,10 +125,10 @@ class Display{
         bool updateProgressBar();
 
         //begin an item transfer
-        void beginTransfer(String target);
+        void beginTransfer(bool recieving, String target);
 
         //update transfer status label
-        bool updateTransferStatusLabel(bool finished, String target);
+        bool updateTransferStatusLabel(bool finished, bool recieving, String target);
 
         //wipe transfrer status label
         bool wipeTransferStatusLabel();
