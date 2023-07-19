@@ -46,13 +46,17 @@ def make(queueIn, queueOut, robots, stations, killQueue):
     if(counter % 3 == 0):
         rowsFull = True
     
+    #process item keys
+    itemKeys = []
+    for key in getItemInformation().keys():
+        itemKeys.append(key)
 
     for robotRow in robotRows:
         #each row of robot pannels
         robotRowLayout = []
         for robot in robotRow:
             #get frame for each robot
-            frameLayout= getRobotFrameLayout(robot)
+            frameLayout= getRobotFrameLayout(robot, itemKeys)
             robotRowLayout.append(sg.Frame(robot, frameLayout))
 
         robotsFrameLayout.append(robotRowLayout)
@@ -60,12 +64,6 @@ def make(queueIn, queueOut, robots, stations, killQueue):
     #make station frame
     if(len(stations) >= 1):
         #if a station has been connected -- add pannel
-
-        #process item keys
-        itemKeys = []
-        for key in getItemInformation().keys():
-            itemKeys.append(key)
-
 
         stationFrame = sg.Frame("Stations", getStationFrame(stations, robots, itemKeys))
 
@@ -92,9 +90,9 @@ def make(queueIn, queueOut, robots, stations, killQueue):
     queueIn.put(GUIInMessage("All", "ready", True, Direct=False))
 
     #keeps an eye on the gui for event and such as it runs
-    monitor(window, queueIn, queueOut, killQueue, robots)
+    monitor(window, queueIn, queueOut, killQueue, robots, stations)
 
-def getRobotFrameLayout(name):
+def getRobotFrameLayout(name, items):
     #do a little processing to format the keys correctly
     commands = []
     for key in commandKeys.keys():
@@ -108,6 +106,8 @@ def getRobotFrameLayout(name):
         [sg.Text("     Status"), sg.ProgressBar(100, size=(13,17), key=(str(name) + "CommandProgress")), sg.Button("Abort", key=(str(name)) + "AbortCommand", enable_events=True)],
         [sg.Text("From:"), sg.Input("", key=(str(name) + "RouteFrom"), size=(10,7)), sg.Text("To:"), sg.Input("", key=(str(name) + "RouteTo"), size=(10,7)), sg.Button("Route", key=(str(name) + "Route"), enable_events=True)],
         [sg.Text("Location"), sg.Combo(locations, enable_events=False, size=(9,7), key=(str(name) + "LocationMenu")), sg.Button("Set", key=(str(name) + "SetLocation"), enable_events=True), sg.Text(" Localizing:"), sg.Radio("","2", key=str(name)+"IsLocalizing", circle_color="red")],
+        [sg.Text("Item"), sg.Combo(items, enable_events=False, key=(str(name) + "ItemToTransfer")), sg.Button("Add", enable_events=True, key=(str(name) + "AddItem")), sg.Button("Remove", enable_events=True, key=(str(name) + "RemoveItem"))],
+        [sg.Text("      Capacity"), sg.Combo(["2","4","6","8"], enable_events=False, key=(str(name) + "CapacityMenu")), sg.Button("Set", enable_events=True, key=(str(name) + "SetItemCapacity"))], 
         [sg.Text("Battery Voltage: "), sg.Text("0.00", key=str(name) + "BatteryVoltage"), sg.Text("Connection Status:"), sg.Radio("", "1", key=str(name) + "connectionStatus", circle_color="white")]]
     
     return robotFrameLayout
@@ -124,7 +124,7 @@ def getStationFrame(connectedStations, connectedRobots, items):
 
     return stationFrameLayout
 
-def monitor(window, queueIn, queueOut, killQueue, robots):
+def monitor(window, queueIn, queueOut, killQueue, robots, stations):
     #monitor the Gui for events
 
     while True:  
@@ -144,19 +144,25 @@ def monitor(window, queueIn, queueOut, killQueue, robots):
             handleEvents(event, values, window, queueIn)
 
         #update the attributes displayed on the window
-        update(window, values, queueOut, robots)
+        update(window, values, queueOut, robots, stations)
     
 def handleEvents(event, values, window, queueIn):
     #handle the gui events
 
+    print(event)
+
     if("AbortCommand" in event):
         #abort the command currently running
         queueIn.put(GUIInMessage(event.split("AbortCommand")[0], "commandIssue", 255, Direct=False))  
+
+        return 
     elif("Command" in event):       
         #publish command to bot
         if(values[event + "Menu"] != ''):
 
-            queueIn.put(GUIInMessage(event.split("Command")[0], "commandIssue", commandKeys[values[event + "Menu"]], Direct=False))   
+            queueIn.put(GUIInMessage(event.split("Command")[0], "commandIssue", commandKeys[values[event + "Menu"]], Direct=False)) 
+
+        return  
 
     if("Route" in event):
         #run a route between two points
@@ -169,12 +175,15 @@ def handleEvents(event, values, window, queueIn):
                 args=(values[event.split("Route")[0] + "RouteFrom"], values[event.split("Route")[0] + "RouteTo"], event.split("Route")[0], queueIn))
             routingThread.isDaemon=True
             routingThread.run()
-        
+    
+        return
     
     if("SetLocation" in event):
         #Set the location of a robot
         if(not values[event.split("SetLocation")[0] + "LocationMenu"] == ""):
             queueIn.put(GUIInMessage(event.split("SetLocation")[0], "locationSet", values[event.split("SetLocation")[0] + "LocationMenu"], Direct=False))
+
+        return
 
     if("SetStationItem" in event):
         #set the item a station transfers
@@ -182,7 +191,9 @@ def handleEvents(event, values, window, queueIn):
         if(not values["StationItem"] == ""):
             queueIn.put(GUIInMessage(values["SelectedStation"], "SetStationItem", values["StationItem"], Direct=False))
 
-    if("TransferStationItem") in event:
+        return
+
+    if("TransferStationItem" in event):
         #send or recieve an item from a bot
 
         if(not values["StationTransferTarget"] == "" and not values["StationTransferDirection"] == ""):
@@ -195,10 +206,40 @@ def handleEvents(event, values, window, queueIn):
                 #item from bot to station
                 queueIn.put(GUIInMessage(values["SelectedStation"], "CollectStationItem", values["StationTransferTarget"], Direct=False))
 
+        return
 
+    if("SetItemCapacity" in event):
+        #set a bot's capacity for holding items
+        target = event.split("SetItemCapacity")[0]
 
+        if(not values[target + "CapacityMenu"] == ""):
+            #send message to bot overseer
+            queueIn.put(GUIInMessage(target, "SetItemCapacity", values[target + "CapacityMenu"], False))
 
-def update(window, values, queueOut, robots):
+        return
+    
+    if("AddItem" in event):
+        #add item to bot
+
+        target = event.split("AddItem")[0]
+
+        if(not values[target + "ItemToTransfer"] == ""):
+
+            queueIn.put(GUIInMessage(target, "AddItem", values[target + "ItemToTransfer"], False))
+
+        return
+    
+    if("RemoveItem" in event):
+        #remove item from bot
+
+        target = event.split("RemoveItem")[0]
+
+        if(not values[target + "ItemToTransfer"] == ""):
+            queueIn.put(GUIInMessage(target, "RemoveItem", values[target + "ItemToTransfer"], False))
+
+        return
+
+def update(window, values, queueOut, robots, stations):
     # to effectively clear queue - do two stage message scanning
 
     inputDictionary = dict()
@@ -219,9 +260,10 @@ def update(window, values, queueOut, robots):
         target = str(topic).split("$")[0]
 
         #if target is a station - see if its the selected on
-        if(target == values["SelectedStation"]):
-            #change the target frame to the selected station window
-            target = "SelectedStation"
+        if not (len(stations) == 0):
+            if(target == values["SelectedStation"]):
+                #change the target frame to the selected station window
+                target = "SelectedStation"
 
         if("bat" in topic):
 

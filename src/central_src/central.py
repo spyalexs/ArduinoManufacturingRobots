@@ -135,29 +135,34 @@ def handleGUIIn():
                 if overseer.m_port == message.getDirectString()[0]:
                     overseer.sendMessageToOverseen(message.getDirectString()[1])
         else:
+
+            #find correct overseer to handle message
+            targetOverseer = None
+            for overseer in overseers:
+                if(overseer.m_port == message.m_target):
+                    targetOverseer = overseer
+
+            if(targetOverseer == None and not message.m_target == "All"):
+                print("Invalid GUI Message, target: " + message.m_target + " cannot be found!")
+                return 
+
             #if the message should first be controller processed
             if message.m_characteristic == "commandSequence":
                 
                 # find the bot it belongs to and give the commands
-                for overseer in overseers:
-                    if overseer.m_port == message.m_target:
-                        overseer.issueRoute(message.m_value)
+                    targetOverseer.issueRoute(message.m_value)
 
-            if message.m_characteristic == "commandIssue":
+            elif message.m_characteristic == "commandIssue":
                 # find the bot it belongs to and give the command
 
-                for overseer in overseers:
-                    if overseer.m_port == message.m_target:
-                        overseer.issueCommand(message.m_value)
+                targetOverseer.issueCommand(message.m_value)
 
-            if message.m_characteristic == "locationSet":
+            elif message.m_characteristic == "locationSet":
                 #set the location for of the robot in the locatalization system
 
-                for overseer in overseers:
-                    if overseer.m_port == message.m_target:
-                        overseer.setLocation(message.m_value) 
+                targetOverseer.setLocation(message.m_value) 
 
-            if message.m_characteristic == "ready":
+            elif message.m_characteristic == "ready":
                 if(message.m_value == True):
                     #if the GUI has sent to central that it is ready
 
@@ -165,35 +170,59 @@ def handleGUIIn():
                     for overseer in overseers:
                         overseer.sendInitialStateToGUI()
 
-            if message.m_characteristic == "SetStationItem":
+            elif message.m_characteristic == "SetStationItem":
                 #gui has sent to set the item in a station
 
-                for overseer in overseers:
-                    if(overseer.m_type == "station" and overseer.m_port == message.m_target):
-                        overseer.setStationItem(message.m_value)
+                    if(targetOverseer.m_type == "station"):
+                        targetOverseer.setStationItem(message.m_value)
                     else:
-                        if(overseer.m_port == message.m_target):
-                            print("Cannot set item type on: " + overseer.m_type)
+                        print("Cannot set item type on: " + targetOverseer.m_type)
 
-            if message.m_characteristic == "DispenseStationItem":
+            elif message.m_characteristic == "DispenseStationItem":
                 #gui has reqested that an item be transfered to bot
 
-                for overseer in overseers:
-                    if(overseer.m_type == "station" and overseer.m_port == message.m_target):
-                        overseer.dispenseItem(message.m_value)
-                    else:
-                        if(overseer.m_port == message.m_target):
-                            print("Cannot dispense item from: " + overseer.m_type)
+                if(targetOverseer.m_type == "station" and targetOverseer.m_port == message.m_target):
+                    targetOverseer.dispenseItem(message.m_value)
+                else:
+                    print("Cannot dispense item from: " + targetOverseer.m_type)
 
-            if message.m_characteristic == "CollectStationItem":
+            elif message.m_characteristic == "CollectStationItem":
                 #gui has requested that an item be transfered from bot
 
-                for overseer in overseers:
-                    if(overseer.m_type == "station" and overseer.m_port == message.m_target):
-                        overseer.collectItem(message.m_value)
+                    if(targetOverseer.m_type == "station"):
+                        targetOverseer.collectItem(message.m_value)
                     else:
-                        if(overseer.m_port == message.m_target):
-                            print("Cannot collect item on: " + overseer.m_type)
+                        print("Cannot collect item on: " + targetOverseer.m_type)
+
+            elif message.m_characteristic == "SetItemCapacity":
+                #gui that bot capacity has been sent
+                
+                if(targetOverseer.m_type == "bot"):
+                    #set the number of items in the overseer
+                    targetOverseer.setNumberOfItemSlots(message.m_value)
+                else:
+                    print("Cannot set item capacity on type: " + targetOverseer.m_type)
+
+            elif message.m_characteristic == "AddItem":
+                #gui has requested that an item be added to the bot
+
+                if(targetOverseer.m_type == "bot"):
+                    #set the number of items in the overseer
+                    targetOverseer.addItem(message.m_value)
+                else:
+                    print("Cannot add item to type: " + targetOverseer.m_type)
+
+            elif message.m_characteristic == "RemoveItem":
+                #gui has requested that an item be removed from the bot
+
+                if(targetOverseer.m_type == "bot"):
+                    #set the number of items in the overseer
+                    targetOverseer.removeItem(message.m_value)
+                else:
+                    print("Cannot remove item from type: " + targetOverseer.m_type)
+            else:
+                #note the message characteristic cannot be processed
+                print("Cannot process message, unhandled characteristic: " + message.m_characteristic)
 
                 
                  

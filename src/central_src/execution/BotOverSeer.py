@@ -29,6 +29,9 @@ class BotOverSeer(OverSeer):
     
     m_status = 0 # the connection status of the bot
 
+    m_itemSlots = None # the number of item slots on the robot
+    m_itemsOnBot = [] # a list of the items on the bot
+
     def __init__(self, macAddress, port, ip_address, queueToBots, queuePacketOut, queueToGUI):
         self.m_localizationEffects = getCommandLocalizationEffects()
 
@@ -242,10 +245,48 @@ class BotOverSeer(OverSeer):
             #tell the gui that the robot is now localizing
             self.sendLocalizationStatusToGui()
 
+    def setNumberOfItemSlots(self, numberOfSlots):
+        #if the number of slots has changed
+        if(not self.m_itemSlots == numberOfSlots):
 
+            self.m_itemSlots = numberOfSlots
 
+            #send message to bot to set the number of item slots
+            self.sendMessageToOverseen(self.m_port + "$SetSlotCount$" + numberOfSlots)
 
-            
-
+            #clear items on bot
+            self.m_itemsOnBot = []
         
-    
+    def addItem(self, itemType):
+        #check to ensure the bot's item slots have been configured
+        if(self.m_itemSlots == None):
+            print("The bot's item slots must be configured before adding items: " + self.m_port)
+            return
+        
+        #check to make sure the bot is has space for the item
+        if(len(self.m_itemsOnBot) >= int(self.m_itemSlots)):
+            print("Cannot add item: " + str(itemType) + ". The bot: " + self.m_port + " is at capacity.")
+            return
+
+        #add item to the overseer's list of items on the bot
+        self.m_itemsOnBot.append(itemType)
+
+        #add item to bot
+        self.sendMessageToOverseen(self.m_port + "$AddItem$" + itemType)
+
+    def removeItem(self, itemType):
+        #check to ensure the bot's item slots have been configured
+        if(self.m_itemSlots == None):
+            print("The bot's item slots must be configured before adding items: " + self.m_port)
+            return
+        
+        #check to make sure the bot is has space for the item
+        if not (itemType in self.m_itemsOnBot):
+            print("Cannot remove item: " + str(itemType) + ". It is not on bot: " + self.m_port)
+            return
+
+        #add item to the overseer's list of items on the bot
+        self.m_itemsOnBot.remove(itemType)
+
+        #add item to bot
+        self.sendMessageToOverseen(self.m_port + "$RemoveItem$" + itemType)
