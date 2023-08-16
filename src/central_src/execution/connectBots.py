@@ -3,10 +3,10 @@ from threading import Thread
 import queue
 import time
 
-from getConstants import getConnectionPorts, getPacketBufferLength
+from getConstants import getBotConnectionPorts, getPacketBufferLength, getStationConnectionPorts
 
 try:
-    LOCAL_IP = socket.gethostbyname("Alexsmen.mshome.net")
+    LOCAL_IP = socket.gethostbyname("Alexsmen")
 except socket.gaierror:
     print("Could not find LOCALIP, is the Hotspot/Network up?")
     quit()
@@ -37,7 +37,10 @@ def launchBotConnector(connectorQueue):
 
 
 def connectBots(connectorQueue, killQueue):
-    lowerComPort, higherComPort = getConnectionPorts()
+
+    lowerBotComPort, higherBotComPort = getBotConnectionPorts()
+    lowerStationComPort, higherStationComPort = getStationConnectionPorts()
+
     #create a dictionary of known MAC addresses and the ports the bot has been assigned to
     #allows for reconnections
     knownMACs = dict()
@@ -48,12 +51,13 @@ def connectBots(connectorQueue, killQueue):
     sock.bind((LOCAL_IP, CONNECTION_PORT))
     sock.settimeout(.01)
 
-    #the next port to be assigned
-    nextPort = lowerComPort
-
     bufferLength = getPacketBufferLength()
 
     searching = True
+
+    nextBotPort = lowerBotComPort
+    nextStationPort = lowerStationComPort
+
     while(searching):
 
         #sequence that allows program to gracefully exit
@@ -94,30 +98,48 @@ def connectBots(connectorQueue, killQueue):
                         except TimeoutError:
                             clearing = False
 
-                elif(nextPort <= higherComPort):
+                else:
                     #new connection
-                    knownMACs[macAddress] = nextPort
 
                     #determine wether connection is from a bot or station
                     if(BOT_CONNECTION_MESSAGE in str(message)):
+
+                        #check to see if there is space to connect the bot
+                        if(nextBotPort <= higherBotComPort):
+                            #if using the next port would be valid
+                            knownMACs[macAddress] = nextBotPort
+
+                            nextBotPort += 1
+                        else:
+                            #bot ports full
+                            print("Cannot connect bot, ports full!")
+
                         #connection from bot
                         print("Bot --- Connection from: " + macAddress + ". Assigning to port: " + str(knownMACs[macAddress]))
 
                         #send back to main thread to be added to bot overseer
-                        connectorQueue.put(macAddress + "$" + str(nextPort) + "$" + str(addr[0]) + "$" + str(addr[1]) + "$bot")
+                        connectorQueue.put(macAddress + "$" + str(knownMACs[macAddress]) + "$" + str(addr[0]) + "$" + str(addr[1]) + "$bot")
 
                     else:
+                        
+                        #check to see if there is space to connect the station
+                        if(nextStationPort <= higherStationComPort):
+                            #if using the next port would be valid
+                            knownMACs[macAddress] = nextStationPort
+
+                            nextStationPort += 1
+                        else:
+                            #bot ports full
+                            print("Cannot connect bot, ports full!")
                         #connection from station
                         print("Station --- Connection from: " + macAddress + ". Assigning to port: " + str(knownMACs[macAddress]))
 
                         #send back to main thread to be added to bot overseer
-                        connectorQueue.put(macAddress + "$" + str(nextPort) + "$" + str(addr[0]) + "$" + str(addr[1]) + "$station")
+                        connectorQueue.put(macAddress + "$" + str(knownMACs[macAddress]) + "$" + str(addr[0]) + "$" + str(addr[1]) + "$station")
 
                     #send back connection string
-                    message = bytes(CONNECTION_REPLY + str(nextPort) +"$$$", 'utf-8')
+                    message = bytes(CONNECTION_REPLY + str(knownMACs[macAddress]) +"$$$", 'utf-8')
                     sock.sendto(message, (addr[0], BOT_LISTENING_PORT))
-
-                    nextPort += 1
 
                     #stop any duplicate connections
                     time.sleep(1.0)
@@ -129,9 +151,6 @@ def connectBots(connectorQueue, killQueue):
                             sock.recv(bufferLength)
                         except TimeoutError:
                             clearing = False
-
-                else:
-                    print("Connection found but cannot establish: Out of valid COM ports.")
 
 
         except TimeoutError:

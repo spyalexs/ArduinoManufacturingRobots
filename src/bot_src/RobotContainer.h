@@ -2,10 +2,12 @@
 #define motioncontroller_h
 
 #include <ArduinoMotorCarrier.h>
+#include <Adafruit_MCP23X17.h>
 #include "Display.h"
+#include "Arduino.h"
 
 #define CONTAINER_ULTRASONIC_ACTIVE false
-#define CONTAINER_ENCODER_CLICK_MIN_TIME 500 //ms
+#define CONTAINER_ENCODER_CLICK_MIN_TIME 1000 //ms
 
 // a wrapper class around motion, allows for the easy utilization of subroutines and control methods
 
@@ -38,15 +40,17 @@ class RobotContainer{
     uint8_t m_intersectionPin;
     uint8_t m_codePin;
 
-    uint8_t m_encoderClickPin = 11;
-    uint8_t m_encoderCWFPin = 12;
-    uint8_t m_encoderCCWFPin = 12;
+    uint8_t m_encoderClickPin = 2;
+    uint8_t m_encoderCWFPin = 0;
+    uint8_t m_encoderCCWFPin = 1;
 
     uint8_t m_ultrasonicTriggerPin = 11;
     uint8_t m_ultrasonicEchoPin = 12;
     
     //robot display
     Display m_display;
+
+    Adafruit_MCP23X17* mp_gpio = nullptr;
 
     //class-wide constants
     double m_staleTime = 0.1; // the time it takes for control results to need to be refreshed
@@ -104,6 +108,11 @@ class RobotContainer{
     void cycleUltrasonic();
 
     void cycle();
+
+    //gpio
+    void setGPIOPointer(Adafruit_MCP23X17* gpio);
+
+    void BypassEncoder();
 };
 
 

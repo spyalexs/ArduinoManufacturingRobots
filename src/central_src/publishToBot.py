@@ -35,7 +35,7 @@ def publish(queueOut, queuePacketOut, killQueue):
                     address = messageArray[0]
                     message = messageArray[1]
    
-                    print(message)
+                    print("Message to bot: " + str(message))
 
                     messageBytes = bytes(message + "\0", "utf-8")
 

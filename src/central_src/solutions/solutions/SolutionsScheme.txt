@@ -1,0 +1,32 @@
+This file contains a list of solution actions
+    - To Run this file, select it in the GUI and hit Run Solution
+    - Note, extranious spaces will break the file
+        -Blank lines and comments are ok (#)
+    - Bot and Station ids are port number
+        -Bots begin at 5010 - assigned by connection order
+        -Stations begin at 5020 - assigned by connection order
+    -All commands for the Configuration Scheme should be valid, however, be wary that there may be unexpected consequences
+        -These parameters tend to reset certain aspects
+
+    C commands are for central
+    S commands are for stations
+    B commands are for bots
+
+    -General Format for these commands: {COMMAND} {RELEVANT BOT} {MIN TIME SINCE SOLUTION STARTED} other params
+        -to run the command at any time, min time = 0 
+
+    -Commands will run in order and will not be skipped (unless they are invalid)
+
+B100 - Route Specific Bot To
+    Ex "B100 5010 30 AP4" - route bot 5010 from its current location to the station with ID 4 any time after 30 seconds    
+
+S100 - Transfer Station Item to Bot
+    Ex "S100 5010 10 5022" - gives the station item from station 5022 to bot 5010 (located at the station) after 10 seconds since the solution has been running
+
+S101 - Transfer Item To Station From Robot
+    Ex "S101 5011 0 5021" - removes the station item of station 5021 from bot 5011 (located at the station) at any time 
+
+
+
+
+

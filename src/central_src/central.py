@@ -20,20 +20,11 @@ subThreadKills = [] #a list of all the thread PIDS
 
 #this is the main thread for the central controller
 
-def initialize():
+def initialize(queueIn, queueOut, queueInGui, queueOutGui, killQueue: queue.Queue):
     #run startup / connection protocol
 
-    #thread safe queue for messages into central
-    queueIn = queue.Queue()
-    #thread safe queu for messages out of central
-    queueOut = queue.Queue()
     #queue to send packets to bots
     queuePacketOut = queue.Queue()
-
-    #queue for incomming gui requests - from GUI to central
-    queueInGUI = queue.Queue()
-    #queue for outgoing gui messages - from central to GUI
-    queueOutGUI = queue.Queue()
 
     #queue for new bot connections
     connectionQueue = queue.Queue()
@@ -44,14 +35,12 @@ def initialize():
     #create a thread to send messages out serial
     subThreadKills.append(launchPacketPublisher(queueOut, queuePacketOut))
 
-    #launch the gui
-    subThreadKills.append(launchGUI(queueInGUI, queueOutGUI))
     #launch the connection thread
     subThreadKills.append(launchBotConnector(connectionQueue))
 
     #if bots were connected during startup
     botConnected = False
-    while(queueInGUI.empty()):
+    while(queueInGui.empty() and killQueue.empty()):
         #wait for connections until menu closed
         time.sleep(.05)
 
@@ -59,7 +48,7 @@ def initialize():
             connection = connectionQueue.get()
 
             #put bot in the startup gui
-            queueOutGUI.put(connection)
+            queueOutGui.put(connection)
 
             #get bot info from message
             connectionInfo = str(connection).split("$")
@@ -70,13 +59,13 @@ def initialize():
                 #determine if new connection is bot or station
                 if(connectionInfo[4] == "bot"):
                     #set up bot overseer
-                    overseers.append(BotOverSeer(connectionInfo[0], connectionInfo[1], connectionInfo[2], queueOut, queuePacketOut, queueOutGUI))
+                    overseers.append(BotOverSeer(connectionInfo[0], connectionInfo[1], connectionInfo[2], queueOut, queuePacketOut, queueOutGui))
 
                     #mark that at least one bot was connected
                     botConnected = True
                 elif(connectionInfo[4] == "station"):
                     #set up station overseer
-                    overseers.append(StationOverSeer(connectionInfo[0], connectionInfo[1], connectionInfo[2], queueOut, queuePacketOut, queueOutGUI))
+                    overseers.append(StationOverSeer(connectionInfo[0], connectionInfo[1], connectionInfo[2], queueOut, queuePacketOut, queueOutGui))
                 else:
                     #something really isn't right
                     print("Cannot connect to type: " + connectionInfo[4])
@@ -87,7 +76,7 @@ def initialize():
                 print("Invalid connection detected: " + connection)
 
     #see what to do next based on menu result
-    startUpAction = queueInGUI.get()
+    startUpAction = queueInGui.get()
 
     if(str(startUpAction) == "Stop" or botConnected == False):
         #if stop then return - kinda crashes but thats cool cause it should just stop
@@ -97,10 +86,10 @@ def initialize():
 
     #create Gui
 
-    return queueIn, queueOut, queueInGUI, queueOutGUI
+    return queueIn, queueOut, queueInGui, queueOutGui
 
 
-def cycle():
+def cycle(queueIn, queueOut, queueInGui, queueOutGui):
     #In a cycle:
     #1. messages in should be handled
     #2. gui requests in should be handled
@@ -108,26 +97,26 @@ def cycle():
     #4. robots commands should be checked
     #5. any messages (not sent out by other processes) needing sent should be sent
 
-    handleMessagesIn() #1
+    handleMessagesIn(queueIn, queueOutGui) #1
     
-    handleGUIIn() #2
+    handleGUIIn(queueInGui) #2
 
     for overseer in overseers: #3
         overseer.cycle()
 
     time.sleep(.05)
 
-def handleMessagesIn():
+def handleMessagesIn(queueIn: queue.Queue, queueOutGui: queue.Queue):
     #process incoming messages - from bridge/bots
     while(not queueIn.empty()):
        message = queueIn.get()
         #print(message)
        handleBotMessage(message, queueOutGui, overseers)
 
-def handleGUIIn():
+def handleGUIIn(queueInGui: queue.Queue):
     #processes messages from the GUI
-    while(not queueInGUI.empty()):
-        message = queueInGUI.get()
+    while(not queueInGui.empty()):
+        message = queueInGui.get()
         #handle all messages in the queu
         if message.m_direct == True:
             #if the message is ment to go directly to the robot
@@ -226,7 +215,7 @@ def handleGUIIn():
 
                 
                  
-def sendMessageToBot(BotName, Characteristic, Value):
+def sendMessageToBot(BotName, Characteristic, Value, queueOut: queue.Queue):
     #botname = string
     #characteristic = string
     #value = int
@@ -240,32 +229,19 @@ def sendMessageToBot(BotName, Characteristic, Value):
     message = BotName + "$" + Characteristic + "$" + str(Value)
     queueOut.put(message)
 
-def sendStringToBot(string):
+def sendStringToBot(string, queueOut: queue.Queue):
     #put a string in the output queue - be sure that the string wil be recognized by the bridge
     queueOut.put(string)
 
-def cleanKill(signum, frame):
-    print("Cleanly shutting down!")
+def runController(queueIn: queue.Queue, queueOut: queue.Queue, queueInGui: queue.Queue, queueOutGui: queue.Queue, controllerKillQueue: queue.Queue): 
+    #kill signal for main controller
 
-    for threadQueue in subThreadKills:
-        #add something to the kill queue so the thread knows its time to end
-        threadQueue.put("Kill")
+    subThreadKills.append(controllerKillQueue)
 
-    quit()
+    #start up the program
+    initialize(queueIn, queueOut, queueInGui, queueOutGui, controllerKillQueue)
+
+    while(controllerKillQueue.empty()):
+        cycle(queueIn, queueOut, queueInGui, queueOutGui)
 
 
-if __name__ == "__main__":
-    #redefine ctrl+c to cleanly kill the program... otherwise some processes like to hang around
-    signal.signal(signal.SIGINT, cleanKill)
-
-    if not sys.platform.startswith('win'):
-        #ensure windows is being used
-        print("This program was designed to run only on a Windows operating system! Quitting.")
-        quit()
-
-    #define threads and their queues
-    queueIn, queueOut, queueInGUI, queueOutGui = initialize()
-
-    while(True):
-        #main cycle for the central controller thread - Gui/publishers/subscribers are threaded differently
-      cycle()

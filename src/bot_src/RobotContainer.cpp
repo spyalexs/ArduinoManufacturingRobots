@@ -21,15 +21,14 @@ RobotContainer::RobotContainer(mc::DCMotor* motor1, mc::DCMotor* motor2, mc::Enc
   }
 
   pinMode(this->m_ultrasonicEchoPin, INPUT);
-  pinMode(this->m_encoderClickPin, INPUT);
 }
 
 void RobotContainer::setMotor1(int duty){
-  this->m_motor1->setDuty(-duty);
+  this->m_motor1->setDuty(duty);
 }
 
 void RobotContainer::setMotor2(int duty){
-  this->m_motor2->setDuty(duty);
+  this->m_motor2->setDuty(-duty);
 }
 
 void RobotContainer::setLEDStatus(int status){
@@ -41,11 +40,11 @@ void RobotContainer::setLEDStatus(int status){
 }
 
 int RobotContainer::getEncoder1Counts(){
-  return -this->m_encoder1->getRawCount();
+  return this->m_encoder1->getRawCount();
 }
 
 int RobotContainer::getEncoder2Counts(){
-  return this->m_encoder2->getRawCount();
+  return -this->m_encoder2->getRawCount();
 }
 
 int RobotContainer::getLineFollowerPinReading(){
@@ -116,12 +115,12 @@ void RobotContainer::lineControl(double* Correction1, double* Correction2){
   int value = this->getLineFollowerPinReading();
   double time = getTime();
 
-  value = min(m_lineHighValue, max(m_lineLowValue, value));
+  value = std::min(m_lineHighValue, std::max(m_lineLowValue, value));
 
   double correctionP = lP * (value - (m_lineLowValue + m_lineHighValue) / 2);
   double correctionD = (value - m_linePreviousValue) / (time - m_linePreviousTime) * lD;
   int correction = floor(correctionP + correctionD);
-  correction = min(correction, maxCorrection);
+  correction = std::min(correction, maxCorrection);
 
   m_linePreviousValue = value;
   m_linePreviousTime = time;
@@ -158,7 +157,6 @@ void RobotContainer::velocityControl(double* Power1, double* Power2){
   m_velPreviousCPS1 = instantCPS1;
   m_velPreviousCPS2 = instantCPS2;
 
-
   double vP = .02;
   double vD = 0;//.000005;
   double vFF = 20;
@@ -172,7 +170,10 @@ void RobotContainer::velocityControl(double* Power1, double* Power2){
 
 bool RobotContainer::isEncoderClicked(){
 
-  if(!digitalRead(this->m_encoderClickPin)){
+  pinMode(IN2, INPUT);
+  Serial.println(analogRead(IN2));
+
+  if(!digitalRead(IN2)){
     //if a click signal is being sent
 
     if(this->m_encoderReleased){
@@ -191,7 +192,8 @@ bool RobotContainer::isEncoderClicked(){
   if(m_encoderClickStart + CONTAINER_ENCODER_CLICK_MIN_TIME < millis() && this->m_encoderClickSent == false && this->m_encoderReleased == false){
     //the encoder has been pressed for the right time and the signal hasn't been sent
     this->m_encoderClickSent = true;
-    return true;
+    
+    return false;
   }
 
   return false;
@@ -202,8 +204,8 @@ void RobotContainer::cycleEncoder(){
   //this works because of low cycle time
   
   //check to see if a direction signal is being sent
-  bool ccw = digitalRead(this->m_encoderCCWFPin);  
-  bool cw = digitalRead(this->m_encoderCWFPin);  
+  bool ccw = mp_gpio->digitalRead(this->m_encoderCCWFPin);  
+  bool cw = mp_gpio->digitalRead(this->m_encoderCWFPin);  
 
   //cycle / handle clicks
   if(this->isEncoderClicked()){
@@ -407,4 +409,28 @@ void RobotContainer::handleEncoderClick(){
     }
     
   }
+}
+
+void RobotContainer::setGPIOPointer(Adafruit_MCP23X17* gpio){
+  //set the pointer to the gpio board
+  this->mp_gpio = gpio;
+
+  mp_gpio->pinMode(this->m_encoderCCWFPin, INPUT);
+  mp_gpio->pinMode(this->m_encoderCWFPin, INPUT);
+  mp_gpio->pinMode(this->m_encoderClickPin, INPUT);
+}
+
+void RobotContainer::BypassEncoder(){
+  
+  //clear old
+  this->m_display.addWipeDisplayJob(false, ILI9341_BLACK);
+
+  //reset encoder counts so the highlight begins off
+  this->resetDisplayEncoder();
+
+  //disable menu
+  this->m_display.disableMenu();
+
+  //draw in icon holders
+  this->m_display.setIconsCount(6);
 }

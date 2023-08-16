@@ -27,6 +27,7 @@
                 "C:/Users/spyal/Documents/Arduino/libraries/Adafruit_ILI9341",
                 "C:/Users/spyal/Documents/Arduino/libraries/Adafruit_GFX_Library",
                 "C:/Users/spyal/Documents/Arduino/libraries/Adafruit_BusIO",
+                "C:/Users/spyal/Documents/Arduino/libraries/Adafruit_MCP23017_Arduino_Library/src",
                 "C:/Users/spyal/Documents/Arduino/libraries/**"
                 
             ],

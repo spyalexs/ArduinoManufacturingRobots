@@ -38,12 +38,22 @@ def getCommandLocalizationEffects():
 
     return keys
 
-def getConnectionPorts():
+def getBotConnectionPorts():
     #ports for communication to be assigneed
         #this limit is 20(could be higher) -- need a router for more than 8(hardware)
 
 
     LOWER_COM_PORT = 5010
+    UPPER_COM_PORT = 5019
+
+    return (LOWER_COM_PORT, UPPER_COM_PORT)
+
+def getStationConnectionPorts():
+    #ports for communication to be assigneed
+        #this limit is 20(could be higher) -- need a router for more than 8(hardware)
+
+
+    LOWER_COM_PORT = 5020
     UPPER_COM_PORT = 5029
 
     return (LOWER_COM_PORT, UPPER_COM_PORT)

@@ -133,14 +133,13 @@ class BotOverSeer(OverSeer):
             #update information on the gui
             self.updateStatus(0)
 
-        if(self.m_connected):
+        if not (self.m_connected):
             #if disconnected, clear all commands
             self.m_commands = []
                                     
             self.m_written = False
             self.m_confirmed = False
         
-
         #check the bots status
         if(self.m_status == 255):
             #if a command was aborted
@@ -148,6 +147,8 @@ class BotOverSeer(OverSeer):
 
             #set status back to ready 
             self.updateStatus(0, UpdateGui=False)
+
+            self.m_written = False
 
         elif(self.m_status == 254):
             #if the command is finished

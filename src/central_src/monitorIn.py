@@ -2,10 +2,10 @@ import queue
 import socket
 import threading
 
-from getConstants import getConnectionPorts, getPacketBufferLength
+from getConstants import getBotConnectionPorts, getStationConnectionPorts, getPacketBufferLength
 
 try:
-    LOCAL_IP = socket.gethostbyname("Alexsmen.mshome.net")
+    LOCAL_IP = socket.gethostbyname("Alexsmen")
 except socket.gaierror:
     print("Could not find LOCALIP, is the Hotspot/Network up?")
     quit()
@@ -24,7 +24,8 @@ def launchPacketMonitor(queueIn):
 def monitor(queueIn, killQueue):
     #monitor the updp ports input for messages
 
-    lowerComPort, higherComPort = getConnectionPorts()
+    lowerComPort, _ = getBotConnectionPorts()
+    _, higherComPort = getStationConnectionPorts()
 
     sockets = dict()
     #initialize sockets

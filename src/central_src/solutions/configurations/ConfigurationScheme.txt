@@ -1,0 +1,40 @@
+This file contains a list of configuration parameters for a solution
+    - To Run this file, select it in the GUI and hit configuration
+    - Note, extranious spaces will break the file
+        -Blank lines and comments are ok (#)
+    - Bot and Station ids are port number
+        -Bots begin at 5010 - assigned by connection order
+        -Stations begin at 5020 - assigned by connection order
+
+    C commands are for central
+    S commands are for stations
+    B commands are for bots
+
+C1 - Ensure the correct number of bots are connected
+    Ex "C1 3" - ensure 3 bots are connected
+
+C2 - Ensure the correct number of stations are connected
+    Ex "C2 2" - ensure 2 stations are connected
+
+B1 - Set Bot initial capacity
+    Ex "B1 5011 4" - set item capacity of bot 5011 is 4
+
+B2 - Set Bot initial location
+    Ex "B2 5010 Node2-A" - set bot 5010 location to Node2-A
+
+B3: - Give Bot Item
+    Ex "B3 5011 jeep" - give bot 5011 a jeep
+
+B4: - Remove Bot Item
+    Ex "B3 5011 mustang" - remove a mustang from bot 5011
+
+S1 - Set station item
+    Ex "S1 5022 mustang" - set station 5022 to collect / distribute mustangs
+
+S2 - Connect Station to id
+    Ex "S1 5020 4" - set the station 5020 to be action point 4
+
+
+
+
+

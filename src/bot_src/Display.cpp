@@ -122,6 +122,7 @@ void Display::cycle(int encoderCount){
 
         //wether the job completed
         bool pop = false;
+        Serial.println(this->m_jobQueue.front().m_jobNumber);
 
         switch (this->m_jobQueue.front().m_jobNumber){
             //call job based on code from queue

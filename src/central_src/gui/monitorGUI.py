@@ -1,11 +1,17 @@
 import PySimpleGUI as sg
 import threading
 from PIL import Image, ImageTk
+import sys
+import os
 
 from getConstants import getCommandKeys, getTheme, getItemInformation
 from gui.GUIInMessage import GUIInMessage
 from createRoute import route, getLocations
 from gui.map_display.displayMap import getBaseMap, drawBots
+
+#get path to grab the configuration / solution managers
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), ".."))
+from solutions.configurationManger import startConfiguring, getConfigurationFilesList
 
 #keys for the commands availible to be launched - the name of the command corrosponds to the name that will be launched on the robot
 commandKeys = getCommandKeys()
@@ -16,6 +22,13 @@ botLocationsGUI = dict()
 
 def make(queueIn, queueOut, robots, stations, killQueue):
     #create the GUI window for the first time
+
+    #parse into overseer data - need for config mananger
+    overseerData = dict()
+    for robot in robots:
+        overseerData[robot] = "bot"
+    for station in stations:
+        overseerData[station] = "station"
 
     #apply gui theme
     sg.theme(getTheme())
@@ -78,7 +91,10 @@ def make(queueIn, queueOut, robots, stations, killQueue):
     mapLayout = [[sg.Image(key="MapImage")]]
 
     #all the elements on the gui are defined here - similar to XML formating...
-    layout = [[sg.Frame("",robotsFrameLayout), sg.Frame("Map", mapLayout)]]
+    layout = [
+        [sg.Frame("",robotsFrameLayout), sg.Frame("Map", mapLayout)],
+        [sg.Text("Configure Map"), sg.Combo(getConfigurationFilesList(), enable_events=False, key="ConfigurationFile"), sg.Button("Configure", enable_events=True, key="ConfigurationStart")],
+        ]
 
     #links the layout to the window
     window = sg.Window(title="Test", layout=layout, finalize=True)
@@ -90,7 +106,7 @@ def make(queueIn, queueOut, robots, stations, killQueue):
     queueIn.put(GUIInMessage("All", "ready", True, Direct=False))
 
     #keeps an eye on the gui for event and such as it runs
-    monitor(window, queueIn, queueOut, killQueue, robots, stations)
+    monitor(window, queueIn, queueOut, killQueue, robots, stations, overseerData)
 
 def getRobotFrameLayout(name, items):
     #do a little processing to format the keys correctly
@@ -124,7 +140,7 @@ def getStationFrame(connectedStations, connectedRobots, items):
 
     return stationFrameLayout
 
-def monitor(window, queueIn, queueOut, killQueue, robots, stations):
+def monitor(window, queueIn, queueOut, killQueue, robots, stations, overseerData):
     #monitor the Gui for events
 
     while True:  
@@ -141,12 +157,12 @@ def monitor(window, queueIn, queueOut, killQueue, robots, stations):
             break
         elif (event != "__TIMEOUT__"):
             #if there is an interaction, handle it
-            handleEvents(event, values, window, queueIn)
+            handleEvents(event, values, window, queueIn, overseerData)
 
         #update the attributes displayed on the window
         update(window, values, queueOut, robots, stations)
     
-def handleEvents(event, values, window, queueIn):
+def handleEvents(event, values, window, queueIn, overseerData):
     #handle the gui events
 
     print(event)
@@ -238,6 +254,11 @@ def handleEvents(event, values, window, queueIn):
             queueIn.put(GUIInMessage(target, "RemoveItem", values[target + "ItemToTransfer"], False))
 
         return
+    
+    if("ConfigurationStart" in event):
+        #start configuring the map automatically!
+        if(not values["ConfigurationFile"] == ""):
+            startConfiguring(values["ConfigurationFile"], queueIn, overseerData)
 
 def update(window, values, queueOut, robots, stations):
     # to effectively clear queue - do two stage message scanning

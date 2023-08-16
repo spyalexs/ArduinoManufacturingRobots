@@ -8,6 +8,8 @@ from gui.startupGUI import createStartupGui
 
 def launchGUI(queueIn, queueOut):
     #start the thread the contains the GUI - only one tk thread so both will happen here
+    #depricated -  this doesn't give pysimple gui the main thread
+    #   use launch script instead
 
     killQueue = queue.Queue()
 

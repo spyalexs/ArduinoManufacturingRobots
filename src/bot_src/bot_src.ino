@@ -25,6 +25,9 @@ Communicator CC = Communicator();
 Sequencer SC = Sequencer();
 CycleOverseer CO = CycleOverseer(50);
 
+//GPIOboard
+Adafruit_MCP23X17 gpio;
+
 int lastUpdate = 0; //last time the update was sent to central
 int updateFrequency = 1; //Hz
 
@@ -44,11 +47,20 @@ void setup(){
     Serial.println("Failed to start controller!");
   }
 
+  //startup gpio board
+  if(!gpio.begin_I2C()){
+    Serial.println("Failed to start the gpio board!");
+  }
+
+  //set the robot container gpio pointer
+  MC.setGPIOPointer(&gpio);
+
   //set up display basics
   MC.m_display.setBackground(ILI9341_BLACK);
   MC.m_display.drawBasicUI();
 
   MC.m_display.drawOpeningMenu();
+  //MC.BypassEncoder();
 
   //get coms set up with central
   CC.connectToNetwork();
@@ -134,7 +146,7 @@ void assignCommand(int commandNumber){
 
     case 4:
       if(true){
-        SC.loadInCommand(TravelStraight(&MC, &CC, 210));
+        SC.loadInCommand(TravelStraight(&MC, &CC, 1000));
       }
       break;
 

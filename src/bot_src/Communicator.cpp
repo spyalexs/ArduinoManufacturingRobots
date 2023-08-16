@@ -9,7 +9,7 @@ bool Communicator::connectToNetwork(){
     //ensure board has wifi module
     if(WiFi.status() == WL_NO_MODULE){
         Serial.print("Failed to start WIFI");
-        return false;
+        return false;                                                            
     }
 
     WiFi.setHostname(this->m_hostName);
@@ -54,7 +54,7 @@ bool Communicator::connectToNetwork(){
     
     //get server ip address
     this->m_serverIPAddress = this->m_localIPAddress;
-    this->m_serverIPAddress[3] = 1;
+    this->m_serverIPAddress[3] = 111;
     Serial.print("Server IP is: ");
     Serial.println(this->m_serverIPAddress);
 
