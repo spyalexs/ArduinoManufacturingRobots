@@ -5,11 +5,26 @@ import time
 
 from getConstants import getBotConnectionPorts, getPacketBufferLength, getStationConnectionPorts
 
+#to find server, first try hotspot, then external network, then fail
 try:
-    LOCAL_IP = socket.gethostbyname("Alexsmen")
-except socket.gaierror:
-    print("Could not find LOCALIP, is the Hotspot/Network up?")
-    quit()
+    #get hotspot hostname
+    LOCAL_IP = socket.gethostbyname(getHotSpotHostname())
+    if(LOCAL_IP):
+        print("Accepting connections over local hotspot!")
+except:
+    try:
+        LOCAL_IP = socket.gethostbyname(getCentralHostName())
+
+        ROUTER_NAME = socket.gethostbyaddr(LOCAL_IP)[0]
+        if(ROUTER_NAME == getRouterHostName()):
+            print("Accepting Connections over switch: " + ROUTER_NAME)
+        else:
+            print("Invalid switch name: " + str(ROUTER_NAME) + ". Should be: " + str(getRouterHostName()))
+            quit()
+
+    except socket.gaierror:
+        print("Could not find LOCALIP, is the environment set up?")
+        quit()
 
 BOT_CONNECTION_MESSAGE = "Im a bot! MAC:"
 STATION_CONNECTION_MESSAGE = "Im a station! MAC:"

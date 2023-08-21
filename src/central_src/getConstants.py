@@ -98,3 +98,21 @@ def getItemInformation():
     
     return items
 
+def getRouterHostName():
+    #returns the hostname of the network router
+    ROUTER_HOSTNAME = "FILL THIS IN LATER"
+
+    return ROUTER_HOSTNAME
+
+def getHotSpotHostname():
+    #returns the hostname for the hotspot when in action
+    HOTSPOT_HOSTNAME = "Alexsmen.ms.home"
+
+    return HOTSPOT_HOSTNAME
+
+def getCentralHostName():
+    #returns the hostname for the central computer
+    CENTRAL_HOSTNAME = "Alexsmen"
+
+    return CENTRAL_HOSTNAME
+
