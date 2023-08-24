@@ -43,7 +43,7 @@ if __name__ == "__main__":
     controllerThread.start()
 
     #run the GUI
-    runGUI(queueIn, queueOut, guiKillQueue)
+    runGUI(queueInGui, queueOutGui, guiKillQueue)
 
 
 

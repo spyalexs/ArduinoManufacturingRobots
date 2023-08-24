@@ -100,13 +100,13 @@ def getItemInformation():
 
 def getRouterHostName():
     #returns the hostname of the network router
-    ROUTER_HOSTNAME = "FILL THIS IN LATER"
+    ROUTER_HOSTNAME = "Linksys02301"
 
     return ROUTER_HOSTNAME
 
 def getHotSpotHostname():
     #returns the hostname for the hotspot when in action
-    HOTSPOT_HOSTNAME = "Alexsmen.ms.home"
+    HOTSPOT_HOSTNAME = "Alexsmen.mshome.net"
 
     return HOTSPOT_HOSTNAME
 

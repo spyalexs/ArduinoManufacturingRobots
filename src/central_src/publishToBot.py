@@ -1,7 +1,7 @@
 import socket
 import queue
 import threading
-from getConstants import getListeningPort
+from getConstants import getListeningPort, getHotSpotHostname, getCentralHostName
 
 def launchPacketPublisher(queueOut, queuePacketOut):
     #queue to pass the kill signal to the thread
@@ -20,6 +20,19 @@ def publish(queueOut, queuePacketOut, killQueue):
 
     listeningPort = getListeningPort()
     outSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+    #determine local ip
+    try:
+        #try looking as hotspot
+        LOCAL_IP = socket.gethostbyname(getHotSpotHostname())
+    except:
+        try:
+            #try looking for ip on other network
+            LOCAL_IP = socket.gethostbyname(getCentralHostName())
+        except:
+            print("Publisher cannot find LOCAL IP!, quitting!")
+            quit()
+
 
     while(True):
         #sequence that allows program to gracefully exit
@@ -42,8 +55,13 @@ def publish(queueOut, queuePacketOut, killQueue):
                     if(len(messageBytes) >= 49):
                         print("Cannot publish")
 
-                    #write the message out to the bot
-                    outSocket.sendto(messageBytes, (address,listeningPort))
+
+                    if(address ==LOCAL_IP):
+                        #the address is a port number so send locally to sim
+                        outSocket.sendto(messageBytes, (LOCAL_IP, address))
+                    else:
+                        #address is an ip so send to bot
+                        outSocket.sendto(messageBytes, (address,listeningPort))
 
                 else:
                     #print messages without address

@@ -14,15 +14,19 @@ try:
 except:
     try:
         LOCAL_IP = socket.gethostbyname(getCentralHostName())
+        
+        #assume the ip of the router
+        ipBytes = LOCAL_IP.split(".")
+        ROUTER_IP = str(ipBytes[0]) + "." + str(ipBytes[1]) + "." + str(ipBytes[2]) + ".1"
 
-        ROUTER_NAME = socket.gethostbyaddr(LOCAL_IP)[0]
+        ROUTER_NAME = socket.gethostbyaddr(ROUTER_IP)[0]
         if(ROUTER_NAME == getRouterHostName()):
             print("Accepting Connections over switch: " + ROUTER_NAME)
         else:
             print("Invalid switch name: " + str(ROUTER_NAME) + ". Should be: " + str(getRouterHostName()))
             quit()
 
-    except socket.gaierror:
+    except socket.herror:
         print("Could not find LOCALIP, is the environment set up?")
         quit()
         

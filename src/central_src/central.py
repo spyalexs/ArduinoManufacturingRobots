@@ -54,18 +54,18 @@ def initialize(queueIn, queueOut, queueInGui, queueOutGui, killQueue: queue.Queu
             connectionInfo = str(connection).split("$")
 
             #add bot overseerer to new connection
-            if(len(connectionInfo) >= 5):
+            if(len(connectionInfo) >= 6):
 
                 #determine if new connection is bot or station
                 if(connectionInfo[4] == "bot"):
                     #set up bot overseer
-                    overseers.append(BotOverSeer(connectionInfo[0], connectionInfo[1], connectionInfo[2], queueOut, queuePacketOut, queueOutGui))
+                    overseers.append(BotOverSeer(connectionInfo[0], connectionInfo[1], connectionInfo[2], queueOut, queuePacketOut, queueOutGui, connectionInfo[5]))
 
                     #mark that at least one bot was connected
                     botConnected = True
                 elif(connectionInfo[4] == "station"):
                     #set up station overseer
-                    overseers.append(StationOverSeer(connectionInfo[0], connectionInfo[1], connectionInfo[2], queueOut, queuePacketOut, queueOutGui))
+                    overseers.append(StationOverSeer(connectionInfo[0], connectionInfo[1], connectionInfo[2], queueOut, queuePacketOut, queueOutGui, connectionInfo[5]))
                 else:
                     #something really isn't right
                     print("Cannot connect to type: " + connectionInfo[4])

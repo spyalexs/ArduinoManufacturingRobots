@@ -5,9 +5,9 @@ class StationOverSeer(OverSeer):
     
     m_item: str = None
 
-    def __init__(self, macAddress, port, ip_address, queueToBots, queuePacketOut, queueToGUI):
+    def __init__(self, macAddress, port, ip_address, queueToBots, queuePacketOut, queueToGUI, connectionType):
         #specifiy that this is a station overseer
-        super().__init__(macAddress, port, ip_address, queueToBots, queuePacketOut, queueToGUI)
+        super().__init__(macAddress, port, ip_address, queueToBots, queuePacketOut, queueToGUI, connectionType)
 
         self.m_type = "station"
 

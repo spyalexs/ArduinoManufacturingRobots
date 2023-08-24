@@ -32,10 +32,10 @@ class BotOverSeer(OverSeer):
     m_itemSlots = None # the number of item slots on the robot
     m_itemsOnBot = [] # a list of the items on the bot
 
-    def __init__(self, macAddress, port, ip_address, queueToBots, queuePacketOut, queueToGUI):
+    def __init__(self, macAddress, port, ip_address, queueToBots, queuePacketOut, queueToGUI, connectionType):
         self.m_localizationEffects = getCommandLocalizationEffects()
 
-        super().__init__(macAddress, port, ip_address, queueToBots, queuePacketOut, queueToGUI)
+        super().__init__(macAddress, port, ip_address, queueToBots, queuePacketOut, queueToGUI, connectionType)
 
         #specify that this is a bot overseer
         self.m_type = "bot"

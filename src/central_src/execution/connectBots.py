@@ -3,7 +3,7 @@ from threading import Thread
 import queue
 import time
 
-from getConstants import getBotConnectionPorts, getPacketBufferLength, getStationConnectionPorts
+from getConstants import getBotConnectionPorts, getPacketBufferLength, getStationConnectionPorts,getHotSpotHostname, getRouterHostName, getCentralHostName
 
 #to find server, first try hotspot, then external network, then fail
 try:
@@ -14,8 +14,12 @@ try:
 except:
     try:
         LOCAL_IP = socket.gethostbyname(getCentralHostName())
+        
+        #assume the ip of the router
+        ipBytes = LOCAL_IP.split(".")
+        ROUTER_IP = str(ipBytes[0]) + "." + str(ipBytes[1]) + "." + str(ipBytes[2]) + ".1"
 
-        ROUTER_NAME = socket.gethostbyaddr(LOCAL_IP)[0]
+        ROUTER_NAME = socket.gethostbyaddr(ROUTER_IP)[0]
         if(ROUTER_NAME == getRouterHostName()):
             print("Accepting Connections over switch: " + ROUTER_NAME)
         else:
@@ -97,7 +101,6 @@ def connectBots(connectorQueue, killQueue):
                         #station connection
                         print("Bot --- Reconnection from: " + macAddress + ". Reassigning to port: " + str(knownMACs[macAddress]))
 
-
                     #reply back with connection port
                     message = bytes(CONNECTION_REPLY + str(knownMACs[macAddress]) +"$$$", 'utf-8')
                     sock.sendto(message, (addr[0], BOT_LISTENING_PORT))
@@ -132,8 +135,13 @@ def connectBots(connectorQueue, killQueue):
                         #connection from bot
                         print("Bot --- Connection from: " + macAddress + ". Assigning to port: " + str(knownMACs[macAddress]))
 
+                        #detect sim connection
+                        connectionType = "Bot"
+                        if(LOCAL_IP == addr[0]):
+                            connectionType = "Sim"
+                        
                         #send back to main thread to be added to bot overseer
-                        connectorQueue.put(macAddress + "$" + str(knownMACs[macAddress]) + "$" + str(addr[0]) + "$" + str(addr[1]) + "$bot")
+                        connectorQueue.put(macAddress + "$" + str(knownMACs[macAddress]) + "$" + str(addr[0]) + "$" + str(addr[1]) + "$bot$" + str(connectionType))
 
                     else:
                         
@@ -149,8 +157,13 @@ def connectBots(connectorQueue, killQueue):
                         #connection from station
                         print("Station --- Connection from: " + macAddress + ". Assigning to port: " + str(knownMACs[macAddress]))
 
+                        #detect sim connection
+                        connectionType = "Bot"
+                        if(LOCAL_IP == addr[0]):
+                            connectionType = "Sim"
+
                         #send back to main thread to be added to bot overseer
-                        connectorQueue.put(macAddress + "$" + str(knownMACs[macAddress]) + "$" + str(addr[0]) + "$" + str(addr[1]) + "$station")
+                        connectorQueue.put(macAddress + "$" + str(knownMACs[macAddress]) + "$" + str(addr[0]) + "$" + str(addr[1]) + "$station$" + str(connectionType))
 
                     #send back connection string
                     message = bytes(CONNECTION_REPLY + str(knownMACs[macAddress]) +"$$$", 'utf-8')
@@ -166,7 +179,6 @@ def connectBots(connectorQueue, killQueue):
                             sock.recv(bufferLength)
                         except TimeoutError:
                             clearing = False
-
 
         except TimeoutError:
             searching = True #make the try clause happy

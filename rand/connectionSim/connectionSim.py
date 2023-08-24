@@ -3,6 +3,13 @@ from random import random
 from math import floor
 import socket
 from time import time
+import sys
+import os
+
+#insert path to grab constants
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), "../.."))
+
+from src.central_src.getConstants import getCentralHostName, getRouterHostName,getHotSpotHostname
 
 BUFFER_LENGTH = 50
 
@@ -39,8 +46,12 @@ def monitor(window):
     except:
         try:
             LOCAL_IP = socket.gethostbyname(getCentralHostName())
+        
+            #assume the ip of the router
+            ipBytes = LOCAL_IP.split(".")
+            ROUTER_IP = str(ipBytes[0]) + "." + str(ipBytes[1]) + "." + str(ipBytes[2]) + ".1"
 
-            ROUTER_NAME = socket.gethostbyaddr(LOCAL_IP)[0]
+            ROUTER_NAME = socket.gethostbyaddr(ROUTER_IP)[0]
             if(ROUTER_NAME == getRouterHostName()):
                 print("Accepting Connections over switch: " + ROUTER_NAME)
             else:
@@ -116,6 +127,15 @@ def monitor(window):
                             
                             try:
                                 targetPort = int(connectionMessageParts[1])
+
+                                #switch over the recieving port
+                                recevingSocket.close()
+                                recevingSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+                                recevingSocket.bind((LOCAL_IP, targetPort + 100))
+                                recevingSocket.settimeout(.005)
+
+                                print("It is now safe to open another connection sim!")
+
                             except (IndexError, TypeError):
                                 print("Could not assign target port, incorrect connection message.")
 

@@ -1,6 +1,7 @@
 import time
 import threading
 import os
+import socket
 
 from gui.GUIOutMessage import GUIOutMessage
 from imageStreaming.image2icon import image2icon
@@ -15,7 +16,7 @@ class OverSeer:
 
     m_iconPacketLocation = "" #the location of the icon packets
 
-    def __init__(self, macAddress, port, ip_address, queueToBots, queuePacketOut, queueToGUI):
+    def __init__(self, macAddress, port, ip_address, queueToBots, queuePacketOut, queueToGUI, connectionType):
         self.m_port = port
         self.m_mac = macAddress
         self.m_ip = ip_address
@@ -30,7 +31,13 @@ class OverSeer:
         self.m_iconPacketLocation = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "imageStreaming", "packets")
 
         self.m_type = "generic"
-    
+
+        #wether connection type is a simulation or not
+        if(connectionType == "Sim"):    
+            self.isSim = True
+        else:
+            self.isSim = False
+
     def sendConnectionStatusToGui(self):
         #put a gui message in the GUI queue
         message = GUIOutMessage(self.m_port, "connectionStatus", int(self.m_connected))
@@ -38,7 +45,12 @@ class OverSeer:
 
     def sendMessageToOverseen(self, message):
         #send a message to the bot
-        self.m_queue.put(self.m_ip + ":" + message)
+        if(self.isSim):
+            #send port as address header
+            self.m_queue.put(str(self.m_port + 100) + ":" + message)
+        else:
+            #send ip as address header
+            self.m_queue.put(self.m_ip + ":" + message)
     
     def connectionHeard(self):
         if(not self.m_connected):
