@@ -6,7 +6,7 @@ from time import time
 from solutions.configurationManger  import processConfigurationCommand, validateCommand, getBotCount
 
 
-solutionFilesPath = os.path.join(os.path.dirname(os.path.realpath(__file__)))
+solutionFilesPath = os.path.join(os.path.dirname(os.path.realpath(__file__)), "solutions")
 
 def getSolutionsFilesList():
     #get a list of valid solution files to display on gui

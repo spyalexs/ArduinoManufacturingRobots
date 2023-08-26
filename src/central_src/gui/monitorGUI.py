@@ -3,6 +3,7 @@ import threading
 from PIL import Image, ImageTk
 import sys
 import os
+from time import time
 
 from getConstants import getCommandKeys, getTheme, getItemInformation
 from gui.GUIInMessage import GUIInMessage
@@ -12,6 +13,7 @@ from gui.map_display.displayMap import getBaseMap, drawBots
 #get path to grab the configuration / solution managers
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), ".."))
 from solutions.configurationManger import startConfiguring, getConfigurationFilesList
+from solutions.solutionManager import getSolutionsFilesList
 
 #keys for the commands availible to be launched - the name of the command corrosponds to the name that will be launched on the robot
 commandKeys = getCommandKeys()
@@ -19,6 +21,9 @@ commandKeys = getCommandKeys()
 baseMap = getBaseMap()
 #the current bot locations as far as the gui knows
 botLocationsGUI = dict()
+#if a solution is currently running positive value
+#not running, negative one
+solutionStartTime = -1
 
 def make(queueIn, queueOut, robots, stations, killQueue):
     #create the GUI window for the first time
@@ -93,7 +98,8 @@ def make(queueIn, queueOut, robots, stations, killQueue):
     #all the elements on the gui are defined here - similar to XML formating...
     layout = [
         [sg.Frame("",robotsFrameLayout), sg.Frame("Map", mapLayout)],
-        [sg.Text("Configure Map"), sg.Combo(getConfigurationFilesList(), enable_events=False, key="ConfigurationFile"), sg.Button("Configure", enable_events=True, key="ConfigurationStart")],
+        [sg.Text("Configure Map"), sg.Combo(getConfigurationFilesList(), enable_events=False, key="ConfigurationFile"), sg.Button("Configure", enable_events=True, key="ConfigurationStart"),],
+        [sg.Text("Run Solution"), sg.Combo(getSolutionsFilesList(), enable_events=False, key="SolutionFile"), sg.Button("Run Solution", enable_events=True, key="ToggleSolution"), sg.Text("Solution Runtime:"), sg.Text("--:--", key="SolutionRuntime")],
         ]
 
     #links the layout to the window
@@ -259,6 +265,23 @@ def handleEvents(event, values, window, queueIn, overseerData):
         #start configuring the map automatically!
         if(not values["ConfigurationFile"] == ""):
             startConfiguring(values["ConfigurationFile"], queueIn, overseerData)
+            
+    global solutionStartTime
+
+    if("ToggleSolution" in event):
+        #start or stop solution
+
+        if(solutionStartTime < 0):
+            #start a solution
+            window["ToggleSolution"].update(text="Stop Solution")
+            window["SolutionRuntime"].update(value="00:00")
+            solutionStartTime = time()
+        else:
+            #stop solution
+            window["ToggleSolution"].update(text="Start Solution")
+            window["SolutionRuntime"].update(value="--:--")
+            solutionStartTime = -1
+
 
 def update(window, values, queueOut, robots, stations):
     # to effectively clear queue - do two stage message scanning
@@ -361,6 +384,13 @@ def update(window, values, queueOut, robots, stations):
         #if the map needs redrawn
         window["MapImage"].update(data=ImageTk.PhotoImage(Image.fromarray(drawBots(baseMap.copy(), botLocationsGUI))))
 
+    #update the solution clock if needed
+    if(solutionStartTime >= 0):
+        secondsSinceStart = round(time() - solutionStartTime)
+        minutesSinceStart = round(secondsSinceStart / 60)
+        remainderSeconds = secondsSinceStart % 60
+
+        window["SolutionRuntime"].update(value=str(minutesSinceStart) + ":" + str(remainderSeconds))
 
 def runRouting(startingNodeName, endingNodeName, targetBot, queue):
     #route and add route to target - run this in a seperate thread to prevent blocking in gui thread

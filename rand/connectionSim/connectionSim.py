@@ -15,7 +15,7 @@ BUFFER_LENGTH = 50
 
 def launch():
     #characteristics that the sim can publish
-    characteristics = ["bat", "commandStatus", "connectToCentral"]
+    characteristics = ["bat", "commandStatus", "connectBotToCentral", "connectStationToCentral"]
 
     #the sim layout
     layout = [[sg.Text("Characteristic:"), sg.Combo(characteristics, key="characteristic")],
@@ -58,7 +58,7 @@ def monitor(window):
                 print("Invalid switch name: " + str(ROUTER_NAME) + ". Should be: " + str(getRouterHostName()))
                 quit()
 
-        except socket.gaierror:
+        except socket.herror:
             print("Could not find LOCALIP, is the environment set up?")
             quit()
 
@@ -83,8 +83,11 @@ def monitor(window):
             return
         elif(event == "sendMessage"):
 
-            if(values["characteristic"] == "connectToCentral"):
-                connectionMessage =  bytes("Im a bot! MAC:" + mac + "$$$", "utf-8")
+            if(values["characteristic"] == "connectBotToCentral"):
+                connectionMessage = bytes("Im a bot! MAC:" + mac + "$$$", "utf-8")
+                sendingSocket.sendto(connectionMessage, (LOCAL_IP, sendPort))
+            elif(values["characteristic"] == "connectStationToCentral"):
+                connectionMessage = bytes("Im a station! MAC:" + mac + "$$$", "utf-8")
                 sendingSocket.sendto(connectionMessage, (LOCAL_IP, sendPort))
 
             elif(not targetPort == None):

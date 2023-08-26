@@ -16,6 +16,7 @@ This file contains a list of solution actions
         -to run the command at any time, min time = 0 
 
     -Commands will run in order and will not be skipped (unless they are invalid)
+        -They will be run in order listed, not chronological order
 
 B100 - Route Specific Bot To
     Ex "B100 5010 30 AP4" - route bot 5010 from its current location to the station with ID 4 any time after 30 seconds    
