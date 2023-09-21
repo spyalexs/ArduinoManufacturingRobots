@@ -21,6 +21,8 @@ RobotContainer::RobotContainer(mc::DCMotor* motor1, mc::DCMotor* motor2, mc::Enc
   }
 
   pinMode(this->m_ultrasonicEchoPin, INPUT);
+  pinMode(this->m_encoderCWFPin, INPUT);
+  pinMode(this->m_encoderCCWFPin, INPUT);
 }
 
 void RobotContainer::setMotor1(int duty){
@@ -170,10 +172,9 @@ void RobotContainer::velocityControl(double* Power1, double* Power2){
 
 bool RobotContainer::isEncoderClicked(){
 
-  pinMode(IN2, INPUT);
-  Serial.println(analogRead(IN2));
+  Serial.println(digitalRead(this->m_encoderClickPin));
 
-  if(!digitalRead(IN2)){
+  if(!digitalRead(this->m_encoderClickPin)){
     //if a click signal is being sent
 
     if(this->m_encoderReleased){
@@ -204,15 +205,10 @@ void RobotContainer::cycleEncoder(){
   //this works because of low cycle time
   
   //check to see if a direction signal is being sent
-  bool ccw = mp_gpio->digitalRead(this->m_encoderCCWFPin);  
-  bool cw = mp_gpio->digitalRead(this->m_encoderCWFPin);  
-
-  //cycle / handle clicks
-  if(this->isEncoderClicked()){
-    Serial.println("Clicked");
-    handleEncoderClick();
-  }
-
+  bool ccw = digitalRead(this->m_encoderCCWFPin);  
+  bool cw = digitalRead(this->m_encoderCWFPin);  
+  
+  //2 signal mode
   if(ccw != cw){
     //direction signal
     
@@ -228,6 +224,19 @@ void RobotContainer::cycleEncoder(){
     return;
   } 
 
+  //use when switch is disconnnected
+  //"click"
+  if(ccw != this->m_encoderLastPosition){
+    this->m_encoderClickStart = millis();
+    this->m_encoderReleased = true;
+  }
+
+  if(this->m_encoderClickStart + 5000 < millis() && this->m_encoderReleased){
+    this->m_encoderReleased = false;
+    
+    handleEncoderClick();
+  }
+
   if(ccw != this->m_encoderLastPosition){
     //if state has changed
 
@@ -241,6 +250,19 @@ void RobotContainer::cycleEncoder(){
       this->m_encoderCounts--;
     }
   }
+
+  //cycle / handle clicks - use when switch is working
+  // if(this->isEncoderClicked()){
+  //   Serial.println("Clicked");
+  //   handleEncoderClick();
+  // }
+
+  // 1 Signal Mode - only one side of the dial attached
+  // if(ccw != this->m_encoderLastPosition){
+  //   this->m_encoderCounts++;
+
+  //   this->m_encoderLastPosition = ccw;
+  // }
 }
 
 int RobotContainer::getDisplayEncoderCounts(){

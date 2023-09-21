@@ -40,9 +40,9 @@ class RobotContainer{
     uint8_t m_intersectionPin;
     uint8_t m_codePin;
 
-    uint8_t m_encoderClickPin = 2;
-    uint8_t m_encoderCWFPin = 0;
-    uint8_t m_encoderCCWFPin = 1;
+    uint8_t m_encoderClickPin = IN4;
+    uint8_t m_encoderCWFPin = IN4;
+    uint8_t m_encoderCCWFPin = IN2;
 
     uint8_t m_ultrasonicTriggerPin = 11;
     uint8_t m_ultrasonicEchoPin = 12;
