@@ -296,6 +296,8 @@ Icon* Display::getIcon(uint8_t iconNumber){
     return nullptr;
 }
 
+void 
+
 bool Display::drawRect(int x, int y, int w, int h, uint16_t color){
     //draw horizontal lines
     for(int i = x; i < x + w; i++){

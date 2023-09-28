@@ -149,6 +149,8 @@ void Display::cycle(int encoderCount){
                 break;
             case 105:  
                 pop = this->drawIconOutline(&this->m_displayIcons[5]);
+                this->addItem("mustang");
+
                 break;          
             case 106:                
                 pop = this->drawIconOutline(&this->m_displayIcons[6]);
@@ -179,6 +181,9 @@ void Display::cycle(int encoderCount){
                 break;
             case 117:                
                 pop = this->drawIcon(&this->m_displayIcons[7]);
+                break;
+            case 119:
+                pop = this->wipeIcon(&this->m_displayIcons[this->m_jobQueue.front().m_param1], this->m_jobQueue.front().m_param2, &this->m_jobQueue.front().m_param3);
                 break;
             case 120:
                 pop = this->drawIcon(&this->m_connectionIcon);
@@ -248,6 +253,8 @@ bool Display::setIconsCount(int icons){
 }
 
 void Display::drawIconSlots(){
+    Serial.println("Drawing Icons");
+
     //get heights and widths
     int iconZoneHeight = DISPLAY_HEIGHT - DISPLAY_BOTTOM_BAR_HEIGHT - DISPLAY_TOP_BAR_HEIGHT;
     int maxIconHeight = round((iconZoneHeight - DISPLAY_MIN_ICON_SPACING * 3) / 2);
@@ -281,18 +288,18 @@ bool Display::drawIconOutline(Icon* icon){
     //draw the outline of the icon
 
     //add in  vertical lines
-    for(int i = 0; i < icon->m_height; i++){
+    for(int i = 0; i < icon->m_height + 1; i++){
         //add left and right pixels
-        this->addPixelToBuffer(Pixel(icon->m_x, icon->m_y + i, ILI9341_WHITE));
-        this->addPixelToBuffer(Pixel(icon->m_x + icon->m_width, icon->m_y + i, ILI9341_WHITE));
+        this->addPixelToBuffer(Pixel(icon->m_x, icon->m_y + i + 1, ILI9341_WHITE));
+        this->addPixelToBuffer(Pixel(icon->m_x + icon->m_width + 1, icon->m_y + i, ILI9341_WHITE));
     }    
     
-    for(int i = 0; i < icon->m_width; i++){
+    for(int i = 0; i < icon->m_width + 1; i++){
         //add top and bottom pixels
-        this->addPixelToBuffer(Pixel(icon->m_x + i, icon->m_y, ILI9341_WHITE));
-        this->addPixelToBuffer(Pixel(icon->m_x + i, icon->m_y + icon->m_height, ILI9341_WHITE));
+        this->addPixelToBuffer(Pixel(icon->m_x + i, icon->m_y - 1, ILI9341_WHITE));
+        this->addPixelToBuffer(Pixel(icon->m_x + i, icon->m_y + icon->m_height + 1, ILI9341_WHITE));
     }
-
+ 
     return true;
 }
 
@@ -375,10 +382,57 @@ void Display::setMessagesOutQueue(std::queue<String>* queue){
 }
 
 void Display::addIconDrawJob(uint8_t iconNumber, String iconName){
-    //call this to begin drawing an icon
+    //call this to begin drawing an icons
 
     this->m_jobQueue.push(DisplayJob(110 + iconNumber));
     this->getIcon(iconNumber)->beginDrawing(iconName);
+}
+
+void Display::addItem(String iconName){
+    //find empty icon
+    for(uint8_t i = 0; i < this->m_requestedIconCount; i++){
+        if(this->m_displayIcons[i].m_iconName == ""){
+            //if the icon is empty draw the item in it
+            this->addIconDrawJob(i, iconName);
+
+            return;
+        }
+    }
+}
+
+void Display::removeItem(String itemName){
+    //find a icon that contains a target item and remove it
+
+    for(int i = 0; i < this->m_requestedIconCount; i++){
+        if(this->m_displayIcons[i].m_iconName == itemName){
+            //if the icon's item name match's the target item name
+            this->m_jobQueue.push(DisplayJob(119, i, ILI9341_BLACK, 0));
+
+            //mark the icon as empty
+            this->m_displayIcons[i].m_iconName = "";
+            return;
+        }
+    }
+}
+
+bool Display::wipeIcon(Icon* icon, uint16_t color, uint16_t* yCurrent){
+    //remove an object from an icon - this op should be small enough to do in a single pass
+
+    for(int y = *yCurrent; y < icon->m_height; y++){
+
+        //escape from row if there is not enough room in the pixel buffer
+        if(PIXEL_BUFFER_LENGTH - this->getPixelsInBufferCount() < icon->m_width){
+            //save current y
+            *yCurrent = y;
+            return false;
+        }
+
+        for(int x = 1; x < icon->m_width; x++){
+            this->addPixelToBuffer(Pixel(x + icon->m_x, y + icon->m_y, color));
+        }
+    }
+
+    return true;
 }
 
 Icon* Display::getIcon(uint8_t iconNumber){
@@ -514,6 +568,11 @@ void Display::drawTestingMenu(uint8_t page){
 
 void Display::addWipeDisplayJob(bool entireDisplay, uint16_t color = ILI9341_BLACK){
     this->m_jobQueue.push(DisplayJob(255, entireDisplay, color));
+
+    //mark all items as removed
+    for(int i = 0; i < 8; i++){
+        this->m_displayIcons[i].m_iconName = "";
+    }
 }
 
 bool Display::wipeDisplay(bool entireDisplay = true, uint16_t color = ILI9341_BLACK){

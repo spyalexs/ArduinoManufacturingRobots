@@ -159,9 +159,9 @@ void RobotContainer::velocityControl(double* Power1, double* Power2){
   m_velPreviousCPS1 = instantCPS1;
   m_velPreviousCPS2 = instantCPS2;
 
-  double vP = .02;
+  double vP = .06;
   double vD = 0;//.000005;
-  double vFF = 20;
+  double vFF = 80;
 
   double power1 = (vP * (m_velTargetCPS - instantCPS1)) + vFF - vD * dCPS1;
   double power2 = (vP * (m_velTargetCPS - instantCPS2)) + vFF - vD * dCPS2;

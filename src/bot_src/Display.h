@@ -157,6 +157,15 @@ class Display{
 
         void updateDestination(String Destination);
 
+        //add an item to the system's hold
+        void addItem(String iconName);
+
+        //remove an item from the system's hold
+        void removeItem(String iconName);
+
+        //reset an icon's contents on the display
+        bool wipeIcon(Icon* icon, uint16_t color, uint16_t* currentY);
+
 };
 
 /*Job Reference

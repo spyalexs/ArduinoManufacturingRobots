@@ -274,6 +274,25 @@ void listen(){
 
       //write the destination
       MC.m_display.updateDestination(destination);
+
+    } else if (characteristic == "SetSlotCount"){
+      int value = dataString.substring(secondSeperator + 1).toInt();
+
+      //wipe display and adjust icon count
+      MC.m_display.addWipeDisplayJob(false, 0);
+
+      MC.m_display.setIconsCount(value);
+
+    } else if (characteristic == "AddItem"){
+      // add an item to a slot
+      String itemName = dataString.substring(secondSeperator + 1);
+      
+      MC.m_display.addItem(itemName);
+    } else if (characteristic == "RemoveItem"){
+      // remove an item from a slot
+      String itemName = dataString.substring(secondSeperator + 1);
+      
+      MC.m_display.removeItem(itemName);
     }
 
     //remove packet after it has been handled
