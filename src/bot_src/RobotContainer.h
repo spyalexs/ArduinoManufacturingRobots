@@ -56,8 +56,9 @@ class RobotContainer{
     double m_staleTime = 0.1; // the time it takes for control results to need to be refreshed
 
     //define line control varibles
-    int m_lineHighValue = 100;
-    int m_lineLowValue = 50;
+    int m_lineHighValue = 60;
+    int m_lineLowValue = 40;
+    int m_intersectionMarkerThreshold = 50;
     int m_linePreviousValue = 0;
     double m_linePreviousTime = 0;
 
@@ -111,6 +112,7 @@ class RobotContainer{
 
     //gpio
     void setGPIOPointer(Adafruit_MCP23X17* gpio);
+    void setConnectionLight(bool connected);
 
     void BypassEncoder();
 };

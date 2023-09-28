@@ -149,8 +149,6 @@ void Display::cycle(int encoderCount){
                 break;
             case 105:  
                 pop = this->drawIconOutline(&this->m_displayIcons[5]);
-                this->addItem("mustang");
-
                 break;          
             case 106:                
                 pop = this->drawIconOutline(&this->m_displayIcons[6]);

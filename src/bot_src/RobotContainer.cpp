@@ -26,11 +26,11 @@ RobotContainer::RobotContainer(mc::DCMotor* motor1, mc::DCMotor* motor2, mc::Enc
 }
 
 void RobotContainer::setMotor1(int duty){
-  this->m_motor1->setDuty(duty);
+  this->m_motor1->setDuty(-duty);
 }
 
 void RobotContainer::setMotor2(int duty){
-  this->m_motor2->setDuty(-duty);
+  this->m_motor2->setDuty(duty);
 }
 
 void RobotContainer::setLEDStatus(int status){
@@ -54,7 +54,11 @@ int RobotContainer::getLineFollowerPinReading(){
 }
 
 bool RobotContainer::isOnIntersectionMarker(){
-  return !digitalRead(m_intersectionPin);
+  if(analogRead(m_intersectionPin) > this->m_intersectionMarkerThreshold){
+    return false;
+  } 
+
+  return true;
 }
 
 bool RobotContainer::isCodePin(){
@@ -109,8 +113,8 @@ void RobotContainer::lineControl(double* Correction1, double* Correction2){
     m_linePreviousValue = this->getLineFollowerPinReading();
   }
 
-  double lP = .15;
-  double lD = .001;
+  double lP = .45;
+  double lD = .002;
 
   int maxCorrection = 25;
 
@@ -127,8 +131,8 @@ void RobotContainer::lineControl(double* Correction1, double* Correction2){
   m_linePreviousValue = value;
   m_linePreviousTime = time;
 
-  *Correction1 = correction;
-  *Correction2 = -correction;
+  *Correction1 = -correction;
+  *Correction2 = +correction;
 }
 
 void RobotContainer::velocityControl(double* Power1, double* Power2){
@@ -159,9 +163,9 @@ void RobotContainer::velocityControl(double* Power1, double* Power2){
   m_velPreviousCPS1 = instantCPS1;
   m_velPreviousCPS2 = instantCPS2;
 
-  double vP = .06;
+  double vP = .02;
   double vD = 0;//.000005;
-  double vFF = 80;
+  double vFF = 60;
 
   double power1 = (vP * (m_velTargetCPS - instantCPS1)) + vFF - vD * dCPS1;
   double power2 = (vP * (m_velTargetCPS - instantCPS2)) + vFF - vD * dCPS2;
@@ -437,9 +441,14 @@ void RobotContainer::setGPIOPointer(Adafruit_MCP23X17* gpio){
   //set the pointer to the gpio board
   this->mp_gpio = gpio;
 
-  mp_gpio->pinMode(this->m_encoderCCWFPin, INPUT);
-  mp_gpio->pinMode(this->m_encoderCWFPin, INPUT);
-  mp_gpio->pinMode(this->m_encoderClickPin, INPUT);
+
+  //set all pins to be input
+  for(int i = 0; i < 16; i++){
+    mp_gpio->pinMode(0, INPUT);
+  }
+
+  mp_gpio->pinMode(1, OUTPUT);
+  mp_gpio->digitalWrite(1, HIGH);
 }
 
 void RobotContainer::BypassEncoder(){
@@ -455,4 +464,10 @@ void RobotContainer::BypassEncoder(){
 
   //draw in icon holders
   this->m_display.setIconsCount(6);
+}
+
+void RobotContainer::setConnectionLight(bool connected){
+  //write to tell the gpio board to turn the light on when connected
+  Serial.println("Writing");
+  this->mp_gpio->digitalWrite(0,HIGH);
 }

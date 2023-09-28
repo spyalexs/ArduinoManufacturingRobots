@@ -29,6 +29,8 @@ void TravelStraight::cleanup(){
 }
 
 bool TravelStraight::ifEnd(){
+  Serial.println(mp_MC->getEncoder2Counts());
+
   //return true to stop cycling, false to continue
   if((mp_MC->getEncoder1Counts() + mp_MC->getEncoder2Counts()) / 2 >= m_targetCounts){
     return true;

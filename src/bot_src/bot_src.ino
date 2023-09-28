@@ -20,7 +20,7 @@
 bool PUBLISHDATA = true;
 
 //the robot container that is a wrapper around periphral functions
-RobotContainer MC = RobotContainer(&M1, &M2, &encoder1, &encoder2, IN1, A6, A2);
+RobotContainer MC = RobotContainer(&M1, &M2, &encoder1, &encoder2, IN1, IN3, A2);
 Communicator CC = Communicator();
 Sequencer SC = Sequencer();
 CycleOverseer CO = CycleOverseer(50);
@@ -47,6 +47,9 @@ void setup(){
     Serial.println("Failed to start controller!");
   }
 
+  M1.setDuty(0);
+  M2.setDuty(0);
+
   //startup gpio board
   if(!gpio.begin_I2C()){
     Serial.println("Failed to start the gpio board!");
@@ -64,7 +67,11 @@ void setup(){
 
   //get coms set up with central
   CC.connectToNetwork();
+
+  MC.setConnectionLight(true);
+
   CC.connectToCentral();
+
 
   Serial.println("I am a bot!");
 
