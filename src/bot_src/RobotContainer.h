@@ -62,14 +62,14 @@ class RobotContainer{
     int m_linePreviousValue = 0;
     double m_linePreviousTime = 0;
 
-    uint8_t m_powerState = 99;
+    uint8_t m_powerState = 0;
     //powerstates:
     //  0 - usb or charging
     //  1 - bat low
     //  2 - bat high
 
     //define velocity control varibles
-    int m_velTargetCPS = 450;
+    int m_velTargetCPS = 900;
     int m_velPreviousCounts1 = 0;
     int m_velPreviousCounts2 = 0;
     double m_velPreviousCPS1 = 0;

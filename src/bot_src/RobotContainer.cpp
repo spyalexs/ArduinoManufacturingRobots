@@ -85,7 +85,7 @@ double RobotContainer::getBatteryVoltage(){
     }
   } else if(this->m_powerState == 0){
     //usb to battery power
-    if(voltage > 7){
+    if(voltage > 7.55){
       this->m_powerState = 2;
       this->m_display.addIconDrawJob(11, "bathi");
     } else {
@@ -94,13 +94,13 @@ double RobotContainer::getBatteryVoltage(){
     }
   } else if(this->m_powerState == 1){
     //low to high
-    if(voltage > 7.1){
+    if(voltage > 7.6){
       this->m_powerState = 1;
       this->m_display.addIconDrawJob(11, "bathi");
     }
   }else{
     //high to low
-    if(voltage < 6.9){
+    if(voltage < 7.5){
       this->m_powerState = 1;
       this->m_display.addIconDrawJob(11, "batlow");
     }
