@@ -87,7 +87,8 @@ class RobotContainer{
     int getEncoder1Counts();
     int getEncoder2Counts();
 
-    int getLineFollowerPinReading();
+    uint16_t getLineFollowerPinReading();
+    uint16_t getMarkerPinReading();
     bool isOnIntersectionMarker();
     bool isCodePin();
 

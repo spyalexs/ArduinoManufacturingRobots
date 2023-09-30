@@ -132,6 +132,9 @@ void Display::cycle(int encoderCount){
             case 2:
                 pop = this->writeText();
                 break;
+            case 3:
+                pop = this->drawFilledRect(this->m_jobQueue.front().m_param1, this->m_jobQueue.front().m_param2, &this->m_jobQueue.front().m_param3, this->m_jobQueue.front().m_param4, &this->m_jobQueue.front().m_param5);
+                break;
             case 100:
                 pop = this->drawIconOutline(&this->m_displayIcons[0]);
                 break;
@@ -180,9 +183,6 @@ void Display::cycle(int encoderCount){
             case 117:                
                 pop = this->drawIcon(&this->m_displayIcons[7]);
                 break;
-            case 119:
-                pop = this->wipeIcon(&this->m_displayIcons[this->m_jobQueue.front().m_param1], this->m_jobQueue.front().m_param2, &this->m_jobQueue.front().m_param3);
-                break;
             case 120:
                 pop = this->drawIcon(&this->m_connectionIcon);
                 break;            
@@ -198,6 +198,9 @@ void Display::cycle(int encoderCount){
             //remove job from queue
             this->m_jobQueue.pop();
         }
+    } else if(this->getPixelsInBufferCount() == 0 && this->m_activeMenuItems > 0){
+        //call for a menu refresh
+        this->m_refreshMenu = true;
     }
 
     while(this->getPixelsInBufferCount() != 0){
@@ -404,7 +407,7 @@ void Display::removeItem(String itemName){
     for(int i = 0; i < this->m_requestedIconCount; i++){
         if(this->m_displayIcons[i].m_iconName == itemName){
             //if the icon's item name match's the target item name
-            this->m_jobQueue.push(DisplayJob(119, i, ILI9341_BLACK, 0));
+            this->m_jobQueue.push(DisplayJob(3, ILI9341_BLACK, this->m_displayIcons[i].m_x + 1, this->m_displayIcons[i].m_y, this->m_displayIcons[i].m_width, this->m_displayIcons[i].m_height));
 
             //mark the icon as empty
             this->m_displayIcons[i].m_iconName = "";
@@ -413,20 +416,23 @@ void Display::removeItem(String itemName){
     }
 }
 
-bool Display::wipeIcon(Icon* icon, uint16_t color, uint16_t* yCurrent){
+bool Display::drawFilledRect(uint16_t color, uint16_t x_initial, uint16_t* yCurrent, uint16_t width, uint16_t* yToGo){
     //remove an object from an icon - this op should be small enough to do in a single pass
 
-    for(int y = *yCurrent; y < icon->m_height; y++){
+    for(int y = *yCurrent; y < (*yToGo + *yCurrent); y++){
 
         //escape from row if there is not enough room in the pixel buffer
-        if(PIXEL_BUFFER_LENGTH - this->getPixelsInBufferCount() < icon->m_width){
+        if(PIXEL_BUFFER_LENGTH - this->getPixelsInBufferCount() < width){
+            //calculate rows remaining
+            *yToGo = *yToGo - (y - *yCurrent);
+            
             //save current y
             *yCurrent = y;
             return false;
         }
 
-        for(int x = 1; x < icon->m_width; x++){
-            this->addPixelToBuffer(Pixel(x + icon->m_x, y + icon->m_y, color));
+        for(int x = x_initial; x < width + x_initial; x++){
+            this->addPixelToBuffer(Pixel(x, y, color));
         }
     }
 
@@ -751,6 +757,41 @@ void Display::updateDestination(String destination){
     if(destination != "None"){
         //write new destination
         this->addWriteTextJob(156, 5, ILI9341_WHITE, 2, destination);
+    }
+}
+
+void Display::refreshMenuPage(SensorData sd){
+    //refresh the current menu page
+
+    //stop calls for refresh
+    this->m_refreshMenu = false;
+
+    switch(this->m_testingMenuPage){
+        case 3:
+            //UV sensor page
+            this->m_menuItems[2].m_text = "UV1: " + String(sd.m_UV1);
+            this->m_menuItems[3].m_text = "UV2: " + String(sd.m_UV2);
+            this->m_menuItems[4].m_text = "UV3: " + String(sd.m_UV3);
+            this->m_menuItems[5].m_text = "US:  " + String(sd.m_US);
+
+            //wipe over previous text
+            this->m_jobQueue.push(DisplayJob(3, ILI9341_BLACK, this->m_menuItems[2].m_x + 1, this->m_menuItems[2].m_y + 1, this->m_menuItems[2].m_width - 2, this->m_menuItems[2].m_height - 2));
+            //rewrite text
+            this->addWriteTextJob(this->m_menuItems[2].m_x + this->m_menuItems[2].m_width / 2 - (this->m_menuItems[2].m_text.length() * 6), this->m_menuItems[2].m_y + this->m_menuItems[2].m_height / 2 - 4, ILI9341_WHITE, 2, this->m_menuItems[2].m_text);
+
+            this->m_jobQueue.push(DisplayJob(3, ILI9341_BLACK, this->m_menuItems[3].m_x + 1, this->m_menuItems[3].m_y + 1, this->m_menuItems[3].m_width - 2, this->m_menuItems[3].m_height - 2));
+            this->addWriteTextJob(this->m_menuItems[3].m_x + this->m_menuItems[3].m_width / 2 - (this->m_menuItems[3].m_text.length() * 6), this->m_menuItems[3].m_y + this->m_menuItems[3].m_height / 2 - 4, ILI9341_WHITE, 2, this->m_menuItems[3].m_text);
+
+            this->m_jobQueue.push(DisplayJob(3, ILI9341_BLACK, this->m_menuItems[4].m_x + 1, this->m_menuItems[4].m_y + 1, this->m_menuItems[4].m_width - 2, this->m_menuItems[4].m_height - 2));
+            this->addWriteTextJob(this->m_menuItems[4].m_x + this->m_menuItems[4].m_width / 2 - (this->m_menuItems[4].m_text.length() * 6), this->m_menuItems[4].m_y + this->m_menuItems[4].m_height / 2 - 4, ILI9341_WHITE, 2, this->m_menuItems[4].m_text);
+
+            this->m_jobQueue.push(DisplayJob(3, ILI9341_BLACK, this->m_menuItems[5].m_x + 1, this->m_menuItems[5].m_y + 1, this->m_menuItems[5].m_width - 2, this->m_menuItems[5].m_height - 2));
+            this->addWriteTextJob(this->m_menuItems[5].m_x + this->m_menuItems[5].m_width / 2 - (this->m_menuItems[5].m_text.length() * 6), this->m_menuItems[5].m_y + this->m_menuItems[5].m_height / 2 - 4, ILI9341_WHITE, 2, this->m_menuItems[5].m_text);
+
+
+        default:
+            //not a known page, do nothing
+            break;
     }
 }
 

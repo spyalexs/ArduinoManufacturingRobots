@@ -13,6 +13,7 @@
 #include "Icon.h"
 #include "DisplayJob.h"
 #include "MenuItem.h"
+#include "SensorData.h"
 
 // For the Adafruit shield, these are the default.
 #define TFT_DC 10
@@ -78,6 +79,9 @@ class Display{
         bool highlightMenuItem(uint8_t item, bool unhighlight = false);
 
     public:
+        //wether or not the container should refresh the menu
+        bool m_refreshMenu = false;
+
         //constructor
         Display();
 
@@ -164,13 +168,17 @@ class Display{
         void removeItem(String iconName);
 
         //reset an icon's contents on the display
-        bool wipeIcon(Icon* icon, uint16_t color, uint16_t* currentY);
+        bool drawFilledRect(uint16_t color, uint16_t x, uint16_t* currentY, uint16_t width, uint16_t* yToGo);
+
+        //refresh menu page
+        void refreshMenuPage(SensorData sd);
 
 };
 
 /*Job Reference
     001 - draw a rectangle
     002 - print text
+    003 - draw a filled rectangle
     10x - draw icon outline number xx
     11x - draw icon image number xx
     255 - wipe display

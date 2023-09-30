@@ -49,8 +49,12 @@ int RobotContainer::getEncoder2Counts(){
   return -this->m_encoder2->getRawCount();
 }
 
-int RobotContainer::getLineFollowerPinReading(){
+uint16_t RobotContainer::getLineFollowerPinReading(){
   return analogRead(m_lineFollowerPin);
+}
+
+uint16_t RobotContainer::getMarkerPinReading(){
+  return analogRead(m_intersectionPin);
 }
 
 bool RobotContainer::isOnIntersectionMarker(){
@@ -333,6 +337,15 @@ void RobotContainer::cycle(){
   if(this->m_cycleCounter < 25){
     //cycle display
     this->m_display.cycle(this->getDisplayEncoderCounts());
+
+    //if the display requested that the menu page be refreshed
+    if(this->m_display.m_refreshMenu == true){
+      //get sensor data
+      SensorData sd = SensorData(this->getLineFollowerPinReading(), this->getMarkerPinReading(), 0, 0);
+
+      this->m_display.refreshMenuPage(sd);
+    }
+
   } else {
     this->m_cycleCounter = 0;
 
