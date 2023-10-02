@@ -12,6 +12,7 @@ sys.path.insert(1, os.path.join(os.path.dirname(os.path.realpath(__file__)), "..
 
 NODESIZE = 33 #mutliple of 8 + 1 and must be at leatst 25
 MAPFILENAME = "map.xml"
+MAPSIZE = 600
 
 #create a map of possible bot locations
 botDrawingLocations = dict()
@@ -34,7 +35,7 @@ def displayBaseMap(root):
     sg.theme(getTheme())
 
     #set the root loaded from xml
-    layout = [[sg.Image(size=(600,600), key="mapImage")]]
+    layout = [[sg.Image(size=(MAPSIZE,MAPSIZE), key="mapImage")]]
 
     window = sg.Window(title="Map", layout=layout, finalize=True)
     window["mapImage"].update(data=ImageTk.PhotoImage(drawMap(root)))
@@ -52,6 +53,23 @@ def getBaseMap():
         baseImage = drawMap(root)
 
         return baseImage
+    
+def flipImageY(img):
+    #compensates for the top of the image being y = 0
+    #TODO not do this ------ 
+
+    imgHeight = len(img)
+    flippedImg = np.zeros(shape=(imgHeight, len(img[0]), len(img[0][0])))
+
+    for i,row in enumerate(img):
+        flippedImg[imgHeight - i - 1] = row 
+    
+    print(len(flippedImg))
+    print(len(flippedImg[0]))
+    print(len(flippedImg[0][0]))
+
+    return flippedImg
+    
 
 def loadImage():
     #load a test imahe
@@ -154,7 +172,8 @@ def drawMap(root):
     ET.indent(ppTree, " ")
     ppTree.write("ppData.xml")
 
-    return np.uint8(map)
+    #flip y
+    return np.uint8(flipImageY(map))
 
 def drawNode(locationX, locationY,  map):
     # nodes are represented by an 41 by 41 box, centered around location
