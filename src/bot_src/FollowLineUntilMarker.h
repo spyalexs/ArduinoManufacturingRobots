@@ -6,7 +6,7 @@
 
 class FollowLineUntilMarker : public Command{
   public:
-    FollowLineUntilMarker(RobotContainer* MC, Communicator* CC);
+    FollowLineUntilMarker(RobotContainer* MC, Communicator* CC, bool preconfirmed = false);
 
     void startup();
     void cycle();

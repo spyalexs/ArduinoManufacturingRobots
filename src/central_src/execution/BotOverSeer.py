@@ -188,6 +188,7 @@ class BotOverSeer(OverSeer):
 
                 #issue confirmation
                 self.sendMessageToOverseen(self.m_port + "$commandIssue$" + str(253))
+                
         elif(self.m_status == 2):
             #set the robot's location to the in progress point
             self.setLocation(self.m_progressLocation, Clearing=False)

@@ -6,7 +6,7 @@
 
 class TravelStraight : public Command{
   public:
-    TravelStraight(RobotContainer* MC, Communicator* CC, int counts);
+    TravelStraight(RobotContainer* MC, Communicator* CC, int counts, bool preconfirmed = false);
 
     void startup();
     void cycle();

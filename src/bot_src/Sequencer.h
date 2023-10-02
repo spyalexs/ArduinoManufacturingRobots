@@ -59,6 +59,8 @@ class Sequencer{
         bool m_clearQueue = false;
 
         Communicator* mp_CC;
+
+        void updateStatus(uint8_t status);
 };
 
 

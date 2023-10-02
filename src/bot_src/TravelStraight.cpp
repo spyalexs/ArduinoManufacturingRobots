@@ -1,6 +1,6 @@
 #include "TravelStraight.h"
 
-TravelStraight::TravelStraight(RobotContainer* MC, Communicator* CC, int counts):Command(MC, CC, "TravelStraight"){
+TravelStraight::TravelStraight(RobotContainer* MC, Communicator* CC, int counts, bool preconfirmed):Command(MC, CC, "TravelStraight", preconfirmed){
   //do initialization here
   m_straightCounts = counts;
 }

@@ -1,6 +1,6 @@
 #include "FollowLineUntilMarker.h"
 
-FollowLineUntilMarker::FollowLineUntilMarker(RobotContainer* MC, Communicator* CC):Command(MC, CC, "FollowLineUntilMarker"){
+FollowLineUntilMarker::FollowLineUntilMarker(RobotContainer* MC, Communicator* CC, bool preconfirmed):Command(MC, CC, "FollowLineUntilMarker", preconfirmed){
   //do initialization here
   m_intersectionCounter = 0;
 }
@@ -15,8 +15,6 @@ void FollowLineUntilMarker::cycle(){
 
   mp_MC->velocityControl(&power1, &power2);
   mp_MC->lineControl(&correction1, &correction2);
-
-  Serial.println("Power1: " + String(power1) + " Power2: " + String(power2) + "Correction1: " + String(correction1) + "Correction2: " + String(correction2));
 
   mp_MC->setMotor1(power1 + correction1);
   mp_MC->setMotor2(power2 + correction2);

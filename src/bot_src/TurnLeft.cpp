@@ -1,38 +1,41 @@
 #include "TurnLeft.h"
 
-TurnLeft::TurnLeft(RobotContainer* MC, Communicator* CC):Command(MC, CC, "TurnLeft"){
+TurnLeft::TurnLeft(RobotContainer* MC, Communicator* CC, bool preconfirmed):Command(MC, CC, "TurnLeft", preconfirmed){
   //do initialization here
 }
 
 void TurnLeft::startup(){
   //do startup tasks 
-  m_targetCounts = m_turningCounts + mp_MC->getEncoder1Counts();
+  m_targetCounts = m_turningCounts + mp_MC->getEncoder2Counts();
   m_previousTime = mp_MC->getTime();
-  m_previousCounts = mp_MC->getEncoder1Counts();
+  m_previousCounts1 = mp_MC->getEncoder1Counts();
+  m_previousCounts2 = mp_MC->getEncoder2Counts();
 
 }
 
 void TurnLeft::cycle(){
   //do cycle stuff here
   int counts1 = mp_MC->getEncoder1Counts();
+  int counts2 = mp_MC->getEncoder2Counts();
   double time = mp_MC->getTime();
 
-  double instantCPS1 = (counts1 - m_previousCounts) / (time - m_previousTime);
+  double instantCPS1 = -(counts1 - m_previousCounts1) / (time - m_previousTime);
+  double instantCPS2 = (counts2 - m_previousCounts2) / (time - m_previousTime);
 
   double vP = .02;
-  double vFF = 25;
+  double vFF = 20 + .015 * this->m_targetCPS;
 
   int power1 = vP * (m_targetCPS - instantCPS1) + vFF;
-  int power2 = 0;
-
-  mp_MC->setMotor1(power1);
+  int power2 = vP * (m_targetCPS - instantCPS2) + vFF;
+  mp_MC->setMotor1(-power1);
   mp_MC->setMotor2(power2);
 
-  Serial.println(power1);
-  Serial.println(instantCPS1);
+  // Serial.println("P1: " + String(-power1) + " CPS1: " + String(instantCPS1) + " P2: " + String(power2) + " CPS2: " + String(instantCPS2));
+
 
   m_previousTime = time;
-  m_previousCounts = counts1;
+  m_previousCounts1 = counts1;
+  m_previousCounts2 = counts2;
 }
 
 void TurnLeft::cleanup(){
@@ -45,7 +48,7 @@ void TurnLeft::cleanup(){
 
 bool TurnLeft::ifEnd(){
   //return true to stop cycling, false to continue
-  if(mp_MC->getEncoder1Counts() >= m_targetCounts){
+  if(mp_MC->getEncoder2Counts() >= m_targetCounts){
     return true;
   }
 

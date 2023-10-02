@@ -10,7 +10,7 @@ try:
     #get hotspot hostname
     LOCAL_IP = socket.gethostbyname(getHotSpotHostname())
     if(LOCAL_IP):
-        print("Accepting connections over local hotspot!")
+        print("Monitoring connections over local hotspot!")
 except:
     try:
         LOCAL_IP = socket.gethostbyname(getCentralHostName())
@@ -21,7 +21,7 @@ except:
 
         ROUTER_NAME = socket.gethostbyaddr(ROUTER_IP)[0]
         if(ROUTER_NAME == getRouterHostName()):
-            print("Accepting Connections over switch: " + ROUTER_NAME)
+            print("Monitoring Connections over switch: " + ROUTER_NAME)
         else:
             print("Invalid switch name: " + str(ROUTER_NAME) + ". Should be: " + str(getRouterHostName()))
             quit()

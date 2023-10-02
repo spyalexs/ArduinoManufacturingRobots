@@ -62,6 +62,8 @@ void Sequencer::loadInCommand(FollowLineUntilMarker command){
 
 void Sequencer::removeCurrentCommand(){
     //clear the entire queue if need be
+    Serial.println(this->m_clearQueue);
+
     if(this->m_clearQueue == true){
       while(!this->isEmpty()){
           this->m_clearQueue = false;
@@ -101,6 +103,11 @@ void Sequencer::removeCurrentCommand(){
 
     //remove last command from sequencer
     this->m_sequence.pop();
+
+    //if the sequencer is empty after this command, let central know it is finished
+    if(this->isEmpty()){
+        this->updateStatus(254);
+    }
 }
 
 Command* Sequencer::getNextCommand(){
@@ -156,4 +163,9 @@ void Sequencer::clear(){
 
 void Sequencer::setCommunicatorPointer(Communicator* CC){
     this->mp_CC = CC;
+}
+
+void Sequencer::updateStatus(uint8_t status){
+    //update the status and write to central
+    mp_CC->writeMessageToCentral("commandStatus", String(status));
 }

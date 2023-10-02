@@ -117,8 +117,8 @@ void RobotContainer::lineControl(double* Correction1, double* Correction2){
     m_linePreviousValue = this->getLineFollowerPinReading();
   }
 
-  double lP = .45;
-  double lD = .002;
+  double lP = 1.05;
+  double lD = .02;
 
   int maxCorrection = 25;
 
@@ -134,7 +134,6 @@ void RobotContainer::lineControl(double* Correction1, double* Correction2){
 
   m_linePreviousValue = value;
   m_linePreviousTime = time;
-
   *Correction1 = -correction;
   *Correction2 = +correction;
 }
@@ -167,15 +166,17 @@ void RobotContainer::velocityControl(double* Power1, double* Power2){
   m_velPreviousCPS1 = instantCPS1;
   m_velPreviousCPS2 = instantCPS2;
 
-  double vP = .02;
+  double vP = .04;
   double vD = 0;//.000005;
-  double vFF = 60;
+  double vFF = 20 + .011 * this->m_velTargetCPS;
 
   double power1 = (vP * (m_velTargetCPS - instantCPS1)) + vFF - vD * dCPS1;
   double power2 = (vP * (m_velTargetCPS - instantCPS2)) + vFF - vD * dCPS2;
 
   *Power1 = power1;
   *Power2 = power2;
+
+  // Serial.println("CPS: " + String(instantCPS1) + " Power: " + String(power1));
 }
 
 bool RobotContainer::isEncoderClicked(){

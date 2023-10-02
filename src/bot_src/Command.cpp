@@ -1,12 +1,13 @@
 #include "Command.h"
 
-Command::Command(RobotContainer* MC, Communicator* CC, String name){
+Command::Command(RobotContainer* MC, Communicator* CC, String name, bool preconfirmed){
   //general command structure to run a drawn out task on a bot
   m_name = name;
   mp_MC = MC;
   mp_CC = CC;
 
   m_completed = false; 
+  m_preconfirmed = preconfirmed;
 }
 
 Command::Command(){
@@ -92,13 +93,19 @@ void Command::superCycle(){
       break;
     case 254:
       //the command has been completed and is waiting to be replaced
+      //this state is deciprated -- should never be called
       break;
     case 1:
       //do startup action
       this->startup();
 
-      //request confirmation
-      this->setStatus(253);
+      //request confirmation if not preconfirmed
+      if(this->m_preconfirmed)
+      {
+        this->setStatus(2);
+      }else{
+        this->setStatus(253);
+      }
     break;
 
     case 253:
@@ -118,7 +125,6 @@ void Command::superCycle(){
     case 3:
       this->cleanup();
       this->m_completed = true;
-      this->setStatus(254);
      break;
 
     case 255:

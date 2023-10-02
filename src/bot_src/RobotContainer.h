@@ -69,7 +69,7 @@ class RobotContainer{
     //  2 - bat high
 
     //define velocity control varibles
-    int m_velTargetCPS = 900;
+    int m_velTargetCPS = 1400;
     int m_velPreviousCounts1 = 0;
     int m_velPreviousCounts2 = 0;
     double m_velPreviousCPS1 = 0;

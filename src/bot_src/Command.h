@@ -9,7 +9,7 @@
 
 class Command{
   public:
-    Command(RobotContainer* MC, Communicator* CC, String name);
+    Command(RobotContainer* MC, Communicator* CC, String name, bool preconfirmed = false);
     Command(); //default constructor
 
     void setStatus(int status);
@@ -44,6 +44,8 @@ class Command{
 
     double m_confirmationRequestTime = 0.0;// the time of the confirmation request
     double m_confirmationPatience = 1.0; // how long to wait to see if confirmation needs requesting
+
+    bool m_preconfirmed = false; // wether or not the command has been preconfirmed
 };
 
 

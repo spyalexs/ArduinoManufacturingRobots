@@ -153,7 +153,7 @@ void assignCommand(int commandNumber){
 
     case 4:
       if(true){
-        SC.loadInCommand(TravelStraight(&MC, &CC, 1000));
+        SC.loadInCommand(TravelStraight(&MC, &CC, 100000));
       }
       break;
 
@@ -173,8 +173,8 @@ void assignCommand(int commandNumber){
       //full right turn through intersection
       if(true){
         SC.loadInCommand(FollowLineOnMarker(&MC, &CC));
-        SC.loadInCommand(TravelStraight(&MC, &CC, 210));
-        SC.loadInCommand(TurnRight(&MC, &CC));
+        SC.loadInCommand(TravelStraight(&MC, &CC, 2600, true));
+        SC.loadInCommand(TurnRight(&MC, &CC, true));
       }
       break;
 
@@ -259,6 +259,7 @@ void listen(){
           } else {
             Serial.println("Abort message recieved, however, there is no command to abort!");
           }
+          break;
         case 254:
           //clear all commands from queue
           SC.clear();
