@@ -747,12 +747,8 @@ uint8_t Display::getNextTestingMenuPage(){
 void Display::updateDestination(String destination){
     //update the destination portion of the display
 
-    //wipe old destination
-    for(int y = 10; y < DISPLAY_TOP_BAR_HEIGHT; y++){
-        for(int  x = 156; x < DISPLAY_WIDTH; x++){
-            this->addPixelToBuffer(Pixel(x,y, ILI9341_BLACK));
-        }
-    }
+    //wipe old destination by drawing rectangle over it
+    this->m_jobQueue.push(DisplayJob(3, ILI9341_BLACK, 156, 10, DISPLAY_WIDTH - 157, DISPLAY_TOP_BAR_HEIGHT - 11));
 
     if(destination != "None"){
         //write new destination
