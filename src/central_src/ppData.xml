@@ -2,7 +2,7 @@
  <ppnode name="Node1-A" />
  <ppnode name="Node1-B">
   <pplink cost="30" intersection="Node1" locationX="50" locationY="250" neighbor="Node1-A" />
-  <pplink cost="30" intersection="Node1" locationX="50" locationY="250" neighbor="Node1-C" />
+  <pplink cost="35" intersection="Node1" locationX="50" locationY="250" neighbor="Node1-C" />
   <pplink cost="30" intersection="Node1" locationX="50" locationY="250" neighbor="Node1-E" />
   <pplink cost="30" intersection="Node1" locationX="50" locationY="250" neighbor="Node1-G" />
  </ppnode>
@@ -12,7 +12,7 @@
  <ppnode name="Node1-D">
   <pplink cost="30" intersection="Node1" locationX="50" locationY="250" neighbor="Node1-A" />
   <pplink cost="30" intersection="Node1" locationX="50" locationY="250" neighbor="Node1-C" />
-  <pplink cost="30" intersection="Node1" locationX="50" locationY="250" neighbor="Node1-E" />
+  <pplink cost="35" intersection="Node1" locationX="50" locationY="250" neighbor="Node1-E" />
   <pplink cost="30" intersection="Node1" locationX="50" locationY="250" neighbor="Node1-G" />
  </ppnode>
  <ppnode name="Node1-E">
@@ -24,11 +24,11 @@
   <pplink cost="30" intersection="Node1" locationX="50" locationY="250" neighbor="Node1-A" />
   <pplink cost="30" intersection="Node1" locationX="50" locationY="250" neighbor="Node1-C" />
   <pplink cost="30" intersection="Node1" locationX="50" locationY="250" neighbor="Node1-E" />
-  <pplink cost="30" intersection="Node1" locationX="50" locationY="250" neighbor="Node1-G" />
+  <pplink cost="35" intersection="Node1" locationX="50" locationY="250" neighbor="Node1-G" />
  </ppnode>
  <ppnode name="Node1-G" />
  <ppnode name="Node1-H">
-  <pplink cost="30" intersection="Node1" locationX="50" locationY="250" neighbor="Node1-A" />
+  <pplink cost="35" intersection="Node1" locationX="50" locationY="250" neighbor="Node1-A" />
   <pplink cost="30" intersection="Node1" locationX="50" locationY="250" neighbor="Node1-C" />
   <pplink cost="30" intersection="Node1" locationX="50" locationY="250" neighbor="Node1-E" />
   <pplink cost="30" intersection="Node1" locationX="50" locationY="250" neighbor="Node1-G" />
@@ -38,7 +38,7 @@
  </ppnode>
  <ppnode name="Node2-B">
   <pplink cost="30" intersection="Node2" locationX="50" locationY="50" neighbor="Node2-A" />
-  <pplink cost="30" intersection="Node2" locationX="50" locationY="50" neighbor="Node2-C" />
+  <pplink cost="35" intersection="Node2" locationX="50" locationY="50" neighbor="Node2-C" />
   <pplink cost="30" intersection="Node2" locationX="50" locationY="50" neighbor="Node2-E" />
   <pplink cost="30" intersection="Node2" locationX="50" locationY="50" neighbor="Node2-G" />
  </ppnode>
@@ -49,7 +49,7 @@
  <ppnode name="Node2-D">
   <pplink cost="30" intersection="Node2" locationX="50" locationY="50" neighbor="Node2-A" />
   <pplink cost="30" intersection="Node2" locationX="50" locationY="50" neighbor="Node2-C" />
-  <pplink cost="30" intersection="Node2" locationX="50" locationY="50" neighbor="Node2-E" />
+  <pplink cost="35" intersection="Node2" locationX="50" locationY="50" neighbor="Node2-E" />
   <pplink cost="30" intersection="Node2" locationX="50" locationY="50" neighbor="Node2-G" />
  </ppnode>
  <ppnode name="Node2-E" />
@@ -57,11 +57,11 @@
   <pplink cost="30" intersection="Node2" locationX="50" locationY="50" neighbor="Node2-A" />
   <pplink cost="30" intersection="Node2" locationX="50" locationY="50" neighbor="Node2-C" />
   <pplink cost="30" intersection="Node2" locationX="50" locationY="50" neighbor="Node2-E" />
-  <pplink cost="30" intersection="Node2" locationX="50" locationY="50" neighbor="Node2-G" />
+  <pplink cost="35" intersection="Node2" locationX="50" locationY="50" neighbor="Node2-G" />
  </ppnode>
  <ppnode name="Node2-G" />
  <ppnode name="Node2-H">
-  <pplink cost="30" intersection="Node2" locationX="50" locationY="50" neighbor="Node2-A" />
+  <pplink cost="35" intersection="Node2" locationX="50" locationY="50" neighbor="Node2-A" />
   <pplink cost="30" intersection="Node2" locationX="50" locationY="50" neighbor="Node2-C" />
   <pplink cost="30" intersection="Node2" locationX="50" locationY="50" neighbor="Node2-E" />
   <pplink cost="30" intersection="Node2" locationX="50" locationY="50" neighbor="Node2-G" />
@@ -69,7 +69,7 @@
  <ppnode name="Node3-A" />
  <ppnode name="Node3-B">
   <pplink cost="30" intersection="Node3" locationX="250" locationY="250" neighbor="Node3-A" />
-  <pplink cost="30" intersection="Node3" locationX="250" locationY="250" neighbor="Node3-C" />
+  <pplink cost="35" intersection="Node3" locationX="250" locationY="250" neighbor="Node3-C" />
   <pplink cost="30" intersection="Node3" locationX="250" locationY="250" neighbor="Node3-E" />
   <pplink cost="30" intersection="Node3" locationX="250" locationY="250" neighbor="Node3-G" />
  </ppnode>
@@ -77,7 +77,7 @@
  <ppnode name="Node3-D">
   <pplink cost="30" intersection="Node3" locationX="250" locationY="250" neighbor="Node3-A" />
   <pplink cost="30" intersection="Node3" locationX="250" locationY="250" neighbor="Node3-C" />
-  <pplink cost="30" intersection="Node3" locationX="250" locationY="250" neighbor="Node3-E" />
+  <pplink cost="35" intersection="Node3" locationX="250" locationY="250" neighbor="Node3-E" />
   <pplink cost="30" intersection="Node3" locationX="250" locationY="250" neighbor="Node3-G" />
  </ppnode>
  <ppnode name="Node3-E">
@@ -87,13 +87,13 @@
   <pplink cost="30" intersection="Node3" locationX="250" locationY="250" neighbor="Node3-A" />
   <pplink cost="30" intersection="Node3" locationX="250" locationY="250" neighbor="Node3-C" />
   <pplink cost="30" intersection="Node3" locationX="250" locationY="250" neighbor="Node3-E" />
-  <pplink cost="30" intersection="Node3" locationX="250" locationY="250" neighbor="Node3-G" />
+  <pplink cost="35" intersection="Node3" locationX="250" locationY="250" neighbor="Node3-G" />
  </ppnode>
  <ppnode name="Node3-G">
   <pplink cost="152.0" locationX="150.0" locationY="262.0" neighbor="Node1-B" intersection="None" />
  </ppnode>
  <ppnode name="Node3-H">
-  <pplink cost="30" intersection="Node3" locationX="250" locationY="250" neighbor="Node3-A" />
+  <pplink cost="35" intersection="Node3" locationX="250" locationY="250" neighbor="Node3-A" />
   <pplink cost="30" intersection="Node3" locationX="250" locationY="250" neighbor="Node3-C" />
   <pplink cost="30" intersection="Node3" locationX="250" locationY="250" neighbor="Node3-E" />
   <pplink cost="30" intersection="Node3" locationX="250" locationY="250" neighbor="Node3-G" />
@@ -104,7 +104,7 @@
  </ppnode>
  <ppnode name="Node4-B">
   <pplink cost="30" intersection="Node4" locationX="250" locationY="50" neighbor="Node4-A" />
-  <pplink cost="30" intersection="Node4" locationX="250" locationY="50" neighbor="Node4-C" />
+  <pplink cost="35" intersection="Node4" locationX="250" locationY="50" neighbor="Node4-C" />
   <pplink cost="30" intersection="Node4" locationX="250" locationY="50" neighbor="Node4-E" />
   <pplink cost="30" intersection="Node4" locationX="250" locationY="50" neighbor="Node4-G" />
  </ppnode>
@@ -112,7 +112,7 @@
  <ppnode name="Node4-D">
   <pplink cost="30" intersection="Node4" locationX="250" locationY="50" neighbor="Node4-A" />
   <pplink cost="30" intersection="Node4" locationX="250" locationY="50" neighbor="Node4-C" />
-  <pplink cost="30" intersection="Node4" locationX="250" locationY="50" neighbor="Node4-E" />
+  <pplink cost="35" intersection="Node4" locationX="250" locationY="50" neighbor="Node4-E" />
   <pplink cost="30" intersection="Node4" locationX="250" locationY="50" neighbor="Node4-G" />
  </ppnode>
  <ppnode name="Node4-E" />
@@ -120,14 +120,14 @@
   <pplink cost="30" intersection="Node4" locationX="250" locationY="50" neighbor="Node4-A" />
   <pplink cost="30" intersection="Node4" locationX="250" locationY="50" neighbor="Node4-C" />
   <pplink cost="30" intersection="Node4" locationX="250" locationY="50" neighbor="Node4-E" />
-  <pplink cost="30" intersection="Node4" locationX="250" locationY="50" neighbor="Node4-G" />
+  <pplink cost="35" intersection="Node4" locationX="250" locationY="50" neighbor="Node4-G" />
  </ppnode>
  <ppnode name="Node4-G">
   <pplink cost="152.0" locationX="150.0" locationY="62.0" neighbor="Node2-B" intersection="None" />
   <pplink cost="77.5" locationY="62.0" locationX="120" neighbor="AP5" intersection="None" />
  </ppnode>
  <ppnode name="Node4-H">
-  <pplink cost="30" intersection="Node4" locationX="250" locationY="50" neighbor="Node4-A" />
+  <pplink cost="35" intersection="Node4" locationX="250" locationY="50" neighbor="Node4-A" />
   <pplink cost="30" intersection="Node4" locationX="250" locationY="50" neighbor="Node4-C" />
   <pplink cost="30" intersection="Node4" locationX="250" locationY="50" neighbor="Node4-E" />
   <pplink cost="30" intersection="Node4" locationX="250" locationY="50" neighbor="Node4-G" />

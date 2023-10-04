@@ -182,9 +182,9 @@ void assignCommand(int commandNumber){
       //full straight through intersection
       if(true){
         SC.loadInCommand(FollowLineOnMarker(&MC, &CC));
-        SC.loadInCommand(TravelStraight(&MC, &CC, 200));
-        SC.loadInCommand(FollowLineUntilMarker(&MC, &CC));
-        SC.loadInCommand(TravelStraight(&MC, &CC, 100));
+        SC.loadInCommand(TravelStraight(&MC, &CC, 1200, true));
+        SC.loadInCommand(FollowLineUntilMarker(&MC, &CC, true));
+        SC.loadInCommand(TravelStraight(&MC, &CC, 2600,true));
       }
       break;
 
@@ -192,11 +192,11 @@ void assignCommand(int commandNumber){
       //full left through intersection
       if(true){
         SC.loadInCommand(FollowLineOnMarker(&MC, &CC));
-        SC.loadInCommand(TravelStraight(&MC, &CC, 200));
-        SC.loadInCommand(FollowLineUntilMarker(&MC, &CC));
-        SC.loadInCommand(TravelStraight(&MC, &CC, 310));
-        SC.loadInCommand(TurnLeft(&MC, &CC));
-        SC.loadInCommand(TravelStraight(&MC, &CC, 40));
+        SC.loadInCommand(TravelStraight(&MC, &CC, 1200, true));
+        SC.loadInCommand(FollowLineUntilMarker(&MC, &CC, true));
+        SC.loadInCommand(TravelStraight(&MC, &CC, 2020, true));
+        SC.loadInCommand(TurnLeft(&MC, &CC, true));
+        SC.loadInCommand(TravelStraight(&MC, &CC, 1850, true));
       }
       break;
 
@@ -204,10 +204,11 @@ void assignCommand(int commandNumber){
       //full u turn
       if(true){
         SC.loadInCommand(FollowLineOnMarker(&MC, &CC));
-        SC.loadInCommand(TravelStraight(&MC, &CC, 390));
-        SC.loadInCommand(TurnLeft(&MC, &CC));
-        SC.loadInCommand(TravelStraight(&MC, &CC, 265));
-        SC.loadInCommand(TurnLeft(&MC, &CC));
+        SC.loadInCommand(TravelStraight(&MC, &CC, 2750, true));
+        SC.loadInCommand(TurnLeft(&MC, &CC, true));
+        SC.loadInCommand(TravelStraight(&MC, &CC, 3700, true));
+        SC.loadInCommand(TurnLeft(&MC, &CC, true));
+
       }
       break;
 

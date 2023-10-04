@@ -6,7 +6,8 @@ TurnLeft::TurnLeft(RobotContainer* MC, Communicator* CC, bool preconfirmed):Comm
 
 void TurnLeft::startup(){
   //do startup tasks 
-  m_targetCounts = m_turningCounts + mp_MC->getEncoder2Counts();
+  m_initialCounts1 = mp_MC->getEncoder1Counts();
+  m_initialCounts2 = mp_MC->getEncoder2Counts();
   m_previousTime = mp_MC->getTime();
   m_previousCounts1 = mp_MC->getEncoder1Counts();
   m_previousCounts2 = mp_MC->getEncoder2Counts();
@@ -48,7 +49,9 @@ void TurnLeft::cleanup(){
 
 bool TurnLeft::ifEnd(){
   //return true to stop cycling, false to continue
-  if(mp_MC->getEncoder2Counts() >= m_targetCounts){
+  int progress = ((mp_MC->getEncoder2Counts() - this->m_initialCounts2) - (mp_MC->getEncoder1Counts() - this->m_initialCounts1));
+
+  if(progress >= this->m_turningCounts){
     return true;
   }
 

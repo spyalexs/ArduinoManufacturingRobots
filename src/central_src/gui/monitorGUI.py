@@ -8,7 +8,7 @@ from time import time
 from getConstants import getCommandKeys, getTheme, getItemInformation
 from gui.GUIInMessage import GUIInMessage
 from createRoute import route, getLocations
-from gui.map_display.displayMap import getBaseMap, drawBots
+from gui.map_display.displayMap import getBaseMap, drawBots, flipImageY
 
 #get path to grab the configuration / solution managers
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), ".."))
@@ -105,7 +105,7 @@ def make(queueIn, queueOut, robots, stations, killQueue):
     #links the layout to the window
     window = sg.Window(title="Test", layout=layout, finalize=True)
 
-    mapImage = Image.fromarray(baseMap)
+    mapImage = Image.fromarray(flipImageY(baseMap))
     window["MapImage"].update(data=ImageTk.PhotoImage(mapImage))
 
     #tell central that the gui is ready to begin

@@ -13,9 +13,10 @@ class TurnRight : public Command{
     void cleanup();
     bool ifEnd();
 
-    int m_turningCounts = 2100; // the amount of counts the robot should turn to
+    int m_turningCounts = 4070; // the amount of counts the robot should turn to
     int m_targetCPS = 1400;
-    int m_targetCounts = 0; // initial + turning
+    int m_initialCounts1 = 0; // initial reading of encoder 1
+    int m_initialCounts2 = 0; // initial reading of encoder 2
 
     int m_previousCounts1 = 0;
     int m_previousCounts2 = 0;

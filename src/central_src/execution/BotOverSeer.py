@@ -139,11 +139,16 @@ class BotOverSeer(OverSeer):
                                     
             self.m_written = False
             self.m_confirmed = False
+
+            #not localizing after being disconnected
+            self.m_localizing = False
+            self.sendLocalizationStatusToGui()
         
         #check the bots status
         if(self.m_status == 255):
             #if a command was aborted
             self.m_commands = [] # clear all commands
+            self.m_targetLocation = None
 
             #set status back to ready 
             self.updateStatus(0, UpdateGui=False)

@@ -5,10 +5,11 @@ import numpy as np
 import sys
 import os
 import math
-from getConstants import getTheme
 
 #add theme to path
 sys.path.insert(1, os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", ".."))
+
+from getConstants import getTheme
 
 NODESIZE = 33 #mutliple of 8 + 1 and must be at leatst 25
 MAPFILENAME = "map.xml"
@@ -64,11 +65,8 @@ def flipImageY(img):
     for i,row in enumerate(img):
         flippedImg[imgHeight - i - 1] = row 
     
-    print(len(flippedImg))
-    print(len(flippedImg[0]))
-    print(len(flippedImg[0][0]))
 
-    return flippedImg
+    return np.uint8(flippedImg)
     
 
 def loadImage():
@@ -83,6 +81,7 @@ def prepPathPlanningXML(root):
     ppData = ET.Element("map")
 
     intraConnectionCost = 30 # the cost of making an intranode connection
+    uturnConnectionCost = 35 # the cost of making a uturn
 
     #iterate over all subnodes
 
@@ -98,25 +97,59 @@ def prepPathPlanningXML(root):
             #create and save all of the valid intranode connections from the subnode
             if(ppNodeNameArray[1] == 'B' or ppNodeNameArray[1] == 'D' or ppNodeNameArray[1] == 'F' or ppNodeNameArray[1] == 'H'):
                 pplink1 = ET.SubElement(ppnode, "pplink")
-                pplink1.set("cost", str(intraConnectionCost))
+
+                if(ppNodeNameArray[1] == 'H'):
+                    #uturn
+                    pplink1.set("cost", str(uturnConnectionCost))
+                else:
+                    #all others
+                    pplink1.set("cost", str(intraConnectionCost))  
+
                 pplink1.set("intersection", ppNodeNameArray[0])
                 pplink1.set("locationX", node.get("locationX"))
                 pplink1.set("locationY", node.get("locationY"))   
-                pplink1.set("neighbor", ppNodeNameArray[0] + "-A")             
+                pplink1.set("neighbor", ppNodeNameArray[0] + "-A")  
+
+
                 pplink2 = ET.SubElement(ppnode, "pplink")
-                pplink2.set("cost", str(intraConnectionCost))
+
+                #determine intranode cost based on type of turn
+                if(ppNodeNameArray[1] == 'B'):
+                    #uturn
+                    pplink2.set("cost", str(uturnConnectionCost))
+                else:
+                    #all others
+                    pplink2.set("cost", str(intraConnectionCost))
+
                 pplink2.set("intersection", ppNodeNameArray[0])
                 pplink2.set("locationX", node.get("locationX"))
                 pplink2.set("locationY", node.get("locationY"))
-                pplink2.set("neighbor", ppNodeNameArray[0] + "-C")             
+                pplink2.set("neighbor", ppNodeNameArray[0] + "-C")   
+
+
                 pplink3 = ET.SubElement(ppnode, "pplink")
-                pplink3.set("cost", str(intraConnectionCost))
+
+                if(ppNodeNameArray[1] == 'D'):
+                    #uturn
+                    pplink3.set("cost", str(uturnConnectionCost))
+                else:
+                    #all others
+                    pplink3.set("cost", str(intraConnectionCost))
+
                 pplink3.set("intersection", ppNodeNameArray[0])
                 pplink3.set("locationX", node.get("locationX"))
                 pplink3.set("locationY", node.get("locationY"))
-                pplink3.set("neighbor", ppNodeNameArray[0] + "-E")             
+                pplink3.set("neighbor", ppNodeNameArray[0] + "-E")   
+          
                 pplink4 = ET.SubElement(ppnode, "pplink")
-                pplink4.set("cost", str(intraConnectionCost))
+
+                if(ppNodeNameArray[1] == 'F'):
+                    #uturn
+                    pplink4.set("cost", str(uturnConnectionCost))
+                else:
+                    #all others
+                    pplink4.set("cost", str(intraConnectionCost))
+
                 pplink4.set("intersection", ppNodeNameArray[0])
                 pplink4.set("locationX", node.get("locationX"))
                 pplink4.set("locationY", node.get("locationY"))
@@ -173,7 +206,7 @@ def drawMap(root):
     ppTree.write("ppData.xml")
 
     #flip y
-    return np.uint8(flipImageY(map))
+    return np.uint8(map)
 
 def drawNode(locationX, locationY,  map):
     # nodes are represented by an 41 by 41 box, centered around location
@@ -774,7 +807,8 @@ def drawBots(imageMap, botLocations):
             print("Cannot draw bot! Invalid location: " + str(locationKey) + ", ")
             return
         
-        return imageMap
+        
+    return flipImageY(imageMap)
 
 if __name__ == "__main__":
     #run this file to reload map.xml
