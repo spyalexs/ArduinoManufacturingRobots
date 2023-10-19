@@ -90,7 +90,7 @@ def make(queueIn, queueOut, robots, stations, killQueue):
             robotsFrameLayout[(len(robotsFrameLayout) - 1)].append(stationFrame)
         else:
             #no space, make a new row
-            robotsFrameLayout.append([sg.Frame(robot, stationFrame)])
+            robotsFrameLayout.append([sg.Frame("Stations", stationFrame)])
 
     #get the layout for the map sceen
     mapLayout = [[sg.Image(key="MapImage")]]

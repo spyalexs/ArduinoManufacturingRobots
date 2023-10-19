@@ -86,6 +86,7 @@ def connectBots(connectorQueue, killQueue):
         #run until entire system is down
         try:
             message, addr = sock.recvfrom(bufferLength)
+
             if(BOT_CONNECTION_MESSAGE in str(message) or STATION_CONNECTION_MESSAGE in str(message)):
                 #trim message to get mac
                 macAddress = str(message).split("$$$")[0].split("MAC:")[1]

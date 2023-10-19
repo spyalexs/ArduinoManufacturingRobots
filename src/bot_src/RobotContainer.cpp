@@ -390,8 +390,6 @@ void RobotContainer::handleEncoderClick(){
         //disable menu
         this->m_display.disableMenu();
 
-        //draw in icon holders
-        this->m_display.setIconsCount(6);
         break;
       case 2:
         //move from start menu to test menu

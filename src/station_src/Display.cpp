@@ -294,9 +294,7 @@ Icon* Display::getIcon(uint8_t iconNumber){
 
     Serial.println("Could not find matching icon");
     return nullptr;
-}
-
-void 
+} 
 
 bool Display::drawRect(int x, int y, int w, int h, uint16_t color){
     //draw horizontal lines
@@ -470,6 +468,8 @@ bool Display::updateProgressBar(){
         }
 
         //end progress bar update
+        this->m_previousProgressPixels = 0;
+
         return true;
     }
 

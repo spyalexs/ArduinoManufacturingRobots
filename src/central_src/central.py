@@ -171,6 +171,20 @@ def handleGUIIn(queueInGui: queue.Queue):
                 #gui has reqested that an item be transfered to bot
 
                 if(targetOverseer.m_type == "station" and targetOverseer.m_port == message.m_target):
+                    # get the item type from the target
+                    itemToDispense = targetOverseer.m_item
+
+                    #get the target bot to dispense to 
+                    targetBot = None
+                    for overseer in overseers:
+                        if overseer.m_port == message.m_value:
+                            targetBot = overseer
+
+                    if not (targetBot is None):
+                        #the target bot has been found
+                        targetBot.addItem(itemToDispense)
+
+                    #tell the station to dispense
                     targetOverseer.dispenseItem(message.m_value)
                 else:
                     print("Cannot dispense item from: " + targetOverseer.m_type)
@@ -179,6 +193,19 @@ def handleGUIIn(queueInGui: queue.Queue):
                 #gui has requested that an item be transfered from bot
 
                     if(targetOverseer.m_type == "station"):
+                        # get the item type from the target
+                        itemToCollect = targetOverseer.m_item
+
+                        #get the target bot to dispense to 
+                        targetBot = None
+                        for overseer in overseers:
+                            if overseer.m_port == message.m_value:
+                                targetBot = overseer
+
+                        if not (targetBot is None):
+                            #the target bot has been found
+                            targetBot.removeItem(itemToCollect)
+
                         targetOverseer.collectItem(message.m_value)
                     else:
                         print("Cannot collect item on: " + targetOverseer.m_type)

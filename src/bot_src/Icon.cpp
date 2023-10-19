@@ -48,8 +48,10 @@ int Icon::getPacketRow(){
 
     Serial.println("Drawing Packet");
     //get row - rows per packet * packet number
+    Serial.println(this->strategicPacketNumber(this->m_currentPacket));
+
     int row = floor(900 / (this->m_width * 2)) * this->strategicPacketNumber(this->m_currentPacket) - 1;
-    
+    Serial.println(row);
     //increment the current packet
     this->m_currentPacket++;
 

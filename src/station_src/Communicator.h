@@ -31,8 +31,8 @@ class Communicator{
         WiFiSSLClient m_wifiClient;
         int m_wifiStatus = WL_IDLE_STATUS;
 
-        String m_wifiSSID = "TroublingOmen";
-        String m_wifiPWD = "DarkOmen";
+        String m_wifiSSID = "AMR";
+        String m_wifiPWD = "Mot de passe";
         const char* m_hostName = "MiniBot";
 
         byte m_macAddress[6];

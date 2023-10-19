@@ -131,7 +131,7 @@ def rgb888to565(pixel):
 
     # may have to do some color balancing
     r5 = pixel[0] / 8
-    g6 = math.floor(math.pow(pixel[1], 3) / 65025)
+    g6 = pixel[1] / 4
     b5 = pixel[2] / 8
 
     #byte 1 string

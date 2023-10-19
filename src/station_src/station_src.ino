@@ -107,7 +107,7 @@ void listen(){
         String target = dataString.substring(secondSeperator + 1);
 
         //transfer item to target
-        MC.m_display.beginTransfer(true, target);
+        MC.m_display.beginTransfer(false, target);
     } else if (characteristic == "recieveItem"){
       //get target bot from message
       String target = dataString.substring(secondSeperator + 1);

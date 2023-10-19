@@ -39,7 +39,7 @@ def displayBaseMap(root):
     layout = [[sg.Image(size=(MAPSIZE,MAPSIZE), key="mapImage")]]
 
     window = sg.Window(title="Map", layout=layout, finalize=True)
-    window["mapImage"].update(data=ImageTk.PhotoImage(drawMap(root)))
+    window["mapImage"].update(data=ImageTk.PhotoImage(Image.fromarray(drawMap(root))))
     window.read()
 
 def getBaseMap():
@@ -160,7 +160,7 @@ def prepPathPlanningXML(root):
 def drawMap(root):
     #this should be only run once per boot of gui
 
-    map = np.zeros(shape=(300,300,4))
+    map = np.zeros(shape=(MAPSIZE,MAPSIZE,4))
     # map[row][column]
 
     #get the initial path planning data
