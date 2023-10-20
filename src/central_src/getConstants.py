@@ -95,6 +95,7 @@ def getItemInformation():
                 "bolt" : ("bolt", 30, 30),
                 "washer" : ("washer", 30, 30),
                 "nut" : ("nut", 30, 30),
+                "spring" : ("spring", 30, 30),
                 "wheel" : ("wheel", 30, 30)
              }
     

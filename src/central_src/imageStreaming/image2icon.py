@@ -130,9 +130,9 @@ def rgb888to565(pixel):
     b2 = 0
 
     # may have to do some color balancing
-    r5 = pixel[0] / 8
-    g6 = pixel[1] / 4
-    b5 = pixel[2] / 8
+    r5 = pixel[0] / 8 * math.sin(pixel[0] * math.pi / 512)
+    g6 = pixel[1] / 9.48148 * (2 * math.pow(math.sin(pixel[1] * math.pi / 512),2) + .3 * math.sin(math.pow(pixel[1] / 256, 1.3) * math.pi *2)) + 10 * math.pow(math.tan(pixel[1]/1024*math.pi), 50)
+    b5 = pixel[2] / 8 * math.sin(pixel[2] * math.pi / 512)
 
     #byte 1 string
     if(r5 >= 16):
