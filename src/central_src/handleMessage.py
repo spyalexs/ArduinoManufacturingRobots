@@ -15,6 +15,15 @@ def handleBotMessage(message, queueInGUI, overseers):
     characteristic = messageArray[1] # the characteristic the message is about
     value = messageArray[2] # the value of the message
 
+    #if the message's sender is known accept the message - otherwise ignore
+    knownSender = False
+    for overseer in overseers:
+        if (overseer.m_port == target):
+            knownSender = True
+
+    if not knownSender:
+        return 
+
     if(characteristic == "bat"):
         #messages concerning battery voltage
         queueInGUI.put(GUIOutMessage(target, characteristic, float(value)))

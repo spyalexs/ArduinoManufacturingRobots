@@ -70,7 +70,6 @@ def initialize(queueIn, queueOut, queueInGui, queueOutGui, killQueue: queue.Queu
                     #something really isn't right
                     print("Cannot connect to type: " + connectionInfo[4])
 
-            
             else:
                 #somethings not right...
                 print("Invalid connection detected: " + connection)
@@ -111,9 +110,10 @@ def handleMessagesIn(queueIn: queue.Queue, queueOutGui: queue.Queue):
     while(not queueIn.empty()):
        message = queueIn.get()
         #print(message)
+        
        handleBotMessage(message, queueOutGui, overseers)
 
-def handleGUIIn(queueInGui: queue.Queue):
+def handleGUIIn(queueInGui: queue.Queue, solutionOutQueue: queue.Queue):
     #processes messages from the GUI
     while(not queueInGui.empty()):
         message = queueInGui.get()
@@ -236,6 +236,15 @@ def handleGUIIn(queueInGui: queue.Queue):
                     targetOverseer.removeItem(message.m_value)
                 else:
                     print("Cannot remove item from type: " + targetOverseer.m_type)
+            elif message.m_characteristic == "CollectStatuses":
+                
+                #ask all the bots to send in their statuses
+                for overseer in overseers:
+
+                    #if the overseer is a bot
+                    if (overseer.m_type == "bot"):
+                        solutionOutQueue.put((overseer.port, overseer.getStatus()))
+        
             else:
                 #note the message characteristic cannot be processed
                 print("Cannot process message, unhandled characteristic: " + message.m_characteristic)

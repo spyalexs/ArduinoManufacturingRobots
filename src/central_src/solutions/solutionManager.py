@@ -22,13 +22,15 @@ def getSolutionsFilesList():
 
     return solutionsFiles
 
-def startSolution(fileName: str, GuiInQueue: Queue, SolutionQueue:Queue, OverseerData, killQueue:Queue):
+def startSolution(fileName: str, GuiInQueue: Queue, BotStatusQueue:Queue, OverseerData, killQueue:Queue):
     #start a new thread to handle a solution
-    solutionThread = Thread(target=runSolution, args=(fileName, GuiInQueue, SolutionQueue, OverseerData, killQueue))
+    print("Preparing to start a new solution: " + str(fileName))
+
+    solutionThread = Thread(target=runSolution, args=(fileName, GuiInQueue, BotStatusQueue, OverseerData, killQueue))
     solutionThread.isDaemon = True
     solutionThread.start()
 
-def runSolution(fileName: str, GuiInQueue: Queue, SolutionQueue:Queue, OverseerData, killQueue:Queue):
+def runSolution(fileName: str, GuiInQueue: Queue, BotStatusQueue:Queue, OverseerData, killQueue:Queue):
     #run through a solution script
 
     #load in solution file
@@ -68,10 +70,10 @@ def runSolution(fileName: str, GuiInQueue: Queue, SolutionQueue:Queue, OverseerD
             #timeout
             print("Failed To recieve statuses from all bots in a reasonable time. Check connections. Dumping Statuses! Failing!")
 
-        if(not SolutionQueue.empty()):
+        if(not BotStatusQueue.empty()):
             #a status has been sent
 
-            status = SolutionQueue.get()
+            status = BotStatusQueue.get()
 
             if(not status[1] == 0):
                 #this is a problem
@@ -87,17 +89,19 @@ def runSolution(fileName: str, GuiInQueue: Queue, SolutionQueue:Queue, OverseerD
                 statuses[status[0]] = (status[1], status[2])
                 uniqueStatusesRecieved += 1
 
+    print("All bots are ready to begin solution!")
+
     #make a list of bots that haven't finished all their commands
     unfinishedBots = statuses.keys()
     solutionStartTime = time()
 
     #main solution loop - run until all bots are finished
-    while(len(unfinishedBots) > 0):
+    while(len(unfinishedBots) > 0 and killQueue.empty()):
         
         #updates statuses
-        while(not SolutionQueue.empty()):
+        while(not BotStatusQueue.empty()):
             #update the status
-            statusUpdate = SolutionQueue.get()
+            statusUpdate = BotStatusQueue.get()
 
             statuses[statusUpdate[0]] = (statusUpdate[1], statusUpdate[2])
 

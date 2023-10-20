@@ -13,7 +13,7 @@ from gui.map_display.displayMap import getBaseMap, drawBots, flipImageY
 #get path to grab the configuration / solution managers
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), ".."))
 from solutions.configurationManger import startConfiguring, getConfigurationFilesList
-from solutions.solutionManager import getSolutionsFilesList
+from solutions.solutionManager import getSolutionsFilesList, startSolution
 
 #keys for the commands availible to be launched - the name of the command corrosponds to the name that will be launched on the robot
 commandKeys = getCommandKeys()
@@ -163,12 +163,12 @@ def monitor(window, queueIn, queueOut, killQueue, robots, stations, overseerData
             break
         elif (event != "__TIMEOUT__"):
             #if there is an interaction, handle it
-            handleEvents(event, values, window, queueIn, overseerData)
+            handleEvents(event, values, window, queueIn, overseerData, killQueue)
 
         #update the attributes displayed on the window
         update(window, values, queueOut, robots, stations)
     
-def handleEvents(event, values, window, queueIn, overseerData):
+def handleEvents(event, values, window, queueIn, overseerData, killQueue):
     #handle the gui events
 
     print(event)
@@ -276,6 +276,9 @@ def handleEvents(event, values, window, queueIn, overseerData):
             window["ToggleSolution"].update(text="Stop Solution")
             window["SolutionRuntime"].update(value="00:00")
             solutionStartTime = time()
+
+            #start a solution
+            startSolution(values["SolutionFile"], queueIn, killQueue)
         else:
             #stop solution
             window["ToggleSolution"].update(text="Start Solution")
