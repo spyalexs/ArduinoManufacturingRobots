@@ -9,11 +9,11 @@ from random import random
 from monitorIn import launchPacketMonitor
 from publishToBot import launchPacketPublisher
 from handleMessage import handleBotMessage
-from gui.launchGUI import launchGUI
 from execution.BotOverSeer import BotOverSeer
 from execution.OverSeer import OverSeer
 from execution.StationOverSeer import StationOverSeer
 from execution.connectBots import launchBotConnector
+from gui.monitorGUI import route
 
 overseers: OverSeer = [] # a list of commander classes that tell robots what to do
 subThreadKills = [] #a list of all the thread PIDS
@@ -88,7 +88,7 @@ def initialize(queueIn, queueOut, queueInGui, queueOutGui, killQueue: queue.Queu
     return queueIn, queueOut, queueInGui, queueOutGui
 
 
-def cycle(queueIn, queueOut, queueInGui, queueOutGui):
+def cycle(queueIn, queueOut, queueInGui, queueOutGui, solutionOutQueue):
     #In a cycle:
     #1. messages in should be handled
     #2. gui requests in should be handled
@@ -98,7 +98,7 @@ def cycle(queueIn, queueOut, queueInGui, queueOutGui):
 
     handleMessagesIn(queueIn, queueOutGui) #1
     
-    handleGUIIn(queueInGui) #2
+    handleGUIIn(queueInGui, solutionOutQueue) #2
 
     for overseer in overseers: #3
         overseer.cycle()
@@ -243,8 +243,27 @@ def handleGUIIn(queueInGui: queue.Queue, solutionOutQueue: queue.Queue):
 
                     #if the overseer is a bot
                     if (overseer.m_type == "bot"):
-                        solutionOutQueue.put((overseer.port, overseer.getStatus()))
-        
+                        solutionOutQueue.put((overseer.m_port, overseer.m_status))
+
+            elif message.m_characteristic == "Route":
+                #route the target overseer - this comes from the solution manager
+
+                #ensure the overseer is a bot
+                if(targetOverseer.m_type == "bot"):
+
+                    #ensure the bot is localizing before routing
+                    if(targetOverseer.m_localizing):
+                        routeCommands = route(targetOverseer.m_currentLocation, message.m_value)
+                        
+                        if not (routeCommands is None):
+                            targetOverseer.issueRoute(routeCommands)
+                        else:
+                            print("Cannot route from: " + str(targetOverseer.m_currentLocation) + " to: "+ str(message.m_value) + "!")
+                    else:
+                        print("Cannot route bot that is not currently being localized!")
+                else:
+                    print("Cannot route overseer of type: " + str(targetOverseer.m_type))                
+
             else:
                 #note the message characteristic cannot be processed
                 print("Cannot process message, unhandled characteristic: " + message.m_characteristic)
@@ -269,7 +288,7 @@ def sendStringToBot(string, queueOut: queue.Queue):
     #put a string in the output queue - be sure that the string wil be recognized by the bridge
     queueOut.put(string)
 
-def runController(queueIn: queue.Queue, queueOut: queue.Queue, queueInGui: queue.Queue, queueOutGui: queue.Queue, controllerKillQueue: queue.Queue): 
+def runController(queueIn: queue.Queue, queueOut: queue.Queue, queueInGui: queue.Queue, queueOutGui: queue.Queue, controllerKillQueue: queue.Queue, solutionOutQueue: queue.Queue): 
     #kill signal for main controller
 
     subThreadKills.append(controllerKillQueue)
@@ -278,6 +297,6 @@ def runController(queueIn: queue.Queue, queueOut: queue.Queue, queueInGui: queue
     initialize(queueIn, queueOut, queueInGui, queueOutGui, controllerKillQueue)
 
     while(controllerKillQueue.empty()):
-        cycle(queueIn, queueOut, queueInGui, queueOutGui)
+        cycle(queueIn, queueOut, queueInGui, queueOutGui, solutionOutQueue)
 
 

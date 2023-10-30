@@ -267,7 +267,6 @@ def drawConnection(map, root, originSubNodeName, endSubNodeName, ppData):
     actionPointIDs = checkForActionPoints(root, originSubNodeName)
     actionPointCount = len(actionPointIDs)
 
-
     if(subnodeOriginX == subnodeEndX):
         #vertically alginded nodes
         xmin = subnodeOriginX - lineWidth / 2
@@ -575,7 +574,7 @@ def drawConnection(map, root, originSubNodeName, endSubNodeName, ppData):
 def calculateActionPointSpacing(connectionLength, actionPointCount):
 
     #calculate the spacing between the nodes and actionpoints and the action points themselves
-    if(connectionLength - (NODESIZE - 1) > 1.5 * (NODESIZE - 1) * actionPointCount): 
+    if(connectionLength - (NODESIZE - 1) > 1 * (NODESIZE - 1) * actionPointCount): 
         #spacing between aps
         spacing = (connectionLength - (NODESIZE - 1)) / actionPointCount
 
@@ -651,7 +650,7 @@ def checkForActionPoints(root, name):
                         ids = []
                         for actionPoint in connection.findall("./action_point"):
                             ids.append(actionPoint.get("id"))
-                        
+
                         if(len(ids) != 0):
                             return ids
 

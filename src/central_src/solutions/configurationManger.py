@@ -72,7 +72,7 @@ def processConfigurationCommand(command, queue, overseersData):
     match(command[0]):
             case "C1":
                 #verify bot count
-                if(validateCommand(command, 2)):
+                if(validateCommand(command, overseersData, 2)):
                     if(getBotCount(overseersData) == int(command[1])):
                        print("Bot count verified!")
                     else:
@@ -81,7 +81,7 @@ def processConfigurationCommand(command, queue, overseersData):
 
             case "C2":
                 #verify station count
-                if(validateCommand(command, 2)):
+                if(validateCommand(command, overseersData, 2)):
                     if(getStationCount(overseersData) == int(command[1])):
                        print("Station count verified!")
                     else:
@@ -90,34 +90,34 @@ def processConfigurationCommand(command, queue, overseersData):
 
             case "S1":
                 #configure station item
-                if(validateCommand(command, 3) and checkTarget(overseersData, command[1])):
+                if(validateCommand(command, overseersData, 3) and checkTarget(overseersData, command[1])):
                     queue.put(GUIInMessage(command[1], "SetStationItem", command[2], Direct=False))
 
             case "B1":
                 #configure bot slots
-                if(validateCommand(command, 3) and checkTarget(overseersData, command[1])):
+                if(validateCommand(command, overseersData, 3) and checkTarget(overseersData, command[1])):
                     queue.put(GUIInMessage(command[1], "SetItemCapacity", command[2], Direct=False)) 
 
             case "B2":
                 #configure bot location
-                if(validateCommand(command, 3) and checkTarget(overseersData, command[1])):
+                if(validateCommand(command, overseersData, 3) and checkTarget(overseersData, command[1])):
                     queue.put(GUIInMessage(command[1], "locationSet", command[2], Direct=False))
 
             case "B3":
                 #give bot item
-                if(validateCommand(command, 3) and checkTarget(overseersData, command[1])):
+                if(validateCommand(command, overseersData, 3) and checkTarget(overseersData, command[1])):
                     queue.put(GUIInMessage(command[1], "AddItem", command[2], Direct=False))            
             
             case "B4":
                 #remove bot item
-                if(validateCommand(command, 3) and checkTarget(overseersData, command[1])):
+                if(validateCommand(command, overseersData, 3) and checkTarget(overseersData, command[1])):
                     queue.put(GUIInMessage(command[1], "RemoveItem", command[2], Direct=False))
 
 
             case _:
                 print("Not ready for command: " + command)
 
-def validateCommand(command, length:int, includesTarget=False):
+def validateCommand(command, overseerData, length:int, includesTarget=False,):
     #check length of command to ensure paramters are correct
     
     if (len(command) == length):
@@ -126,7 +126,7 @@ def validateCommand(command, length:int, includesTarget=False):
             if(checkTarget(overseerData, command[1]) == True):
                 return True
             else:
-                print("Cannot find target for command: " + command + ". Skipping!")
+                print("Cannot find target for command: " + str(command[0]) + " " + str(command[1]) + ". Skipping!")
                 return False
         else:
             #no specified target
@@ -134,11 +134,11 @@ def validateCommand(command, length:int, includesTarget=False):
 
     else:
         if(len(command) == length):
-            print("Not enough parameters in command: " + command + ". Skipping!")
+            print("Not enough parameters in command: " + str(command[0]) + ". Skipping!")
 
             return False
         else:
-            print("Too many parameters in command: " + command + ". Skipping!")
+            print("Too many parameters in command: " + str(command[0]) + ". Skipping!")
 
             return False
         

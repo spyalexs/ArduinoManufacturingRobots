@@ -60,6 +60,14 @@ void Sequencer::loadInCommand(FollowLineUntilMarker command){
     this->m_sequence.push(command.getName());
 }
 
+void Sequencer::loadInCommand(WaitCommand command){
+    //load the command into it's respective queue
+    this->m_waitCommandQueue.push(command);
+
+    //add the name of command to the sequence so the system knows what command to give out next
+    this->m_sequence.push(command.getName());
+}
+
 void Sequencer::removeCurrentCommand(){
     //clear the entire queue if need be
     Serial.println(this->m_clearQueue);
@@ -95,6 +103,8 @@ void Sequencer::removeCurrentCommand(){
         this->m_turnLeftQueue.pop();
     }else if(lastCommandName == "TurnRight"){
         this->m_turnRightQueue.pop();
+    }else if(lastCommandName == "WaitCommand"){
+        this->m_waitCommandQueue.pop();
     }else if(lastCommandName == "TestCommand"){
         this->m_testCommandQueue.pop();
     }else{
@@ -141,6 +151,8 @@ Command* Sequencer::getCurrentCommand(){
         return &(this->m_turnLeftQueue.front());
     }else if(currentCommandName == "TurnRight"){
         return &(this->m_turnRightQueue.front());
+    }else if(currentCommandName == "WaitCommand"){
+        return &(this->m_waitCommandQueue.front());
     }else if(currentCommandName == "TestCommand"){
         return &(this->m_testCommandQueue.front());
     }else{

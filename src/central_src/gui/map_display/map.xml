@@ -4,7 +4,6 @@
             <connection direction="outbound" destination="Node6-D"></connection>
         </subnode>        
         <subnode name="Node1-B">
-            <connection direction="outbound" destination="Node2-G"></connection>
         </subnode>        
         <subnode name="Node1-C">
             <connection direction="outbound" destination="Node2-F"></connection>
@@ -18,7 +17,6 @@
         <subnode name="Node1-G">
         </subnode>
         <subnode name="Node1-H">
-            <connection direction="outbound" destination="Node6-E"></connection>
         </subnode>
     </node>
     <node name="Node2" type="intersection" locationX="175" locationY="50">
@@ -26,7 +24,6 @@
             <connection direction="outbound" destination="Node7-D"></connection>
         </subnode>        
         <subnode name="Node2-B">
-            <connection direction="outbound" destination="Node3-G"></connection>
         </subnode>        
         <subnode name="Node2-C">
             <connection direction="outbound" destination="Node3-F"></connection>
@@ -38,9 +35,9 @@
         <subnode name="Node2-F">
         </subnode>
         <subnode name="Node2-G">
+            <connection direction="outbound" destination="Node1-B"></connection>
         </subnode>
         <subnode name="Node2-H">
-            <connection direction="outbound" destination="Node7-E"></connection>
         </subnode>
     </node>
     <node name="Node3" type="intersection" locationX="300" locationY="50">
@@ -48,7 +45,6 @@
             <connection direction="outbound" destination="Node8-D"></connection>
         </subnode>        
         <subnode name="Node3-B">
-            <connection direction="outbound" destination="Node4-G"></connection>
         </subnode>        
         <subnode name="Node3-C">
             <connection direction="outbound" destination="Node4-F"></connection>
@@ -60,9 +56,9 @@
         <subnode name="Node3-F">
         </subnode>        
         <subnode name="Node3-G">
+            <connection direction="outbound" destination="Node2-B"></connection>
         </subnode>        
         <subnode name="Node3-H">
-            <connection direction="outbound" destination="Node8-E"></connection>
         </subnode>
     </node>
     <node name="Node4" type="intersection" locationX="425" locationY="50">
@@ -70,7 +66,6 @@
             <connection direction="outbound" destination="Node9-D"></connection>
         </subnode>        
         <subnode name="Node4-B">
-            <connection direction="outbound" destination="Node5-G"></connection>
         </subnode>        
         <subnode name="Node4-C">
             <connection direction="outbound" destination="Node5-F"></connection>
@@ -82,9 +77,9 @@
         <subnode name="Node4-F">
         </subnode>        
         <subnode name="Node4-G">
+            <connection direction="outbound" destination="Node3-B"></connection>
         </subnode>        
         <subnode name="Node4-H">
-            <connection direction="outbound" destination="Node9-E"></connection>
         </subnode>
     </node>
     <node name="Node5" type="intersection" locationX="550" locationY="50">
@@ -102,9 +97,9 @@
         <subnode name="Node5-F">
         </subnode>        
         <subnode name="Node5-G">
+            <connection direction="outbound" destination="Node4-B"></connection>
         </subnode>        
         <subnode name="Node5-H">
-            <connection direction="outbound" destination="Node10-E"></connection>
         </subnode>
     </node>
     <node name="Node6" type="intersection" locationX="50" locationY="175">
@@ -112,7 +107,6 @@
             <connection direction="outbound" destination="Node21-D"></connection>
         </subnode>        
         <subnode name="Node6-B">
-            <connection direction="outbound" destination="Node7-G"></connection>
         </subnode>        
         <subnode name="Node6-C">
             <connection direction="outbound" destination="Node7-F"></connection>
@@ -120,13 +114,13 @@
         <subnode name="Node6-D">
         </subnode>        
         <subnode name="Node6-E">
+            <connection direction="outbound" destination="Node1-H"></connection>
         </subnode>        
         <subnode name="Node6-F">
         </subnode>        
         <subnode name="Node6-G">
         </subnode>        
         <subnode name="Node6-H">
-            <connection direction="outbound" destination="Node21-E"></connection>
         </subnode>
     </node>
     <node name="Node7" type="intersection" locationX="175" locationY="175">
@@ -134,7 +128,6 @@
             <connection direction="outbound" destination="Node12-D"></connection>
         </subnode>        
         <subnode name="Node7-B">
-            <connection direction="outbound" destination="Node8-G"></connection>
         </subnode>        
         <subnode name="Node7-C">
             <connection direction="outbound" destination="Node8-F"></connection>
@@ -142,13 +135,14 @@
         <subnode name="Node7-D">
         </subnode>        
         <subnode name="Node7-E">
+            <connection direction="outbound" destination="Node2-H"></connection>
         </subnode>        
         <subnode name="Node7-F">
         </subnode>        
         <subnode name="Node7-G">
+            <connection direction="outbound" destination="Node6-B"></connection>
         </subnode>        
         <subnode name="Node7-H">
-            <connection direction="outbound" destination="Node12-H"></connection>
         </subnode>
     </node>
     <node name="Node8" type="intersection" locationX="300" locationY="175">
@@ -162,13 +156,16 @@
         <subnode name="Node8-D">
         </subnode>        
         <subnode name="Node8-E">
+            <connection direction="outbound" destination="Node3-H">
+                <action_point id="1"></action_point>
+            </connection>
         </subnode>        
         <subnode name="Node8-F">
         </subnode>        
         <subnode name="Node8-G">
+            <connection direction="outbound" destination="Node7-B"></connection>
         </subnode>        
         <subnode name="Node8-H">
-            <connection direction="outbound" destination="Node13-E"></connection>
         </subnode>
     </node>
     <node name="Node9" type="intersection" locationX="425" locationY="175">
@@ -176,7 +173,6 @@
             <connection direction="outbound" destination="Node14-D"></connection>
         </subnode>        
         <subnode name="Node9-B">
-            <connection direction="outbound" destination="Node10-G"></connection>
         </subnode>        
         <subnode name="Node9-C">
             <connection direction="outbound" destination="Node10-F"></connection>
@@ -184,13 +180,13 @@
         <subnode name="Node9-D">
         </subnode>        
         <subnode name="Node9-E">
+            <connection direction="outbound" destination="Node4-H"></connection>
         </subnode>        
         <subnode name="Node9-F">
         </subnode>        
         <subnode name="Node9-G">
         </subnode>        
         <subnode name="Node9-H">
-            <connection direction="outbound" destination="Node14-E"></connection>
         </subnode>
     </node>
     <node name="Node10" type="intersection" locationX="550" locationY="175">
@@ -204,13 +200,16 @@
         <subnode name="Node10-D">
         </subnode>        
         <subnode name="Node10-E">
+            <connection direction="outbound" destination="Node5-H">
+                <action_point id="3"></action_point>
+            </connection>
         </subnode>        
         <subnode name="Node10-F">
         </subnode>        
         <subnode name="Node10-G">
+            <connection direction="outbound" destination="Node9-B"></connection>
         </subnode>        
         <subnode name="Node10-H">
-            <connection direction="outbound" destination="Node15-E"></connection>
         </subnode>
     </node>
     <node name="Node12" type="intersection" locationX="175" locationY="300">
@@ -218,7 +217,6 @@
             <connection direction="outbound" destination="Node17-D"></connection>
         </subnode>        
         <subnode name="Node12-B">
-            <connection direction="outbound" destination="Node13-G"></connection>
         </subnode>        
         <subnode name="Node12-C">
             <connection direction="outbound" destination="Node13-F"></connection>
@@ -226,21 +224,24 @@
         <subnode name="Node12-D">
         </subnode>        
         <subnode name="Node12-E">
+            <connection direction="outbound" destination="Node7-H">
+                <action_point id="2"></action_point>
+            </connection>
         </subnode>        
         <subnode name="Node12-F">
         </subnode>        
         <subnode name="Node12-G">
         </subnode>        
         <subnode name="Node12-H">
-            <connection direction="outbound" destination="Node17-E"></connection>
         </subnode>
     </node>
     <node name="Node13" type="intersection" locationX="300" locationY="300">
         <subnode name="Node13-A">
-            <connection direction="outbound" destination="Node18-D"></connection>
+            <connection direction="outbound" destination="Node18-D">
+                <action_point id="4"></action_point>
+            </connection>
         </subnode>        
         <subnode name="Node13-B">
-            <connection direction="outbound" destination="Node14-G"></connection>
         </subnode>        
         <subnode name="Node13-C">
             <connection direction="outbound" destination="Node14-F"></connection>
@@ -248,13 +249,14 @@
         <subnode name="Node13-D">
         </subnode>        
         <subnode name="Node13-E">
+            <connection direction="outbound" destination="Node8-H"></connection>
         </subnode>        
         <subnode name="Node13-F">
         </subnode>        
-        <subnode name="Node13-G">
+        <subnode name="Node13-G">            
+            <connection direction="outbound" destination="Node12-B"></connection>
         </subnode>        
         <subnode name="Node13-H">
-            <connection direction="outbound" destination="Node18-E"></connection>
         </subnode>
     </node>
     <node name="Node14" type="intersection" locationX="425" locationY="300">
@@ -262,7 +264,6 @@
             <connection direction="outbound" destination="Node19-D"></connection>
         </subnode>        
         <subnode name="Node14-B">
-            <connection direction="outbound" destination="Node15-G"></connection>
         </subnode>        
         <subnode name="Node14-C">
             <connection direction="outbound" destination="Node15-F"></connection>
@@ -270,13 +271,14 @@
         <subnode name="Node14-D">
         </subnode>        
         <subnode name="Node14-E">
+            <connection direction="outbound" destination="Node9-H"></connection>
         </subnode>        
         <subnode name="Node14-F">
         </subnode>        
         <subnode name="Node14-G">
+            <connection direction="outbound" destination="Node13-B"></connection>
         </subnode>        
         <subnode name="Node14-H">
-            <connection direction="outbound" destination="Node19-E"></connection>
         </subnode>
     </node>
     <node name="Node15" type="intersection" locationX="550" locationY="300">
@@ -290,13 +292,14 @@
         <subnode name="Node15-D">
         </subnode>        
         <subnode name="Node15-E">
+            <connection direction="outbound" destination="Node10-H"></connection>
         </subnode>        
         <subnode name="Node15-F">
         </subnode>        
         <subnode name="Node15-G">
+            <connection direction="outbound" destination="Node14-B"></connection>
         </subnode>        
         <subnode name="Node15-H">
-            <connection direction="outbound" destination="Node25-E"></connection>
         </subnode>
     </node>
     <node name="Node17" type="intersection" locationX="175" locationY="425">
@@ -304,7 +307,6 @@
             <connection direction="outbound" destination="Node22-D"></connection>
         </subnode>        
         <subnode name="Node17-B">
-            <connection direction="outbound" destination="Node18-G"></connection>
         </subnode>        
         <subnode name="Node17-C">
             <connection direction="outbound" destination="Node18-F"></connection>
@@ -312,20 +314,19 @@
         <subnode name="Node17-D">
         </subnode>        
         <subnode name="Node17-E">
+            <connection direction="outbound" destination="Node12-H"></connection>
         </subnode>        
         <subnode name="Node17-F">
         </subnode>        
         <subnode name="Node17-G">
         </subnode>        
         <subnode name="Node17-H">
-            <connection direction="outbound" destination="Node22-E"></connection>
         </subnode>
     </node>
     <node name="Node18" type="intersection" locationX="300" locationY="425">
         <subnode name="Node18-A">
         </subnode>        
         <subnode name="Node18-B">
-            <connection direction="outbound" destination="Node19-G"></connection>
         </subnode>        
         <subnode name="Node18-C">
             <connection direction="outbound" destination="Node19-F"></connection>
@@ -333,10 +334,12 @@
         <subnode name="Node18-D">
         </subnode>        
         <subnode name="Node18-E">
+            <connection direction="outbound" destination="Node13-H"></connection>
         </subnode>        
         <subnode name="Node18-F">
         </subnode>        
-        <subnode name="Node18-G">
+        <subnode name="Node18-G"> 
+           <connection direction="outbound" destination="Node17-B"></connection>
         </subnode>        
         <subnode name="Node18-H">
         </subnode>
@@ -352,20 +355,20 @@
         <subnode name="Node19-D">
         </subnode>        
         <subnode name="Node19-E">
+            <connection direction="outbound" destination="Node14-H"></connection>
         </subnode>        
         <subnode name="Node19-F">
         </subnode>        
         <subnode name="Node19-G">
+            <connection direction="outbound" destination="Node18-B"></connection>
         </subnode>        
         <subnode name="Node19-H">
-            <connection direction="outbound" destination="Node24-E"></connection>
         </subnode>
     </node>
     <node name="Node21" type="intersection" locationX="50" locationY="550">
         <subnode name="Node21-A">
         </subnode>        
         <subnode name="Node21-B">
-            <connection direction="outbound" destination="Node22-G"></connection>
         </subnode>        
         <subnode name="Node21-C">
             <connection direction="outbound" destination="Node22-F"></connection>
@@ -373,6 +376,7 @@
         <subnode name="Node21-D">
         </subnode>        
         <subnode name="Node21-E">
+            <connection direction="outbound" destination="Node6-H"></connection>
         </subnode>        
         <subnode name="Node21-F">
         </subnode>        
@@ -385,18 +389,21 @@
         <subnode name="Node22-A">
         </subnode>        
         <subnode name="Node22-B">
-            <connection direction="outbound" destination="Node24-G"></connection>
         </subnode>        
         <subnode name="Node22-C">
-            <connection direction="outbound" destination="Node24-F"></connection>
+            <connection direction="outbound" destination="Node24-F">
+                <action_point id="3"></action_point>
+            </connection>
         </subnode>
         <subnode name="Node22-D">
         </subnode>        
         <subnode name="Node22-E">
+            <connection direction="outbound" destination="Node17-H"></connection>
         </subnode>        
         <subnode name="Node22-F">
         </subnode>        
         <subnode name="Node22-G">
+            <connection direction="outbound" destination="Node21-B"></connection>
         </subnode>        
         <subnode name="Node22-H">
         </subnode>
@@ -405,7 +412,6 @@
         <subnode name="Node24-A">
         </subnode>        
         <subnode name="Node24-B">
-            <connection direction="outbound" destination="Node25-G"></connection>
         </subnode>        
         <subnode name="Node24-C">
             <connection direction="outbound" destination="Node25-F"></connection>
@@ -413,10 +419,12 @@
         <subnode name="Node24-D">
         </subnode>        
         <subnode name="Node24-E">
+            <connection direction="outbound" destination="Node19-H"></connection>
         </subnode>        
         <subnode name="Node24-F">
         </subnode>        
         <subnode name="Node24-G">
+            <connection direction="outbound" destination="Node22-B"></connection>
         </subnode>        
         <subnode name="Node24-H">
         </subnode>
@@ -431,10 +439,12 @@
         <subnode name="Node25-D">
         </subnode>        
         <subnode name="Node25-E">
+            <connection direction="outbound" destination="Node15-H"></connection>
         </subnode>        
         <subnode name="Node25-F">
         </subnode>        
         <subnode name="Node25-G">
+            <connection direction="outbound" destination="Node24-B"></connection>
         </subnode>        
         <subnode name="Node25-H">
         </subnode>

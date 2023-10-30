@@ -15,6 +15,7 @@
 #include "TravelStraight.h"
 #include "FollowLineOnMarker.h"
 #include "TestCommand.h"
+#include "WaitCommand.h"
 
 
 bool PUBLISHDATA = true;
@@ -166,6 +167,12 @@ void assignCommand(int commandNumber){
     case 6:
       if(true){
         SC.loadInCommand(TurnLeft(&MC, &CC));
+      }
+      break;
+
+    case 7:
+      if(true){
+        SC.loadInCommand(WaitCommand(&MC, &CC, 10));
       }
       break;
 

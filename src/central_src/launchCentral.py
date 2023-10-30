@@ -37,13 +37,14 @@ if __name__ == "__main__":
     queueInGui = Queue()
     queueOutGui = Queue()
     controllerKill = Queue()
+    solutionOutQueue = Queue()
 
-    controllerThread = Thread(target=runController, args=(queueIn, queueOut, queueInGui, queueOutGui, controllerKill))
+    controllerThread = Thread(target=runController, args=(queueIn, queueOut, queueInGui, queueOutGui, controllerKill, solutionOutQueue))
     controllerThread.daemon = True
     controllerThread.start()
 
     #run the GUI
-    runGUI(queueInGui, queueOutGui, guiKillQueue)
+    runGUI(queueInGui, queueOutGui, guiKillQueue, solutionOutQueue)
 
 
 

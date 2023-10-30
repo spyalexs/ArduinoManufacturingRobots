@@ -25,7 +25,7 @@ botLocationsGUI = dict()
 #not running, negative one
 solutionStartTime = -1
 
-def make(queueIn, queueOut, robots, stations, killQueue):
+def make(queueIn, queueOut, solutionQueue, robots, stations, killQueue):
     #create the GUI window for the first time
 
     #parse into overseer data - need for config mananger
@@ -112,7 +112,7 @@ def make(queueIn, queueOut, robots, stations, killQueue):
     queueIn.put(GUIInMessage("All", "ready", True, Direct=False))
 
     #keeps an eye on the gui for event and such as it runs
-    monitor(window, queueIn, queueOut, killQueue, robots, stations, overseerData)
+    monitor(window, queueIn, queueOut, solutionQueue, killQueue, robots, stations, overseerData)
 
 def getRobotFrameLayout(name, items):
     #do a little processing to format the keys correctly
@@ -146,7 +146,7 @@ def getStationFrame(connectedStations, connectedRobots, items):
 
     return stationFrameLayout
 
-def monitor(window, queueIn, queueOut, killQueue, robots, stations, overseerData):
+def monitor(window, queueIn, queueOut, solutionQueue, killQueue, robots, stations, overseerData):
     #monitor the Gui for events
 
     while True:  
@@ -163,12 +163,12 @@ def monitor(window, queueIn, queueOut, killQueue, robots, stations, overseerData
             break
         elif (event != "__TIMEOUT__"):
             #if there is an interaction, handle it
-            handleEvents(event, values, window, queueIn, overseerData, killQueue)
+            handleEvents(event, values, window, queueIn, solutionQueue, overseerData, killQueue)
 
         #update the attributes displayed on the window
         update(window, values, queueOut, robots, stations)
     
-def handleEvents(event, values, window, queueIn, overseerData, killQueue):
+def handleEvents(event, values, window, queueIn, solutionQueue, overseerData, killQueue):
     #handle the gui events
 
     print(event)
@@ -278,11 +278,15 @@ def handleEvents(event, values, window, queueIn, overseerData, killQueue):
             solutionStartTime = time()
 
             #start a solution
-            startSolution(values["SolutionFile"], queueIn, killQueue)
+            startSolution(values["SolutionFile"], queueIn, solutionQueue, overseerData, killQueue)
         else:
             #stop solution
             window["ToggleSolution"].update(text="Start Solution")
             window["SolutionRuntime"].update(value="--:--")
+
+            #stop the solution thread
+            solutionQueue.put("Stop Solution")
+
             solutionStartTime = -1
 
 

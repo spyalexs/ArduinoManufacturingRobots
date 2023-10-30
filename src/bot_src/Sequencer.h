@@ -14,6 +14,7 @@
 #include "TravelStraight.h"
 #include "TurnLeft.h"
 #include "TurnRight.h"
+#include "WaitCommand.h"
 
 //the need for this arises from the fact that an abstract class cannot be store in a queue 
 //this solved the problem by creating a place to store all of the descendant of that class
@@ -36,6 +37,7 @@ class Sequencer{
         void loadInCommand(TravelStraight command);
         void loadInCommand(TurnLeft command);
         void loadInCommand(TurnRight command);
+        void loadInCommand(WaitCommand command);
 
         void clear();
         void removeCurrentCommand();
@@ -53,6 +55,7 @@ class Sequencer{
         std::queue<TravelStraight> m_travelStraightQueue;
         std::queue<TurnLeft> m_turnLeftQueue;
         std::queue<TurnRight> m_turnRightQueue;
+        std::queue<WaitCommand> m_waitCommandQueue;
 
         std::queue<String> m_sequence;
 
