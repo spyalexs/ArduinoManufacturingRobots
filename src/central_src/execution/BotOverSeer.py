@@ -6,6 +6,8 @@ from execution.RouteLeg import RouteLeg
 
 from execution.OverSeer import OverSeer
 
+from StateMap import StateMap as SM
+
 class BotOverSeer(OverSeer):
     # a class to monitor an individual bot's function on the controller end
     
@@ -23,6 +25,7 @@ class BotOverSeer(OverSeer):
     m_written = False
     m_confirmed = False
     m_messageNumber = 1
+    m_claimingIntersection = False #if the bot is claiming the intersection it is currently at
 
     m_commands = [] # list of raw commands to send to bot - ment for manually sending commands
     m_route = [] # list of steps sent to the bot - meant for going through a route
@@ -31,6 +34,9 @@ class BotOverSeer(OverSeer):
 
     m_itemSlots = None # the number of item slots on the robot
     m_itemsOnBot = [] # a list of the items on the bot
+
+    #the previous statemap state sent to the statemap - prevent from locking more than nessecary
+    m_previousStateMapState = (False, "NotLocalizing", 0, False)
 
     def __init__(self, macAddress, port, ip_address, queueToBots, queuePacketOut, queueToGUI, connectionType):
         self.m_localizationEffects = getCommandLocalizationEffects()
@@ -85,7 +91,7 @@ class BotOverSeer(OverSeer):
             #note that this breaks the localization tracking
             self.m_localizing = False
             
-            self.sendLocalizationStatusToGui()
+            self.updateStateMap()
 
             self.updateStatus(0, False)
 
@@ -99,7 +105,7 @@ class BotOverSeer(OverSeer):
             if(self.m_localizationEffects[command] == -1 or self.m_localizationEffects[command] == 1):
                 #if localization is broken
                 self.m_localizing = False
-                self.sendLocalizationStatusToGui()
+                self.updateStateMap()
 
             print("New command added: " + str(command))
         else:
@@ -142,7 +148,11 @@ class BotOverSeer(OverSeer):
 
             #not localizing after being disconnected
             self.m_localizing = False
-            self.sendLocalizationStatusToGui()
+
+            #not claiming after being disconnected
+            self.m_claimingIntersection = False
+
+            self.updateStateMap()
         
         #check the bots status
         if(self.m_status == 255):
@@ -150,14 +160,27 @@ class BotOverSeer(OverSeer):
             self.m_commands = [] # clear all commands
             self.m_targetLocation = None
 
+           #ensure at abort, not claiming intersection
+            if(self.m_claimingIntersection == True):
+                self.m_claimingIntersection == False
+
+                self.updateStateMap()
+
             #set status back to ready 
             self.updateStatus(0, UpdateGui=False)
 
             self.m_written = False
 
+
         elif(self.m_status == 254):
             #if the command is finished
-           
+                       
+            #ensure at finish, not claiming intersection
+            if(self.m_claimingIntersection == True):
+                self.m_claimingIntersection == False
+
+                self.updateStateMap()
+
             #ensure location is updated every time a command is finished
             if(not self.m_targetLocation == None):
                 self.setLocation(self.m_targetLocation)
@@ -166,6 +189,12 @@ class BotOverSeer(OverSeer):
                 self.updateStatus(0, UpdateGui=False)
 
         elif (self.m_status == 0):
+            #nsure at idle, not claiming intersection
+            if(self.m_claimingIntersection == True):
+                self.m_claimingIntersection == False
+
+                self.updateStateMap()
+
             if(len(self.m_commands) > 0):
                 #if a command needs written to bot
 
@@ -181,14 +210,44 @@ class BotOverSeer(OverSeer):
                     self.m_progressLocation = self.m_commands[0].m_progressLocation
             
         elif(self.m_status == 253 and self.m_written == True):
-            # if the status is 253, the robot is waiting for confirmation to run the command - essential for ensure commands do not get issued twice
+            # if the status is 253, the robot is waiting for confirmation to run the command - essential for ensur cingommands do not get issued twice
             # sorta - kinda a handshake
 
             if(not self.m_confirmed):
-                self.m_confirmed = True
-                self.m_written = False
+                #check if another bot will block path
+                clearToProceed = True
 
-                self.m_commands.pop(0)
+                try:
+                    #TODO - fix hard coding here
+                    if(self.m_currentLocation[:4] == "Node" and self.m_currentLocation[4] == self.m_targetLocation[4]):
+                        #if the connection is an intranode connection
+
+                        #get robot location data
+                        data = SM().getData()
+
+                        #go through data and see if another robot is currently claiming the same intersection
+                        for datum in data.values():
+
+                            #if another robot is claiming the node
+                            if datum[1][:5] == self.m_currentLocation[:5] and datum[3]:
+
+                                #must wait before proceeding
+                                clearToProceed = False
+                                
+                        #since the robot is proceeding with an intranode connection, it will be claiming the intersection
+                        self.m_claimingIntersection = True
+
+                        self.updateStateMap()
+                except:
+                    clearToProceed = True
+
+                #if the robot is clear to proceed
+                if(clearToProceed):
+
+                    self.m_confirmed = True
+                    self.m_written = False
+
+                    self.m_commands.pop(0)
 
 
                 #issue confirmation
@@ -198,21 +257,20 @@ class BotOverSeer(OverSeer):
             #set the robot's location to the in progress point
             self.setLocation(self.m_progressLocation, Clearing=False)
 
-
     def sendCommandStatusToGui(self, status):
         #put a gui message in the GUI queue
         message = GUIOutMessage(self.m_port, "commandStatus", status)
         self.m_queueGui.put(message)
 
-    def sendLocalizationStatusToGui(self):
-        #put a localization status message in the the GUI queue
-        message = GUIOutMessage(self.m_port, "localizationStatus", int(self.m_localizing))
-        self.m_queueGui.put(message)
-
-    def sendLocationToGui(self):
+    def updateStateMap(self):
         #send the gui a message with the robot's location
-        message = GUIOutMessage(self.m_port, "locationCurrent", self.m_currentLocation)
-        self.m_queueGui.put(message)
+
+        #check wether update really needs sent
+        newState = (self.m_localizing, self.m_currentLocation, self.m_status, self.m_claimingIntersection)
+        if(not newState == self.m_previousStateMapState):
+            SM().updateBot(self.m_port, self.m_localizing, self.m_currentLocation, self.m_status, self.m_claimingIntersection)
+
+            self.m_previousStateMapState = newState
 
     def sendInitialBotStateToGUI(self):
         #send the initial state of the robot to the gui... this is needed because the gui is brought up significantly after the overseers
@@ -221,10 +279,7 @@ class BotOverSeer(OverSeer):
         super().sendInitialStateToGUI()
 
         #location
-        self.sendLocationToGui()
-
-        #localization
-        self.sendLocalizationStatusToGui()
+        self.updateStateMap()
 
     def setLocation(self, location, Clearing:bool = True):
         if(location == None):
@@ -243,14 +298,14 @@ class BotOverSeer(OverSeer):
             self.m_currentLocation = location
 
             #send the gui the robot's location
-            self.sendLocationToGui()
+            self.updateStateMap()
 
         if(self.m_localizing == False):
             #mark the robot as now localizing
             self.m_localizing = True
             
             #tell the gui that the robot is now localizing
-            self.sendLocalizationStatusToGui()
+            self.updateStateMap()
 
     def setNumberOfItemSlots(self, numberOfSlots):
         #if the number of slots has changed

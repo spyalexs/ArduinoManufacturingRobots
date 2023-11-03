@@ -21,6 +21,10 @@ botDrawingLocations = dict()
 #path to bot images
 botImagesPath = os.path.join(os.path.dirname(os.path.realpath(__file__)), "botimages")
 
+#bot state chart
+#TODO: run gui based on this state chart
+botStates = dict()
+
 def parseFile(file):
     mapTree = ET.parse(file)
     return mapTree.getroot()

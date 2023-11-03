@@ -9,6 +9,7 @@ from getConstants import getCommandKeys, getTheme, getItemInformation
 from gui.GUIInMessage import GUIInMessage
 from createRoute import route, getLocations
 from gui.map_display.displayMap import getBaseMap, drawBots, flipImageY
+from StateMap import StateMap as SM
 
 #get path to grab the configuration / solution managers
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), ".."))
@@ -19,11 +20,11 @@ from solutions.solutionManager import getSolutionsFilesList, startSolution
 commandKeys = getCommandKeys()
 #the map with no bots draw on
 baseMap = getBaseMap()
-#the current bot locations as far as the gui knows
-botLocationsGUI = dict()
 #if a solution is currently running positive value
 #not running, negative one
 solutionStartTime = -1
+
+botPreviousTimestamps = []
 
 def make(queueIn, queueOut, solutionQueue, robots, stations, killQueue):
     #create the GUI window for the first time
@@ -362,34 +363,26 @@ def update(window, values, queueOut, robots, stations):
                 case 255:
                     window[target+"CommandProgress"].update(current_count=100, bar_color=("Red", None))
         
-        if("localizationStatus" in topic):
-            #set the status of the localization radio on the displa
+    data = SM().getData()
+        
+    global botPreviousTimestamps
 
-            match inputDictionary[topic]:
-                case 0:
-                    window[target + "IsLocalizing"].update(circle_color="red")
+    #check when the last time entries where updated
+    timeStamps = []
+    for datum in data.values():
+        timeStamps.append(datum)
 
-                    #ensure the GUI does not draw the bot location if the bot is not be localized
-                    botLocationsGUI[target] = ("Unlocalized")
-                case 1:
-                    window[target + "IsLocalizing"].update(circle_color="green")
-            
-            #mark the map to be updated
-            mapUpdated = True
+    if(not timeStamps == botPreviousTimestamps):
+        #map has been updated
+        botPreviousTimestamps = timeStamps
 
-        if("locationCurrent" in topic):
-            #set the robot's location
-            botLocationsGUI[target] = inputDictionary[topic]
-            
-            #update the origin for the route setter for the particular bot's frame
-            window[target + "RouteFrom"].update(value=inputDictionary[topic])
-                    
-            #mark the map to be updated
-            mapUpdated = True
+        #extract bot locations dict
+        botLocations = dict()
+        for port, datum in zip(data.keys(), data.values()):
+            botLocations[port] = datum[1]
 
-    if(mapUpdated):
         #if the map needs redrawn
-        window["MapImage"].update(data=ImageTk.PhotoImage(Image.fromarray(drawBots(baseMap.copy(), botLocationsGUI))))
+        window["MapImage"].update(data=ImageTk.PhotoImage(Image.fromarray(drawBots(baseMap.copy(), botLocations))))
 
     #update the solution clock if needed
     if(solutionStartTime >= 0):

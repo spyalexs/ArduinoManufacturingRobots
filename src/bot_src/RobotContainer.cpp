@@ -23,6 +23,8 @@ RobotContainer::RobotContainer(mc::DCMotor* motor1, mc::DCMotor* motor2, mc::Enc
   pinMode(this->m_ultrasonicEchoPin, INPUT);
   pinMode(this->m_encoderCWFPin, INPUT);
   pinMode(this->m_encoderCCWFPin, INPUT);
+
+  pinMode(1, INPUT);
 }
 
 void RobotContainer::setMotor1(int duty){
@@ -105,6 +107,7 @@ double RobotContainer::getBatteryVoltage(){
       this->m_display.addIconDrawJob(11, "batlow");
     }
   }
+
   return voltage;
 }
 

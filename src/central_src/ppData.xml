@@ -253,6 +253,7 @@
  </ppnode>
  <ppnode name="Node8-E">
   <pplink cost="77.0" locationX="288.0" locationY="112" intersection="None" neighbor="Node3-H" />
+  <pplink cost="40.0" locationX="288.0" locationY="101" neighbor="AP1" intersection="None" />
  </ppnode>
  <ppnode name="Node8-F">
   <pplink cost="30" intersection="Node8" locationX="300" locationY="175" neighbor="Node8-A" />
@@ -321,6 +322,7 @@
  </ppnode>
  <ppnode name="Node10-E">
   <pplink cost="77.0" locationX="538.0" locationY="112" intersection="None" neighbor="Node5-H" />
+  <pplink cost="40.0" locationX="538.0" locationY="101" neighbor="AP3" intersection="None" />
  </ppnode>
  <ppnode name="Node10-F">
   <pplink cost="30" intersection="Node10" locationX="550" locationY="175" neighbor="Node10-A" />
@@ -357,6 +359,7 @@
  </ppnode>
  <ppnode name="Node12-E">
   <pplink cost="77.0" locationX="163.0" locationY="238" intersection="None" neighbor="Node7-H" />
+  <pplink cost="40.0" locationX="163.0" locationY="226" neighbor="AP2" intersection="None" />
  </ppnode>
  <ppnode name="Node12-F">
   <pplink cost="30" intersection="Node12" locationX="175" locationY="300" neighbor="Node12-A" />
@@ -373,6 +376,7 @@
  </ppnode>
  <ppnode name="Node13-A">
   <pplink cost="77.0" locationX="312.0" locationY="362" intersection="None" neighbor="Node18-D" />
+  <pplink cost="40.0" locationX="312.0" locationY="351" neighbor="AP4" intersection="None" />
  </ppnode>
  <ppnode name="Node13-B">
   <pplink cost="30" intersection="Node13" locationX="300" locationY="300" neighbor="Node13-A" />
@@ -620,6 +624,7 @@
  </ppnode>
  <ppnode name="Node22-C">
   <pplink cost="202.0" locationX="300.0" locationY="538.0" neighbor="Node24-F" intersection="None" />
+  <pplink cost="102.5" locationY="538.0" locationX="258" neighbor="AP3" intersection="None" />
  </ppnode>
  <ppnode name="Node22-D">
   <pplink cost="30" intersection="Node22" locationX="175" locationY="550" neighbor="Node22-A" />
@@ -710,5 +715,20 @@
   <pplink cost="30" intersection="Node25" locationX="550" locationY="550" neighbor="Node25-C" />
   <pplink cost="30" intersection="Node25" locationX="550" locationY="550" neighbor="Node25-E" />
   <pplink cost="30" intersection="Node25" locationX="550" locationY="550" neighbor="Node25-G" />
+ </ppnode>
+ <ppnode name="AP1">
+  <pplink cost="40.0" locationX="288.0" locationY="124" neighbor="Node3-H" intersection="None" />
+ </ppnode>
+ <ppnode name="AP3">
+  <pplink cost="40.0" locationX="538.0" locationY="124" neighbor="Node5-H" intersection="None" />
+ </ppnode>
+ <ppnode name="AP2">
+  <pplink cost="40.0" locationX="163.0" locationY="249" neighbor="Node7-H" intersection="None" />
+ </ppnode>
+ <ppnode name="AP4">
+  <pplink cost="40.0" locationX="312.0" locationY="374" neighbor="Node18-D" intersection="None" />
+ </ppnode>
+ <ppnode name="AP3">
+  <pplink cost="102.5" locationY="538.0" locationX="342" neighbor="Node24-F" intersection="None" />
  </ppnode>
 </map>
