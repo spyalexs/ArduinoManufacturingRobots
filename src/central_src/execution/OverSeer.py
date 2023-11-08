@@ -11,7 +11,7 @@ from imageStreaming.image2icon import image2icon
 class OverSeer:
 
     #connection
-    m_connectionTimeout = 5 # after five seconds of not hearing from bot, assume connection issues
+    m_connectionTimeout = 30 # after five seconds of not hearing from bot, assume connection issues
     m_connected = False
 
     m_iconPacketLocation = "" #the location of the icon packets

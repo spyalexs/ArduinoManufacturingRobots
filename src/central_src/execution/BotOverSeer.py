@@ -20,9 +20,10 @@ class BotOverSeer(OverSeer):
     m_localizing = False # if the robot is currently being localized by the controller
 
     #commands
-    m_patience = .5 # how long to wait before attempting to reissue a command
+    m_patience = 3 # how long to wait before attempting to reissue a command
     m_lastIssue = None
     m_written = False
+    m_writtenTime = 0
     m_confirmed = False
     m_messageNumber = 1
     m_claimingIntersection = False #if the bot is claiming the intersection it is currently at
@@ -35,16 +36,19 @@ class BotOverSeer(OverSeer):
     m_itemSlots = None # the number of item slots on the robot
     m_itemsOnBot = [] # a list of the items on the bot
 
+    m_solutionQueue = None # the queue linked to the solution manager
+
     #the previous statemap state sent to the statemap - prevent from locking more than nessecary
     m_previousStateMapState = (False, "NotLocalizing", 0, False)
 
-    def __init__(self, macAddress, port, ip_address, queueToBots, queuePacketOut, queueToGUI, connectionType):
+    def __init__(self, macAddress, port, ip_address, queueToBots, queuePacketOut, queueToGUI, connectionType, solutionOutQueue):
         self.m_localizationEffects = getCommandLocalizationEffects()
 
         super().__init__(macAddress, port, ip_address, queueToBots, queuePacketOut, queueToGUI, connectionType)
 
         #specify that this is a bot overseer
         self.m_type = "bot"
+        self.m_solutionQueue = solutionOutQueue
 
     def externalSentMessage(self, characteristic, value):
         #TODO - implement this via publisher
@@ -68,13 +72,17 @@ class BotOverSeer(OverSeer):
     def updateStatus(self, status, UpdateGui:bool = True):
         self.m_status = status
 
-        print("My status is: " + str(status))
-
         #send status to gui
         self.sendCommandStatusToGui(status)
 
+        #send the status to the solution manager
+        self.m_solutionQueue.put((self.m_port, status))
+
         #also clear the patience timer so next command is immediate
         self.m_lastIssue = 0
+
+        if(status == 2 or status == 3 or status == 255):
+            self.m_written = False
 
         if(UpdateGui):
             #update the connection on the gui
@@ -93,7 +101,7 @@ class BotOverSeer(OverSeer):
             
             self.updateStateMap()
 
-            self.updateStatus(0, False)
+            self.updateStatus(255, False)
 
             return
 
@@ -123,7 +131,6 @@ class BotOverSeer(OverSeer):
         if len(self.m_commands) == 0:
             self.m_commands = route
 
-            print("New route added: " + str(route))
         else:
             print("Failed to add new command to bot: " + str(self.m_port) + ". The command/route queue is already full.")
 
@@ -143,7 +150,6 @@ class BotOverSeer(OverSeer):
             #if disconnected, clear all commands
             self.m_commands = []
                                     
-            self.m_written = False
             self.m_confirmed = False
 
             #not localizing after being disconnected
@@ -162,44 +168,58 @@ class BotOverSeer(OverSeer):
 
            #ensure at abort, not claiming intersection
             if(self.m_claimingIntersection == True):
-                self.m_claimingIntersection == False
+                self.m_claimingIntersection = False
 
                 self.updateStateMap()
 
             #set status back to ready 
             self.updateStatus(0, UpdateGui=False)
 
-            self.m_written = False
-
-
         elif(self.m_status == 254):
             #if the command is finished
                        
             #ensure at finish, not claiming intersection
             if(self.m_claimingIntersection == True):
-                self.m_claimingIntersection == False
+                self.m_claimingIntersection = False
 
                 self.updateStateMap()
 
             #ensure location is updated every time a command is finished
             if(not self.m_targetLocation == None):
                 self.setLocation(self.m_targetLocation)
-                
-                #set status back to ready
+
+            #if there are commands in queue, run those
+            if(len(self.m_commands) > 0):
+                #if a command needs written to bot
+
+                if(not self.m_written or self.m_writtenTime + self.m_patience < time.time()):
+                    self.m_written = True # mark so the system knows if the systemhas already written a command
+                    self.m_writtenTime = time.time()
+                    self.m_confirmed = False #command has not yet been confirmed
+
+                    #write command to bot
+                    self.sendMessageToOverseen(self.m_port + "$commandIssue$" + str(self.m_commands[0].m_step))
+
+                    #note the target location for localization purposes
+                    self.m_targetLocation = self.m_commands[0].m_endingLocation
+                    self.m_progressLocation = self.m_commands[0].m_progressLocation
+            else:
+                #no commands set status back to ready - tell solution manager its up
                 self.updateStatus(0, UpdateGui=False)
 
         elif (self.m_status == 0):
             #nsure at idle, not claiming intersection
             if(self.m_claimingIntersection == True):
-                self.m_claimingIntersection == False
+                self.m_claimingIntersection = False
 
                 self.updateStateMap()
 
             if(len(self.m_commands) > 0):
                 #if a command needs written to bot
 
-                if(not self.m_written):
+                if(not self.m_written or self.m_writtenTime + self.m_patience < time.time()):
                     self.m_written = True # mark so the system knows if the systemhas already written a command
+                    self.m_writtenTime = time.time()
                     self.m_confirmed = False #command has not yet been confirmed
 
                     #write command to bot
@@ -210,7 +230,7 @@ class BotOverSeer(OverSeer):
                     self.m_progressLocation = self.m_commands[0].m_progressLocation
             
         elif(self.m_status == 253 and self.m_written == True):
-            # if the status is 253, the robot is waiting for confirmation to run the command - essential for ensur cingommands do not get issued twice
+            # if the status is 253, the robot is waiting for confirmation to run the command - essential for ensure cingommands do not get issued twice
             # sorta - kinda a handshake
 
             if(not self.m_confirmed):
@@ -229,15 +249,18 @@ class BotOverSeer(OverSeer):
                         for datum in data.values():
 
                             #if another robot is claiming the node
-                            if datum[1][:5] == self.m_currentLocation[:5] and datum[3]:
+                            if (datum[1][:5] == self.m_currentLocation[:5]) and (datum[3] == True):
+                                print(datum)
 
                                 #must wait before proceeding
-                                clearToProceed = False
-                                
-                        #since the robot is proceeding with an intranode connection, it will be claiming the intersection
-                        self.m_claimingIntersection = True
+                                clearToProceed = False  
 
-                        self.updateStateMap()
+                        if (clearToProceed == True):     
+                            #since the robot is proceeding with an intranode connection, it will be claiming the intersection
+                            self.m_claimingIntersection = True
+
+                            self.updateStateMap()    
+
                 except:
                     clearToProceed = True
 
@@ -245,13 +268,20 @@ class BotOverSeer(OverSeer):
                 if(clearToProceed):
 
                     self.m_confirmed = True
-                    self.m_written = False
 
                     self.m_commands.pop(0)
 
+                    self.m_writtenTime = time.time()
 
-                #issue confirmation
-                self.sendMessageToOverseen(self.m_port + "$commandIssue$" + str(253))
+                    #issue confirmation
+                    self.sendMessageToOverseen(self.m_port + "$commandIssue$" + str(253))
+
+                elif(self.m_writtenTime + self.m_patience < time.time()):
+                    self.m_writtenTime = time.time()
+
+                    #issue confirmation again if not switched to running status
+                    self.sendMessageToOverseen(self.m_port + "$commandIssue$" + str(253))
+
                 
         elif(self.m_status == 2):
             #set the robot's location to the in progress point

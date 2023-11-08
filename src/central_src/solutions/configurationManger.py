@@ -133,7 +133,7 @@ def validateCommand(command, overseerData, length:int, includesTarget=False,):
             return True
 
     else:
-        if(len(command) == length):
+        if(len(command) <= length):
             print("Not enough parameters in command: " + str(command[0]) + ". Skipping!")
 
             return False

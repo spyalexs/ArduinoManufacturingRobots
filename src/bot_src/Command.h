@@ -35,6 +35,7 @@ class Command{
     Communicator* mp_CC;
 
     String m_name;
+    int m_lastStatusSent = -1;
 
   private:
     int m_status = 0; //governs when the command is in terms of its lifecycle

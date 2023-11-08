@@ -81,6 +81,8 @@ def monitor(queueIn, killQueue):
                         #write out sub messages with the name of the sender attached
                         for subMessage in subMessages:
                             queueIn.put(str(key) + "$" + subMessage)
+
+                            print(subMessage)
                     except IndexError:
                         print("Monitor In: index out of range!")
                         print("Message: " + str(message))

@@ -13,7 +13,7 @@ class FollowLineUntilAction : public Command{
     void cleanup();
     bool ifEnd();
 
-    int m_intersectionCounter;
+    int m_actionMarkerCounter;
 };
 
 

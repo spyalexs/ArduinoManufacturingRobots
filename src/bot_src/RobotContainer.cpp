@@ -1,13 +1,10 @@
 #include "RobotContainer.h"
 
-RobotContainer::RobotContainer(mc::DCMotor* motor1, mc::DCMotor* motor2, mc::Encoder* encoder1, mc::Encoder* encoder2, uint8_t lineFollowerPinName, uint8_t intersectionPinName, uint8_t codePinName){
+RobotContainer::RobotContainer(mc::DCMotor* motor1, mc::DCMotor* motor2, mc::Encoder* encoder1, mc::Encoder* encoder2){
   m_motor1 = motor1;
   m_motor2 = motor2;
   m_encoder1 = encoder1;
   m_encoder2 = encoder2;
-  m_lineFollowerPin = lineFollowerPinName;
-  m_intersectionPin = intersectionPinName;
-  m_codePin = codePinName;
   m_display = Display();
 
   pinMode(LED_BUILTIN, OUTPUT);
@@ -24,15 +21,60 @@ RobotContainer::RobotContainer(mc::DCMotor* motor1, mc::DCMotor* motor2, mc::Enc
   pinMode(this->m_encoderCWFPin, INPUT);
   pinMode(this->m_encoderCCWFPin, INPUT);
 
+  pinMode(this->m_lineFollowerPin, INPUT);
+  pinMode(this->m_intersectionPin, INPUT);
+
   pinMode(1, INPUT);
 }
 
+
+void RobotContainer::setIndividualParamters(String macAddress){
+  //set the paramters that vary between each robot
+
+  if(macAddress == "78:e3:6d:5:1a:24"){
+    // BLUE parameters
+    Serial.println("Setting Individual Parameters for BLUE");
+
+    this->m_lineHighValue = 150;
+    this->m_lineLowValue = 40;
+    this->m_intersectionMarkerThreshold = 100;
+
+    this->m_velDFF = -1;
+
+  }else if(macAddress == "58:bf:25:9c:bc:10"){
+    // BLACK parameters
+    Serial.println("Setting Individual Parameters for BLACK");
+
+    this->m_lineHighValue = 150;
+    this->m_lineLowValue = 45;
+    this->m_intersectionMarkerThreshold = 80;
+
+    this->m_velDFF = -2;
+
+
+  } else if(macAddress == "58:bf:25:9c:a4:78"){
+    // ORANGE parameters
+    Serial.println("Setting Individual Parameters for ORANGE");
+
+    this->m_lineHighValue = 60;
+    this->m_lineLowValue = 40;
+    this->m_intersectionMarkerThreshold = 50;
+
+    //remap line follower and mark pins too
+    uint8_t m_lineFollowerPin = IN3;
+    uint8_t m_intersectionPin = IN1;
+
+  } else{
+    Serial.println("MacAddress Unknown, going with defaults!");
+  }
+}
+
 void RobotContainer::setMotor1(int duty){
-  this->m_motor1->setDuty(-duty);
+  this->m_motor1->setDuty(std::max(-100,std::min(100,duty)));
 }
 
 void RobotContainer::setMotor2(int duty){
-  this->m_motor2->setDuty(duty);
+  this->m_motor2->setDuty(-std::max(-100,std::min(100,duty)));
 }
 
 void RobotContainer::setLEDStatus(int status){
@@ -44,11 +86,11 @@ void RobotContainer::setLEDStatus(int status){
 }
 
 int RobotContainer::getEncoder1Counts(){
-  return this->m_encoder1->getRawCount();
+  return -this->m_encoder1->getRawCount();
 }
 
 int RobotContainer::getEncoder2Counts(){
-  return -this->m_encoder2->getRawCount();
+  return this->m_encoder2->getRawCount();
 }
 
 uint16_t RobotContainer::getLineFollowerPinReading(){
@@ -67,9 +109,10 @@ bool RobotContainer::isOnIntersectionMarker(){
   return true;
 }
 
-bool RobotContainer::isCodePin(){
-  return !digitalRead(m_codePin);
+bool RobotContainer::isOnActionMarker(){
+  return !digitalRead(this->m_codePin);
 }
+
 
 double RobotContainer::getTime(){
   return micros() / 1000000.0;
@@ -117,28 +160,30 @@ void RobotContainer::lineControl(double* Correction1, double* Correction2){
   //be sure the previous results haven't gone bad
   if(m_linePreviousTime + m_staleTime < this->getTime() || m_linePreviousTime == 0){
     //refresh previous results
-    m_linePreviousValue = this->getLineFollowerPinReading();
+    m_linePreviousValue = std::min(m_lineHighValue, std::max(m_lineLowValue, (int)(this->getLineFollowerPinReading()))) / (m_lineHighValue - m_lineLowValue);
   }
 
-  double lP = 1.05;
-  double lD = .02;
+  double lP = 21.0;
+  double lD = 0.4;
 
   int maxCorrection = 25;
 
-  int value = this->getLineFollowerPinReading();
+  double value = (double)(this->getLineFollowerPinReading());
   double time = getTime();
 
-  value = std::min(m_lineHighValue, std::max(m_lineLowValue, value));
+  value = (((double)(std::min(m_lineHighValue, std::max(m_lineLowValue, (int)(value)))) - m_lineLowValue)) / (double)(m_lineHighValue - m_lineLowValue);
 
-  double correctionP = lP * (value - (m_lineLowValue + m_lineHighValue) / 2);
+  double correctionP = lP * (value - .5);
   double correctionD = (value - m_linePreviousValue) / (time - m_linePreviousTime) * lD;
-  int correction = floor(correctionP + correctionD);
+
+  //normalize over different line values
+  int correction = floor((correctionP + correctionD));
   correction = std::min(correction, maxCorrection);
 
   m_linePreviousValue = value;
   m_linePreviousTime = time;
-  *Correction1 = -correction;
-  *Correction2 = +correction;
+  *Correction1 = +correction;
+  *Correction2 = -correction;
 }
 
 void RobotContainer::velocityControl(double* Power1, double* Power2){
@@ -173,13 +218,14 @@ void RobotContainer::velocityControl(double* Power1, double* Power2){
   double vD = 0;//.000005;
   double vFF = 20 + .011 * this->m_velTargetCPS;
 
-  double power1 = (vP * (m_velTargetCPS - instantCPS1)) + vFF - vD * dCPS1;
-  double power2 = (vP * (m_velTargetCPS - instantCPS2)) + vFF - vD * dCPS2;
+  double power1 = (vP * (m_velTargetCPS - instantCPS1)) + vFF - vD * dCPS1 + this->m_velDFF;
+  double power2 = (vP * (m_velTargetCPS - instantCPS2)) + vFF - vD * dCPS2 - this->m_velDFF;
 
   *Power1 = power1;
   *Power2 = power2;
 
   // Serial.println("CPS: " + String(instantCPS1) + " Power: " + String(power1));
+  // Serial.println("CPS2: " + String(instantCPS2) + " Power2: " + String(power2));
 }
 
 bool RobotContainer::isEncoderClicked(){
@@ -345,7 +391,7 @@ void RobotContainer::cycle(){
     //if the display requested that the menu page be refreshed
     if(this->m_display.m_refreshMenu == true){
       //get sensor data
-      SensorData sd = SensorData(this->getLineFollowerPinReading(), this->getMarkerPinReading(), 0, 0);
+      SensorData sd = SensorData(this->getLineFollowerPinReading(), this->getMarkerPinReading(), this->isOnActionMarker(), 0);
 
       this->m_display.refreshMenuPage(sd);
     }

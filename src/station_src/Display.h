@@ -32,7 +32,7 @@
 
 #define PIXEL_BUFFER_LENGTH 1000
 
-#define DISPLAY_ITEM_TRANSFER_TIME 30
+#define DISPLAY_ITEM_TRANSFER_TIME 14
 
 // backlight will eventually go in GPIO breakout board
 

@@ -7,7 +7,8 @@ def getCommandKeys():
             "TravelStraight" : 4, 
             "TurnRight" : 5, 
             "TurnLeft" : 6, 
-            "TurnU" : 7,
+            "Wait" : 7,
+            "FollowLineTillAction" : 8,
             "IntersectionRight" : 101, 
             "IntersectionStraight" : 102, 
             "IntersectionLeft": 103,
@@ -29,7 +30,8 @@ def getCommandLocalizationEffects():
             4 : -1, 
             5 : -1, 
             6 : -1, 
-            7 : -1,
+            7 : 0,
+            8 : 1,
             101 : 1, 
             102 : 1, 
             103: 1,
@@ -92,11 +94,11 @@ def getItemInformation():
     #syntax: [Item, (IconName, LoadTime, UnloadTime)]
 
     items = {
-                "bolt" : ("bolt", 30, 30),
-                "washer" : ("washer", 30, 30),
-                "nut" : ("nut", 30, 30),
-                "spring" : ("spring", 30, 30),
-                "wheel" : ("wheel", 30, 30)
+                "bolt" : ("bolt", 15, 15),
+                "washer" : ("washer", 15, 15),
+                "nut" : ("nut", 15, 15),
+                "spring" : ("spring", 15, 15),
+                "wheel" : ("wheel", 15, 15)
              }
     
     return items

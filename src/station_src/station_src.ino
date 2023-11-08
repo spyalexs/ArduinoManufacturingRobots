@@ -15,7 +15,7 @@ Communicator CC = Communicator();
 CycleOverseer CO = CycleOverseer(50);
 
 int lastUpdate = 0; //last time the update was sent to central
-int updateFrequency = 1; //Hz
+double updateFrequency = .05; //Hz
 
 bool inMenu = true; // wether or not the bot is in menu mode
  
@@ -72,7 +72,7 @@ void update(){
   double time = MC.getTime();
 
   // if it is time to update central
-  if(lastUpdate + (1 / updateFrequency) < time){
+  if(lastUpdate + (1.0 / updateFrequency) < time){
     lastUpdate = time;
 
     //update must be less than 50 bytes

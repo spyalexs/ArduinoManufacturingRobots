@@ -50,12 +50,21 @@ def route(startingNodeName, endingNodeName):
     #route the robot based on a starting node and ending node
     data = loadPPData()
 
+    print("Creating new route from: " + str(startingNodeName) + " to: "  + str(endingNodeName))
+
     #plan path - currently uses A*, can be changed out for a different algorithm later
     route = getRoute(data, startingNodeName, endingNodeName)
 
     if not route == None:
         #get steps in between route
-        return getStepsFromRoute(route)
+        steps = getStepsFromRoute(route)
+
+
+        for step in steps:
+            print(step.m_step)
+
+        return steps
+
 
     return None
 
@@ -191,8 +200,7 @@ def getStepsFromRoute(route):
         if(len(endingKey) == 1):
             if "AP" in endingKey[0]:
                 #add in action point functionality when ready
-                #commandNumbers.append(RouteLeg(commandKeys["TravelToAction"], startingNode, endingNode))
-                print("Skipping action point as it is not ready")
+                commandNumbers.append(RouteLeg(commandKeys["FollowLineTillAction"], startingNode, endingNode))
 
         elif(len(endingKey) == 2):
             if startingKey[0] == endingKey[0]:

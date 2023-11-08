@@ -4,6 +4,7 @@ from PIL import Image, ImageTk
 import sys
 import os
 from time import time
+from math import floor
 
 from getConstants import getCommandKeys, getTheme, getItemInformation
 from gui.GUIInMessage import GUIInMessage
@@ -91,7 +92,7 @@ def make(queueIn, queueOut, solutionQueue, robots, stations, killQueue):
             robotsFrameLayout[(len(robotsFrameLayout) - 1)].append(stationFrame)
         else:
             #no space, make a new row
-            robotsFrameLayout.append([sg.Frame("Stations", stationFrame)])
+            robotsFrameLayout.append([stationFrame,])
 
     #get the layout for the map sceen
     mapLayout = [[sg.Image(key="MapImage")]]
@@ -317,12 +318,16 @@ def update(window, values, queueOut, robots, stations):
                 #change the target frame to the selected station window
                 target = "SelectedStation"
 
-        if("bat" in topic):
+            elif int(target) >= int(5020):
+                #non target station
+                target = "0"
 
+        if("bat" in topic and not target == "0"):
+            
             #update battery voltage display
             window[target + "BatteryVoltage"].update(value=f'{inputDictionary[topic]:0,.2f}')
 
-        if("connectionStatus" in topic):
+        if("connectionStatus" in topic and not target == "0"):
             #set the robot's connect status
 
             #link value to color
@@ -344,7 +349,7 @@ def update(window, values, queueOut, robots, stations):
             #update connection radio
             window[target + "connectionStatus"].update(circle_color = color)
 
-        if("commandStatus" in topic):
+        if("commandStatus" in topic and not target == "0"):
             #set the robot's status on the command progress bar
 
             match inputDictionary[topic]:
@@ -384,13 +389,27 @@ def update(window, values, queueOut, robots, stations):
         #if the map needs redrawn
         window["MapImage"].update(data=ImageTk.PhotoImage(Image.fromarray(drawBots(baseMap.copy(), botLocations))))
 
+        #localization statuses need updated
+        for port, datum in zip(data.keys(), data.values()):
+            #determine what color to set the localizing radio
+            color = "Red"
+            if datum[0] == True:
+                color = "Green"
+
+            window[str(port) + "IsLocalizing"].update(circle_color=color)
+
     #update the solution clock if needed
     if(solutionStartTime >= 0):
         secondsSinceStart = round(time() - solutionStartTime)
-        minutesSinceStart = round(secondsSinceStart / 60)
+        minutesSinceStart = floor(secondsSinceStart / 60)
         remainderSeconds = secondsSinceStart % 60
 
-        window["SolutionRuntime"].update(value=str(minutesSinceStart) + ":" + str(remainderSeconds))
+        if(remainderSeconds >= 10):
+            window["SolutionRuntime"].update(value=str(minutesSinceStart) + ":" + str(remainderSeconds))
+        else:
+            #avoid one digit seconds
+         window["SolutionRuntime"].update(value=str(minutesSinceStart) + ":0" + str(remainderSeconds))
+
 
 def runRouting(startingNodeName, endingNodeName, targetBot, queue):
     #route and add route to target - run this in a seperate thread to prevent blocking in gui thread
@@ -406,4 +425,3 @@ def runRouting(startingNodeName, endingNodeName, targetBot, queue):
         queue.put(GUIInMessage(targetBot, "destination", commands[len(commands) - 1].m_endingLocation, Direct=True))
     else:
         print("Failed to route between: " + startingNodeName + " and " + endingNodeName)
-

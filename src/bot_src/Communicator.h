@@ -27,6 +27,8 @@ class Communicator{
         void setDisplayPointer(Display* display);
 
         std::queue<String>* getMessageOutQueuePointer();
+
+        String m_macString;
     private:
         WiFiSSLClient m_wifiClient;
         int m_wifiStatus = WL_IDLE_STATUS;
@@ -36,7 +38,6 @@ class Communicator{
         const char* m_hostName = "MiniBot";
 
         byte m_macAddress[6];
-        String m_macString;
         IPAddress m_localIPAddress;
         IPAddress m_serverIPAddress;
 

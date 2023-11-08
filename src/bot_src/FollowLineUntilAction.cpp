@@ -2,7 +2,7 @@
 
 FollowLineUntilAction::FollowLineUntilAction(RobotContainer* MC, Communicator* CC, bool preconfirmed):Command(MC, CC, "FollowLineUntilAction", preconfirmed){
   //do initialization here
-  m_intersectionCounter = 0;
+  m_actionMarkerCounter = 0;
 }
 
 void FollowLineUntilAction::startup(){
@@ -20,8 +20,8 @@ void FollowLineUntilAction::cycle(){
   mp_MC->setMotor2(power2 + correction2);
 
 
-  if(mp_MC->isOnIntersectionMarker()){
-    m_intersectionCounter += 1;
+  if(mp_MC->isOnActionMarker()){
+    m_actionMarkerCounter += 1;
   }
 }
 
@@ -35,7 +35,7 @@ void FollowLineUntilAction::cleanup(){
 
 bool FollowLineUntilAction::ifEnd(){
   //return true to stop cycling, false to continue
-  if(m_intersectionCounter >= 3){
+  if(m_actionMarkerCounter >= 3){
     return true;
   }
 

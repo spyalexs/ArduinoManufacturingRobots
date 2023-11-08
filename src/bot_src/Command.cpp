@@ -8,6 +8,10 @@ Command::Command(RobotContainer* MC, Communicator* CC, String name, bool preconf
 
   m_completed = false; 
   m_preconfirmed = preconfirmed;
+
+  if(preconfirmed == true){
+    this->m_lastStatusSent = 2;
+  }
 }
 
 Command::Command(){
@@ -34,7 +38,12 @@ void Command::updateStatus(int status){
     this->m_confirmationRequestTime = this->mp_MC->getTime();
   }
 
-  mp_CC->writeMessageToCentral("commandStatus", String(status));
+  //TODO: remove next line when buffer size shrinks
+  if((status == 0 || status == 253 || status == 254 || status == 255 || status == 2) && (status != this->m_lastStatusSent)){
+    mp_CC->writeMessageToCentral("commandStatus", String(status));
+
+    this->m_lastStatusSent = status;
+  } 
 }
 
 void Command::abort(){

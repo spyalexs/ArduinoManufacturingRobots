@@ -3,7 +3,7 @@
 WaitCommand::WaitCommand(RobotContainer* MC, Communicator* CC, double waitTime, bool preconfirmed):Command(MC, CC, "WaitCommand", preconfirmed){
   //do initialization here
 
-  this->m_waitTime = 0;
+  this->m_waitTime = waitTime;
 }
 
 void WaitCommand::startup(){

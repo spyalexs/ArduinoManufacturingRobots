@@ -20,16 +20,17 @@ void TurnLeft::cycle(){
   int counts2 = mp_MC->getEncoder2Counts();
   double time = mp_MC->getTime();
 
-  double instantCPS1 = -(counts1 - m_previousCounts1) / (time - m_previousTime);
-  double instantCPS2 = (counts2 - m_previousCounts2) / (time - m_previousTime);
+  double instantCPS1 = (counts1 - m_previousCounts1) / (time - m_previousTime);
+  double instantCPS2 = -(counts2 - m_previousCounts2) / (time - m_previousTime);
 
   double vP = .02;
   double vFF = 20 + .015 * this->m_targetCPS;
 
   int power1 = vP * (m_targetCPS - instantCPS1) + vFF;
   int power2 = vP * (m_targetCPS - instantCPS2) + vFF;
-  mp_MC->setMotor1(-power1);
-  mp_MC->setMotor2(power2);
+  
+  mp_MC->setMotor1(power1);
+  mp_MC->setMotor2(-power2);
 
   // Serial.println("P1: " + String(-power1) + " CPS1: " + String(instantCPS1) + " P2: " + String(power2) + " CPS2: " + String(instantCPS2));
 
@@ -49,7 +50,7 @@ void TurnLeft::cleanup(){
 
 bool TurnLeft::ifEnd(){
   //return true to stop cycling, false to continue
-  int progress = ((mp_MC->getEncoder2Counts() - this->m_initialCounts2) - (mp_MC->getEncoder1Counts() - this->m_initialCounts1));
+  int progress = (-(mp_MC->getEncoder2Counts() - this->m_initialCounts2) + (mp_MC->getEncoder1Counts() - this->m_initialCounts1));
 
   if(progress >= this->m_turningCounts){
     return true;

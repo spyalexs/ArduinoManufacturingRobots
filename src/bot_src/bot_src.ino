@@ -12,6 +12,7 @@
 #include "TurnRight.h"
 #include "TurnLeft.h"
 #include "FollowLineUntilMarker.h"
+#include "FollowLineUntilAction.h"
 #include "TravelStraight.h"
 #include "FollowLineOnMarker.h"
 #include "TestCommand.h"
@@ -21,7 +22,7 @@
 bool PUBLISHDATA = true;
 
 //the robot container that is a wrapper around periphral functions
-RobotContainer MC = RobotContainer(&M1, &M2, &encoder1, &encoder2, IN1, IN3, A2);
+RobotContainer MC = RobotContainer(&M1, &M2, &encoder1, &encoder2);
 Communicator CC = Communicator();
 Sequencer SC = Sequencer();
 CycleOverseer CO = CycleOverseer(50);
@@ -30,7 +31,7 @@ CycleOverseer CO = CycleOverseer(50);
 Adafruit_MCP23X17 gpio;
 
 int lastUpdate = 0; //last time the update was sent to central
-int updateFrequency = 1; //Hz
+double updateFrequency = .05; //Hz
 
 Command* runningCommand;
 
@@ -73,6 +74,7 @@ void setup(){
 
   CC.connectToCentral();
 
+  MC.setIndividualParamters(CC.m_macString);
 
   Serial.println("I am a bot!");
 
@@ -172,7 +174,13 @@ void assignCommand(int commandNumber){
 
     case 7:
       if(true){
-        SC.loadInCommand(WaitCommand(&MC, &CC, 10));
+        SC.loadInCommand(WaitCommand(&MC, &CC, 14));
+      }
+      break;
+
+    case 8:
+      if(true){
+        SC.loadInCommand(FollowLineUntilAction(&MC, &CC));
       }
       break;
 
@@ -191,6 +199,7 @@ void assignCommand(int commandNumber){
         SC.loadInCommand(FollowLineOnMarker(&MC, &CC));
         SC.loadInCommand(TravelStraight(&MC, &CC, 1200, true));
         SC.loadInCommand(FollowLineUntilMarker(&MC, &CC, true));
+        SC.loadInCommand(WaitCommand(&MC, &CC, 1.0, true));
         SC.loadInCommand(TravelStraight(&MC, &CC, 2600,true));
       }
       break;
@@ -201,9 +210,12 @@ void assignCommand(int commandNumber){
         SC.loadInCommand(FollowLineOnMarker(&MC, &CC));
         SC.loadInCommand(TravelStraight(&MC, &CC, 1200, true));
         SC.loadInCommand(FollowLineUntilMarker(&MC, &CC, true));
-        SC.loadInCommand(TravelStraight(&MC, &CC, 2020, true));
+        SC.loadInCommand(TravelStraight(&MC, &CC, 2300, true));
         SC.loadInCommand(TurnLeft(&MC, &CC, true));
-        SC.loadInCommand(TravelStraight(&MC, &CC, 1850, true));
+        SC.loadInCommand(FollowLineUntilMarker(&MC, &CC, true));
+        SC.loadInCommand(FollowLineOnMarker(&MC, &CC, true));        
+        SC.loadInCommand(FollowLineUntilMarker(&MC, &CC, true));
+        SC.loadInCommand(FollowLineOnMarker(&MC, &CC, true));
       }
       break;
 
@@ -231,7 +243,7 @@ void update(){
   double time = MC.getTime();
 
   // if it is time to update central
-  if(lastUpdate + (1 / updateFrequency) < time){
+  if(lastUpdate + (1.0 / updateFrequency) < time){
     lastUpdate = time;
 
     //update must be less than 50 bytes

@@ -1,0 +1,325 @@
+<map>
+    <node name="Node2" type="intersection" locationX="175" locationY="50">
+        <subnode name="Node2-A">
+            <connection direction="outbound" destination="Node7-D"></connection>
+        </subnode>        
+        <subnode name="Node2-B">
+        </subnode>        
+        <subnode name="Node2-C">
+            <connection direction="outbound" destination="Node3-F"></connection>
+        </subnode>
+        <subnode name="Node2-D">
+        </subnode>
+        <subnode name="Node2-E">
+        </subnode>
+        <subnode name="Node2-F">
+        </subnode>
+        <subnode name="Node2-G">
+        </subnode>
+        <subnode name="Node2-H">
+        </subnode>
+    </node>
+    <node name="Node3" type="intersection" locationX="300" locationY="50">
+        <subnode name="Node3-A">
+            <connection direction="outbound" destination="Node8-D"></connection>
+        </subnode>        
+        <subnode name="Node3-B">
+        </subnode>        
+        <subnode name="Node3-C">
+            <connection direction="outbound" destination="Node4-F"></connection>
+        </subnode>
+        <subnode name="Node3-D">
+        </subnode>        
+        <subnode name="Node3-E">
+        </subnode>        
+        <subnode name="Node3-F">
+        </subnode>        
+        <subnode name="Node3-G">
+            <connection direction="outbound" destination="Node2-B"></connection>
+        </subnode>        
+        <subnode name="Node3-H">
+        </subnode>
+    </node>
+    <node name="Node4" type="intersection" locationX="425" locationY="50">
+        <subnode name="Node4-A">
+            <connection direction="outbound" destination="Node9-D"></connection>
+        </subnode>        
+        <subnode name="Node4-B">
+        </subnode>        
+        <subnode name="Node4-C">
+        </subnode>
+        <subnode name="Node4-D">
+        </subnode>        
+        <subnode name="Node4-E">
+        </subnode>        
+        <subnode name="Node4-F">
+        </subnode>        
+        <subnode name="Node4-G">
+            <connection direction="outbound" destination="Node3-B"></connection>
+        </subnode>        
+        <subnode name="Node4-H">
+        </subnode>
+    </node>
+    <node name="Node7" type="intersection" locationX="175" locationY="175">
+        <subnode name="Node7-A">
+            <connection direction="outbound" destination="Node12-D"></connection>
+        </subnode>        
+        <subnode name="Node7-B">
+        </subnode>        
+        <subnode name="Node7-C">
+            <connection direction="outbound" destination="Node8-F"></connection>
+        </subnode>
+        <subnode name="Node7-D">
+        </subnode>        
+        <subnode name="Node7-E">
+            <connection direction="outbound" destination="Node2-H"></connection>
+        </subnode>        
+        <subnode name="Node7-F">
+        </subnode>        
+        <subnode name="Node7-G">
+        </subnode>        
+        <subnode name="Node7-H">
+        </subnode>
+    </node>
+    <node name="Node8" type="intersection" locationX="300" locationY="175">
+        <subnode name="Node8-A">
+            <connection direction="outbound" destination="Node13-D"></connection>
+        </subnode>        
+        <subnode name="Node8-B">
+        </subnode>        
+        <subnode name="Node8-C">
+            <connection direction="outbound" destination="Node9-F"></connection>
+        </subnode>
+        <subnode name="Node8-D">
+        </subnode>        
+        <subnode name="Node8-E">
+            <connection direction="outbound" destination="Node3-H">
+                <action_point id="1"></action_point>
+            </connection>
+        </subnode>        
+        <subnode name="Node8-F">
+        </subnode>        
+        <subnode name="Node8-G">
+            <connection direction="outbound" destination="Node7-B"></connection>
+        </subnode>        
+        <subnode name="Node8-H">
+        </subnode>
+    </node>
+    <node name="Node9" type="intersection" locationX="425" locationY="175">
+        <subnode name="Node9-A">
+            <connection direction="outbound" destination="Node14-D"></connection>
+        </subnode>        
+        <subnode name="Node9-B">
+        </subnode>        
+        <subnode name="Node9-C">
+        </subnode>
+        <subnode name="Node9-D">
+        </subnode>        
+        <subnode name="Node9-E">
+            <connection direction="outbound" destination="Node4-H"></connection>
+        </subnode>        
+        <subnode name="Node9-F">
+        </subnode>        
+        <subnode name="Node9-G">
+            <connection direction="outbound" destination="Node8-B"></connection>
+        </subnode>        
+        <subnode name="Node9-H">
+        </subnode>
+    </node>
+    <node name="Node12" type="intersection" locationX="175" locationY="300">
+        <subnode name="Node12-A">
+            <connection direction="outbound" destination="Node17-D"></connection>
+        </subnode>        
+        <subnode name="Node12-B">
+        </subnode>        
+        <subnode name="Node12-C">
+            <connection direction="outbound" destination="Node13-F"></connection>
+        </subnode>
+        <subnode name="Node12-D">
+        </subnode>        
+        <subnode name="Node12-E">
+            <connection direction="outbound" destination="Node7-H">
+                <action_point id="2"></action_point>
+            </connection>
+        </subnode>        
+        <subnode name="Node12-F">
+        </subnode>        
+        <subnode name="Node12-G">
+        </subnode>        
+        <subnode name="Node12-H">
+        </subnode>
+    </node>
+    <node name="Node13" type="intersection" locationX="300" locationY="300">
+        <subnode name="Node13-A">
+            <connection direction="outbound" destination="Node18-D">
+                <action_point id="4"></action_point>
+            </connection>
+        </subnode>        
+        <subnode name="Node13-B">
+        </subnode>        
+        <subnode name="Node13-C">
+            <connection direction="outbound" destination="Node14-F"></connection>
+        </subnode>
+        <subnode name="Node13-D">
+        </subnode>        
+        <subnode name="Node13-E">
+            <connection direction="outbound" destination="Node8-H"></connection>
+        </subnode>        
+        <subnode name="Node13-F">
+        </subnode>        
+        <subnode name="Node13-G">            
+            <connection direction="outbound" destination="Node12-B"></connection>
+        </subnode>        
+        <subnode name="Node13-H">
+        </subnode>
+    </node>
+    <node name="Node14" type="intersection" locationX="425" locationY="300">
+        <subnode name="Node14-A">
+            <connection direction="outbound" destination="Node19-D"></connection>
+        </subnode>        
+        <subnode name="Node14-B">
+        </subnode>        
+        <subnode name="Node14-C">
+        </subnode>
+        <subnode name="Node14-D">
+        </subnode>        
+        <subnode name="Node14-E">
+            <connection direction="outbound" destination="Node9-H"></connection>
+        </subnode>        
+        <subnode name="Node14-F">
+        </subnode>        
+        <subnode name="Node14-G">
+            <connection direction="outbound" destination="Node13-B"></connection>
+        </subnode>        
+        <subnode name="Node14-H">
+        </subnode>
+    </node>
+    <node name="Node17" type="intersection" locationX="175" locationY="425">
+        <subnode name="Node17-A">
+            <connection direction="outbound" destination="Node22-D"></connection>
+        </subnode>        
+        <subnode name="Node17-B">
+        </subnode>        
+        <subnode name="Node17-C">
+            <connection direction="outbound" destination="Node18-F"></connection>
+        </subnode>
+        <subnode name="Node17-D">
+        </subnode>        
+        <subnode name="Node17-E">
+            <connection direction="outbound" destination="Node12-H"></connection>
+        </subnode>        
+        <subnode name="Node17-F">
+        </subnode>        
+        <subnode name="Node17-G">
+        </subnode>        
+        <subnode name="Node17-H">
+        </subnode>
+    </node>
+    <node name="Node18" type="intersection" locationX="300" locationY="425">
+        <subnode name="Node18-A">
+            <connection direction="outbound" destination="Node23-D"></connection>
+        </subnode>        
+        <subnode name="Node18-B">
+        </subnode>        
+        <subnode name="Node18-C">
+            <connection direction="outbound" destination="Node19-F"></connection>
+        </subnode>
+        <subnode name="Node18-D">
+        </subnode>        
+        <subnode name="Node18-E">
+            <connection direction="outbound" destination="Node13-H"></connection>
+        </subnode>        
+        <subnode name="Node18-F">
+        </subnode>        
+        <subnode name="Node18-G"> 
+           <connection direction="outbound" destination="Node17-B"></connection>
+        </subnode>        
+        <subnode name="Node18-H">
+        </subnode>
+    </node>
+    <node name="Node19" type="intersection" locationX="425" locationY="425">
+        <subnode name="Node19-A">
+            <connection direction="outbound" destination="Node24-D"></connection>
+        </subnode>        
+        <subnode name="Node19-B">
+        </subnode>        
+        <subnode name="Node19-C">
+        </subnode>
+        <subnode name="Node19-D">
+        </subnode>        
+        <subnode name="Node19-E">
+            <connection direction="outbound" destination="Node14-H"></connection>
+        </subnode>        
+        <subnode name="Node19-F">
+        </subnode>        
+        <subnode name="Node19-G">
+            <connection direction="outbound" destination="Node18-B"></connection>
+        </subnode>        
+        <subnode name="Node19-H">
+        </subnode>
+    </node>
+    <node name="Node22" type="intersection" locationX="175" locationY="550">
+        <subnode name="Node22-A">
+        </subnode>        
+        <subnode name="Node22-B">
+        </subnode>        
+        <subnode name="Node22-C">
+        </subnode>
+        <subnode name="Node22-D">
+        </subnode>        
+        <subnode name="Node22-E">
+            <connection direction="outbound" destination="Node17-H"></connection>
+        </subnode>        
+        <subnode name="Node22-F">
+        </subnode>        
+        <subnode name="Node22-G">
+        </subnode>        
+        <subnode name="Node22-H">
+        </subnode>
+    </node>
+    <node name="Node23" type="intersection" locationX="300" locationY="550">
+        <subnode name="Node23-A">
+        </subnode>        
+        <subnode name="Node23-B">
+        </subnode>        
+        <subnode name="Node23-C">
+        </subnode>
+        <subnode name="Node23-D">
+        </subnode>        
+        <subnode name="Node23-E">
+            <connection direction="outbound" destination="Node18-H"></connection>
+        </subnode>        
+        <subnode name="Node23-F">
+        </subnode>        
+        <subnode name="Node23-G">
+        </subnode>        
+        <subnode name="Node23-H">
+        </subnode>
+    </node>
+    <node name="Node24" type="intersection" locationX="425" locationY="550">
+        <subnode name="Node24-A">
+        </subnode>        
+        <subnode name="Node24-B">
+        </subnode>        
+        <subnode name="Node24-C">
+        </subnode>
+        <subnode name="Node24-D">
+        </subnode>        
+        <subnode name="Node24-E">
+            <connection direction="outbound" destination="Node19-H"></connection>
+        </subnode>        
+        <subnode name="Node24-F">
+        </subnode>        
+        <subnode name="Node24-G">
+        </subnode>        
+        <subnode name="Node24-H">
+        </subnode>
+    </node>
+</map>
+
+<!-- Sub Node locations on Node are clockwise starting at noon
+     H A
+   G     B
+   F     C
+     E D
+-->

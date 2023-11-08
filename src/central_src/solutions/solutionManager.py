@@ -42,6 +42,10 @@ def startSolution(fileName: str, GuiInQueue: Queue, SolutionQueue:Queue, Oversee
 def runSolution(fileName: str, GuiInQueue: Queue, SolutionQueue:Queue, OverseerData, killQueue:Queue):
     #run through a solution script
 
+    #clear solution queue
+    while not SolutionQueue.empty():
+        SolutionQueue.get()
+
     #load in solution file
     try:
         solutionFile = open(os.path.join(solutionFilesPath, fileName), "r")
@@ -136,7 +140,7 @@ def runSolution(fileName: str, GuiInQueue: Queue, SolutionQueue:Queue, OverseerD
             for command in solutionsCommands:
                  
                 #if the bot is ready for a new command
-                if(statuses[bot][1] == 0):
+                if((statuses[bot][1] == 0)):
 
                     if(command[0] == "B100"):
                         #if the command is a routeing command
@@ -171,14 +175,26 @@ def runSolution(fileName: str, GuiInQueue: Queue, SolutionQueue:Queue, OverseerD
                     elif(command[0] == "S100"):
                         #if the commmand is a transfer to bot command
 
-                        if(validateCommand(command, 4, True)):
+                        if(validateCommand(command, OverseerData, 4, True)):
                             #if the command is valid
 
                             #if the command is for the bot
                             if(command[1] == bot):    
                                 if(solutionStartTime + float(command[2]) < time()):
                                     #if the command is supposed to start now
-                                    print("Issuing")
+                                    #three steps in this 
+                                    # - 1 send bot wait command 
+                                    # - 2 send bot item 
+                                    # - 3 remove item from station
+
+                                    #1
+                                    waitCommand = GUIInMessage(bot, "commandIssue", 7, Direct=False)
+                                    GuiInQueue.put(waitCommand)
+
+                                    # 2 and 3
+                                    stationDispenseRequest = GUIInMessage(command[3], "DispenseStationItem", bot, Direct=False)
+                                    GuiInQueue.put(stationDispenseRequest)
+
 
                                     #mark that the bot is going to complete the command
                                     command[0] = "Complete"
@@ -189,21 +205,29 @@ def runSolution(fileName: str, GuiInQueue: Queue, SolutionQueue:Queue, OverseerD
                                     #command is good - just need to wait to run it
                                     break
                         else:
-                            print("Invalid routing command: " + str(command[0]) + " " + str(command[1]) + ". Skipping!")
+                            print("Invalid transfer command: " + str(command[0]) + " " + str(command[1]) + ". Skipping!")
 
                             command[0] = "Skipped"
 
                     elif(command[0] == "S101"):
                         #if the command is a transfer from bot command
 
-                        if(validateCommand(command, 4, True)):
+                        if(validateCommand(command, OverseerData, 4, True)):
                             #if the command is valid
 
                             #if the command is for the bot
                             if(command[1] == bot):
                                 if(solutionStartTime + float(command[2]) < time()):
                                     #if the command is supposed to start now
-                                    print("Issuing")
+                                    
+                                    #1
+                                    waitCommand = GUIInMessage(bot, "commandIssue", 7, Direct=False)
+                                    GuiInQueue.put(waitCommand)
+
+                                    # 2 and 3
+                                    stationDispenseRequest = GUIInMessage(command[3], "CollectStationItem", bot, Direct=False)
+                                    GuiInQueue.put(stationDispenseRequest)
+
 
                                     #mark that the bot is going to complete the command
                                     command[0] = "Complete"
@@ -214,12 +238,12 @@ def runSolution(fileName: str, GuiInQueue: Queue, SolutionQueue:Queue, OverseerD
                                     #command is good - just need to wait to run it
                                     break
                         else:
-                            print("Invalid routing command: " + str(command[0]) + " " + str(command[1]) + ". Skipping!")
+                            print("Invalid transfer command: " + str(command[0]) + " " + str(command[1]) + ". Skipping!")
 
                             command[0] = "Skipped"
                     elif(not (command[0] == "Skipped" or command[0] == "Complete")):
                         #send command to configuration manager
                         processConfigurationCommand(command, GuiInQueue, OverseerData)
-
-
+    
+    print("Finished Solution!")
 

@@ -27,7 +27,7 @@ class RobotContainer{
 
     uint8_t m_cycleCounter = 0; // counter for cycle - switch between cycles
   public:
-    RobotContainer(mc::DCMotor* motor1, mc::DCMotor* motor2, mc::Encoder* encoder1, mc::Encoder* encoder2, uint8_t lineFollowerPinName, uint8_t intersectionPinName, uint8_t codePinName);
+    RobotContainer(mc::DCMotor* motor1, mc::DCMotor* motor2, mc::Encoder* encoder1, mc::Encoder* encoder2);
 
     //define robot periphrals
     mc::DCMotor* m_motor1;
@@ -36,9 +36,9 @@ class RobotContainer{
     mc::Encoder* m_encoder1;
     mc::Encoder* m_encoder2;
 
-    uint8_t m_lineFollowerPin;
-    uint8_t m_intersectionPin;
-    uint8_t m_codePin;
+    uint8_t m_lineFollowerPin = IN1;
+    uint8_t m_intersectionPin = IN3;
+    uint8_t m_codePin = 1;
 
     uint8_t m_encoderClickPin = IN4;
     uint8_t m_encoderCWFPin = IN4;
@@ -56,9 +56,12 @@ class RobotContainer{
     double m_staleTime = 0.1; // the time it takes for control results to need to be refreshed
 
     //define line control varibles
-    int m_lineHighValue = 60;
+
+    //ORANGE 60, 40, 50
+
+    int m_lineHighValue = 150;
     int m_lineLowValue = 40;
-    int m_intersectionMarkerThreshold = 50;
+    int m_intersectionMarkerThreshold = 100;
     int m_linePreviousValue = 0;
     double m_linePreviousTime = 0;
 
@@ -75,9 +78,13 @@ class RobotContainer{
     double m_velPreviousCPS1 = 0;
     double m_velPreviousCPS2 = 0;
     double m_velPreviousTime = 0;
+    int m_velDFF = 0;
 
     double m_ultrasonicDistance = -1;
     
+    //setup during run
+    void setIndividualParamters(String macAddress);
+
     //getter and setter functions
     void setMotor1(int duty);
     void setMotor2(int duty);
@@ -90,7 +97,7 @@ class RobotContainer{
     uint16_t getLineFollowerPinReading();
     uint16_t getMarkerPinReading();
     bool isOnIntersectionMarker();
-    bool isCodePin();
+    bool isOnActionMarker();
 
     double getTime();
     double getBatteryVoltage();

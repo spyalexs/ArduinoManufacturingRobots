@@ -805,10 +805,9 @@ def drawBots(imageMap, botLocations):
                     xCounter += 1
 
                 yCounter += 1
-        elif not (botLocations[locationKey] == "Unlocalized"):
+        elif not (botLocations[locationKey] == "Unlocalized" or botLocations[locationKey] == "NotLocalized"):
             #if there is not match for the location in the locations and the bot is not unlocalized
-            print("Cannot draw bot! Invalid location: " + str(locationKey) + ", ")
-            return
+            print("Cannot draw bot! Invalid location: " + str(botLocations[locationKey]) + ", ")
         
         
     return flipImageY(imageMap)

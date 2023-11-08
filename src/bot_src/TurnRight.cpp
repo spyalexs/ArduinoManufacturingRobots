@@ -21,8 +21,8 @@ void TurnRight::cycle(){
   int counts2 = mp_MC->getEncoder2Counts();
   double time = mp_MC->getTime();
 
-  double instantCPS1 = (counts1 - m_previousCounts1) / (time - m_previousTime);
-  double instantCPS2 = -(counts2 - m_previousCounts2) / (time - m_previousTime);
+  double instantCPS1 = -(counts1 - m_previousCounts1) / (time - m_previousTime);
+  double instantCPS2 = (counts2 - m_previousCounts2) / (time - m_previousTime);
 
   double vP = .02;
   double vFF = 20 + .015 * this->m_targetCPS;
@@ -30,11 +30,11 @@ void TurnRight::cycle(){
   int power2 = vP * (m_targetCPS - instantCPS2) + vFF;
   int power1 = vP * (m_targetCPS - instantCPS1) + vFF;
 
-  mp_MC->setMotor1(power1);
-  mp_MC->setMotor2(-power2);
+  mp_MC->setMotor1(-power1);
+  mp_MC->setMotor2(power2);
 
-  // Serial.println("Power: " + String(power2));
-  // Serial.println("ICPS: " + String(instantCPS2));
+  //  Serial.println("Power: " + String(power2));
+  //  Serial.println("ICPS: " + String(instantCPS2));
   // Serial.println(vFF);
 
   m_previousTime = time;
@@ -52,7 +52,7 @@ void TurnRight::cleanup(){
 
 bool TurnRight::ifEnd(){
   //return true to stop cycling, false to continue
-  int progress = ((mp_MC->getEncoder1Counts() - this->m_initialCounts1) - (mp_MC->getEncoder2Counts() - this->m_initialCounts2));
+  int progress = (-(mp_MC->getEncoder1Counts() - this->m_initialCounts1) + (mp_MC->getEncoder2Counts() - this->m_initialCounts2));
 
   if(progress >= m_turningCounts){
     return true;

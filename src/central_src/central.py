@@ -20,7 +20,7 @@ subThreadKills = [] #a list of all the thread PIDS
 
 #this is the main thread for the central controller
 
-def initialize(queueIn, queueOut, queueInGui, queueOutGui, killQueue: queue.Queue):
+def initialize(queueIn, queueOut, queueInGui, queueOutGui, killQueue: queue.Queue, solutionOutQueue: queue.Queue):
     #run startup / connection protocol
 
     #queue to send packets to bots
@@ -59,7 +59,7 @@ def initialize(queueIn, queueOut, queueInGui, queueOutGui, killQueue: queue.Queu
                 #determine if new connection is bot or station
                 if(connectionInfo[4] == "bot"):
                     #set up bot overseer
-                    overseers.append(BotOverSeer(connectionInfo[0], connectionInfo[1], connectionInfo[2], queueOut, queuePacketOut, queueOutGui, connectionInfo[5]))
+                    overseers.append(BotOverSeer(connectionInfo[0], connectionInfo[1], connectionInfo[2], queueOut, queuePacketOut, queueOutGui, connectionInfo[5], solutionOutQueue))
 
                     #mark that at least one bot was connected
                     botConnected = True
@@ -182,7 +182,11 @@ def handleGUIIn(queueInGui: queue.Queue, solutionOutQueue: queue.Queue):
 
                     if not (targetBot is None):
                         #the target bot has been found
-                        targetBot.addItem(itemToDispense)
+
+                        if not itemToDispense is None:
+                            targetBot.addItem(itemToDispense)
+                        else:
+                            print("Cannot dispense a non-string item")
 
                     #tell the station to dispense
                     targetOverseer.dispenseItem(message.m_value)
@@ -236,6 +240,7 @@ def handleGUIIn(queueInGui: queue.Queue, solutionOutQueue: queue.Queue):
                     targetOverseer.removeItem(message.m_value)
                 else:
                     print("Cannot remove item from type: " + targetOverseer.m_type)
+
             elif message.m_characteristic == "CollectStatuses":
                 
                 #ask all the bots to send in their statuses
@@ -294,7 +299,7 @@ def runController(queueIn: queue.Queue, queueOut: queue.Queue, queueInGui: queue
     subThreadKills.append(controllerKillQueue)
 
     #start up the program
-    initialize(queueIn, queueOut, queueInGui, queueOutGui, controllerKillQueue)
+    initialize(queueIn, queueOut, queueInGui, queueOutGui, controllerKillQueue, solutionOutQueue)
 
     while(controllerKillQueue.empty()):
         cycle(queueIn, queueOut, queueInGui, queueOutGui, solutionOutQueue)
